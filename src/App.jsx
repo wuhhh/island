@@ -1,5 +1,4 @@
 import * as THREE from "three/webgpu";
-import * as TSL from "three/tsl";
 import React, { useEffect, useRef, useState } from "react";
 import { Canvas, extend, useFrame, useThree } from "@react-three/fiber";
 import { Plane, OrbitControls } from "@react-three/drei";
@@ -22,6 +21,7 @@ const ToggleableOrbitControls = ({ enabled }) => {
 const GeometryTerrainEditor = () => {
   const [pointerDown, setPointerDown] = useState(false);
   const [editMode, setEditMode] = useState(true); // Start in edit mode
+  const [showWireframe, setShowWireframe] = useState(true); // Toggle for wireframe display
   const planeRef = useRef();
   const materialRef = useRef();
   const mousePos = useRef(new THREE.Vector2(0.5, 0.5));
@@ -41,6 +41,15 @@ const GeometryTerrainEditor = () => {
         e.preventDefault(); // Prevent the tab from changing focus
         setEditMode(prev => !prev);
         console.log(`Mode: ${!editMode ? "Sculpting" : "Camera Control"}`);
+      }
+
+      // Toggle wireframe with W key
+      if (e.key === "w" || e.key === "W") {
+        setShowWireframe(prev => !prev);
+        if (materialRef.current) {
+          materialRef.current.wireframe = !materialRef.current.wireframe;
+          console.log(`Wireframe: ${materialRef.current.wireframe ? "On" : "Off"}`);
+        }
       }
 
       // Shift key to lower terrain instead of raising
@@ -86,16 +95,94 @@ const GeometryTerrainEditor = () => {
     };
   }, [editMode]);
 
-  // Create a basic material
+  // Create a compatible material for WebGPU
   useEffect(() => {
-    const material = new THREE.MeshStandardMaterial({
-      color: 0xffffff,
-      roughness: 0.8,
-      wireframe: true,
+    // For WebGPU, we'll use MeshPhongMaterial and adjust its appearance based on height
+    const material = new THREE.MeshPhongMaterial({
+      vertexColors: true, // We'll set vertex colors based on height
+      wireframe: showWireframe,
+      shininess: 30,
+      specular: 0x111111,
     });
 
     materialRef.current = material;
-  }, []);
+
+    // Function to update vertex colors based on height
+    const updateColors = () => {
+      if (!planeRef.current) return;
+
+      const geometry = planeRef.current.geometry;
+      const positions = geometry.attributes.position.array;
+
+      // Find min and max height
+      let minHeight = Infinity;
+      let maxHeight = -Infinity;
+
+      for (let i = 0; i < positions.length; i += 3) {
+        const height = positions[i + 2]; // z is height
+        minHeight = Math.min(minHeight, height);
+        maxHeight = Math.max(maxHeight, height);
+      }
+
+      // Add padding to range
+      const padding = (maxHeight - minHeight) * 0.1;
+      const effectiveMin = minHeight - padding;
+      const effectiveMax = maxHeight + padding;
+
+      // Create color attribute if it doesn't exist
+      if (!geometry.attributes.color) {
+        const colors = new Float32Array(positions.length);
+        geometry.setAttribute("color", new THREE.BufferAttribute(colors, 3));
+      }
+
+      const colors = geometry.attributes.color.array;
+
+      // Color palette
+      const deepColor = new THREE.Color(0x2c3e50);
+      const lowColor = new THREE.Color(0x3498db);
+      const midColor = new THREE.Color(0x27ae60);
+      const highColor = new THREE.Color(0xf1c40f);
+      const peakColor = new THREE.Color(0xe74c3c);
+      const topColor = new THREE.Color(0xecf0f1);
+
+      // Set color for each vertex based on height
+      for (let i = 0; i < positions.length; i += 3) {
+        const height = positions[i + 2];
+
+        // Normalize height to 0-1 range
+        const t = Math.max(0, Math.min(1, (height - effectiveMin) / (effectiveMax - effectiveMin)));
+
+        let color = new THREE.Color();
+
+        // Color gradient logic
+        if (t < 0.2) {
+          color.lerpColors(deepColor, lowColor, t / 0.2);
+        } else if (t < 0.4) {
+          color.lerpColors(lowColor, midColor, (t - 0.2) / 0.2);
+        } else if (t < 0.7) {
+          color.lerpColors(midColor, highColor, (t - 0.4) / 0.3);
+        } else if (t < 0.9) {
+          color.lerpColors(highColor, peakColor, (t - 0.7) / 0.2);
+        } else {
+          color.lerpColors(peakColor, topColor, (t - 0.9) / 0.1);
+        }
+
+        // Set RGB color values
+        colors[i] = color.r;
+        colors[i + 1] = color.g;
+        colors[i + 2] = color.b;
+      }
+
+      // Mark colors for update
+      geometry.attributes.color.needsUpdate = true;
+    };
+
+    // Initial color update
+    updateColors();
+
+    // Store the update function for later use
+    materialRef.current.updateTerrainColors = updateColors;
+  }, [showWireframe]);
 
   // Improved brush application with proper distance calculation and settings
   const applyBrush = (x, y) => {
@@ -126,13 +213,18 @@ const GeometryTerrainEditor = () => {
         const falloff = Math.pow(1.0 - dist / radius, 2);
 
         // Apply the height change with the current mode (raise or lower)
-        positions[i * 3 + 2] += strength * 0.2 * falloff * mode;
+        positions[i * 3 + 2] += strength * falloff * mode;
       }
     }
 
     // Mark geometry as needing update
     geometry.attributes.position.needsUpdate = true;
     geometry.computeVertexNormals(); // Recalculate normals
+
+    // Update terrain colors if available
+    if (materialRef.current && materialRef.current.updateTerrainColors) {
+      materialRef.current.updateTerrainColors();
+    }
   };
 
   // Handle mouse events with better hit detection
@@ -177,6 +269,13 @@ const GeometryTerrainEditor = () => {
     };
   }, [editMode]);
 
+  // Update terrain colors when geometry changes
+  useEffect(() => {
+    if (materialRef.current && materialRef.current.updateTerrainColors) {
+      materialRef.current.updateTerrainColors();
+    }
+  }, [pointerDown]);
+
   return (
     <>
       <Plane
@@ -193,6 +292,12 @@ const GeometryTerrainEditor = () => {
       <directionalLight position={[1, 1, 1]} />
       <ambientLight intensity={0.4} />
       <ToggleableOrbitControls enabled={!editMode} />
+
+      {/* Optional: Visual mode indicator */}
+      <mesh position={[0.9, 0.9, 0]} scale={0.05}>
+        <sphereGeometry />
+        <meshBasicMaterial color={editMode ? "red" : "green"} />
+      </mesh>
     </>
   );
 };
