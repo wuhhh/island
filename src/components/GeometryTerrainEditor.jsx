@@ -13,7 +13,7 @@ export default function GeometryTerrainEditor() {
   const planeRef = useRef();
   const materialRef = useRef();
   const mousePos = useRef(new THREE.Vector2(0.5, 0.5));
-  const [edgeClampRadius, setEdgeClampRadius] = useState(0.2); // Configurable edge clamp radius
+  const [edgeClampRadius, setEdgeClampRadius] = useState(0.1); // Configurable edge clamp radius
   const [showControls, setShowControls] = useState(true); // Toggle for UI controls
 
   // Brush settings with default values
@@ -482,7 +482,7 @@ export default function GeometryTerrainEditor() {
 
       {/* Optional UI controls */}
       {showControls && (
-        <Html position={[-0.5, 0.5, 0]}>
+        <Html position={[-2, 0.5, 0]}>
           <div
             style={{
               background: "rgba(0,0,0,0.7)",
