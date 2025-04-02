@@ -5,6 +5,7 @@ import { Html, Plane } from "@react-three/drei";
 import useStore from "../stores/useStore";
 
 export default function GeometryTerrainEditor() {
+  const planeSubdivisions = useStore(state => state.planeSubdivisions);
   const [pointerDown, setPointerDown] = useState(false);
   const { persisted, actions } = useStore();
   const { wireframe } = persisted;
@@ -192,6 +193,7 @@ export default function GeometryTerrainEditor() {
   useEffect(() => {
     const material = new THREE.MeshStandardMaterial({
       vertexColors: true, // Set vertex colors based on height
+      // flatShading: true,
       wireframe,
     });
 
@@ -468,7 +470,7 @@ export default function GeometryTerrainEditor() {
     <>
       <Plane
         ref={planeRef}
-        args={[2, 2, 128, 128]} // Adjusted for better resolution
+        args={[2, 2, planeSubdivisions, planeSubdivisions]} // Adjusted for better resolution
         rotation={[-Math.PI * 0.5, 0, 0]}
         onPointerDown={handlePointerDown}
         onPointerMove={handlePointerMove}
