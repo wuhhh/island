@@ -97,12 +97,9 @@ const GeometryTerrainEditor = () => {
 
   // Create a compatible material for WebGPU
   useEffect(() => {
-    // For WebGPU, we'll use MeshPhongMaterial and adjust its appearance based on height
-    const material = new THREE.MeshPhongMaterial({
-      vertexColors: true, // We'll set vertex colors based on height
+    const material = new THREE.MeshStandardMaterial({
+      vertexColors: true, // Set vertex colors based on height
       wireframe: showWireframe,
-      shininess: 30,
-      specular: 0x111111,
     });
 
     materialRef.current = material;
@@ -213,7 +210,7 @@ const GeometryTerrainEditor = () => {
         const falloff = Math.pow(1.0 - dist / radius, 2);
 
         // Apply the height change with the current mode (raise or lower)
-        positions[i * 3 + 2] += strength * falloff * mode;
+        positions[i * 3 + 2] += strength * 0.5 * falloff * mode;
       }
     }
 
@@ -280,7 +277,7 @@ const GeometryTerrainEditor = () => {
     <>
       <Plane
         ref={planeRef}
-        args={[2, 2, 64, 64]}
+        args={[2, 2, 128, 128]} // Adjusted for better resolution
         rotation={[-Math.PI * 0.5, 0, 0]}
         onPointerDown={handlePointerDown}
         onPointerMove={handlePointerMove}
@@ -289,15 +286,15 @@ const GeometryTerrainEditor = () => {
       >
         {materialRef.current && <primitive object={materialRef.current} />}
       </Plane>
-      <directionalLight position={[1, 1, 1]} />
+      <directionalLight position={[-1, 1, 1]} />
       <ambientLight intensity={0.4} />
       <ToggleableOrbitControls enabled={!editMode} />
 
       {/* Optional: Visual mode indicator */}
-      <mesh position={[0.9, 0.9, 0]} scale={0.05}>
+      {/* <mesh position={[0.9, 0.9, 0]} scale={0.05}>
         <sphereGeometry />
         <meshBasicMaterial color={editMode ? "red" : "green"} />
-      </mesh>
+      </mesh> */}
     </>
   );
 };
