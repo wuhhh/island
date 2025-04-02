@@ -1,9 +1,9 @@
 import * as THREE from "three/webgpu";
-import React, { useEffect, useRef, useState } from "react";
-import { Canvas, extend, useFrame, useThree } from "@react-three/fiber";
+import React, { useEffect, useRef } from "react";
+import { Canvas, extend } from "@react-three/fiber";
 import { OrbitControls } from "@react-three/drei";
 import GeometryTerrainEditor from "./components/GeometryTerrainEditor";
-import useStore from "./stores/useStore";
+import { useStore } from "./stores/useStore";
 
 extend(THREE);
 
@@ -20,12 +20,8 @@ const ToggleableOrbitControls = ({ enabled }) => {
   return <OrbitControls ref={controlsRef} />;
 };
 
-const App = () => {
+const Experience = () => {
   const { sculptMode } = useStore();
-
-  useEffect(() => {
-    console.log(`Sculpt Mode: ${sculptMode ? "Enabled" : "Disabled"}`);
-  }, [sculptMode]);
 
   return (
     <Canvas
@@ -42,4 +38,4 @@ const App = () => {
   );
 };
 
-export default App;
+export default Experience;
