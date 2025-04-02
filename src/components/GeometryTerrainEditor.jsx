@@ -1,6 +1,5 @@
 import * as THREE from "three/webgpu";
 import React, { useEffect, useRef, useState } from "react";
-import { useThree } from "@react-three/fiber";
 import { Html, Plane } from "@react-three/drei";
 import useStore from "../stores/useStore";
 
@@ -24,6 +23,11 @@ export default function GeometryTerrainEditor() {
     mode: 1, // 1 for raise, -1 for lower
   });
 
+  /**
+   * Edge clamping effect
+   * Maintains the effect of terrain being an island
+   * by clamping the edges based on distance from the center
+   */
   useEffect(() => {
     if (!planeRef.current) return;
 
@@ -116,7 +120,16 @@ export default function GeometryTerrainEditor() {
     }
   }, [edgeClampRadius]);
 
-  // Add keyboard controls for brush settings and mode toggle
+  /**
+   * Add keyboard controls for brush settings and mode toggle
+   * - Tab: Toggle between sculpt mode and camera control
+   * - W: Toggle wireframe mode
+   * - Shift: Lower terrain instead of raising
+   * - [ ]: Adjust brush size
+   * - - =: Adjust brush strength
+   * - H: Toggle UI controls
+   * - R: Reset terrain
+   */
   useEffect(() => {
     const handleKeyDown = e => {
       // Toggle between edit mode and camera control mode with Tab key
@@ -189,7 +202,11 @@ export default function GeometryTerrainEditor() {
     };
   }, [sculptMode, showControls]);
 
-  // Create a compatible material for WebGPU
+  /**
+   * Update the material and colors based on height
+   * - Set vertex colors based on height
+   * - Create a new material if it doesn't exist
+   */
   useEffect(() => {
     const material = new THREE.MeshStandardMaterial({
       vertexColors: true, // Set vertex colors based on height
@@ -276,7 +293,12 @@ export default function GeometryTerrainEditor() {
     materialRef.current.updateTerrainColors = updateColors;
   }, [wireframe]);
 
-  // Improved brush application with spatial optimization and edge clamping
+  /**
+   * Apply brush effect to the terrain
+   * - Uses a spatial index for efficient vertex selection
+   * - Applies height changes based on brush settings
+   * - Uses a smooth quadratic falloff for brush effect
+   */
   const applyBrush = (x, y) => {
     if (!planeRef.current || !sculptMode) return;
 
@@ -387,10 +409,12 @@ export default function GeometryTerrainEditor() {
     }
 
     // For debugging
-    // console.log(`Processed ${modifiedVertices.length} vertices instead of ${positions.length/3}`);
+    // console.log(`Processed ${modifiedVertices.length} vertices instead of ${positions.length / 3}`);
   };
 
-  // Function to reset terrain to original flat state
+  /**
+   * resetTerrain
+   */
   const resetTerrain = () => {
     if (!planeRef.current) return;
 
@@ -417,7 +441,9 @@ export default function GeometryTerrainEditor() {
     }
   };
 
-  // Handle mouse events with better hit detection
+  /**
+   * handlePointerDown
+   */
   const handlePointerDown = e => {
     if (!sculptMode) return;
 
@@ -433,6 +459,10 @@ export default function GeometryTerrainEditor() {
     }
   };
 
+  /**
+   * handlePointerMove
+   * - Apply brush effect if pointer is down
+   */
   const handlePointerMove = e => {
     if (!pointerDown || !sculptMode) return;
 
@@ -447,9 +477,9 @@ export default function GeometryTerrainEditor() {
     }
   };
 
-  const { scene } = useThree();
-
-  // Update the cursor based on the current mode
+  /**
+   * useEffect to set cursor style
+   */
   useEffect(() => {
     document.body.style.cursor = sculptMode ? "crosshair" : "grab";
 
@@ -459,7 +489,9 @@ export default function GeometryTerrainEditor() {
     };
   }, [sculptMode]);
 
-  // Update terrain colors when geometry changes
+  /**
+   * Update terrain colors when geometry changes
+   */
   useEffect(() => {
     if (materialRef.current && materialRef.current.updateTerrainColors) {
       materialRef.current.updateTerrainColors();
