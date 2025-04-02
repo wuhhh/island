@@ -1,18 +1,25 @@
 import * as THREE from "three/webgpu";
 import React, { useEffect, useRef, useState } from "react";
 import { Html, Plane } from "@react-three/drei";
-import useStore from "../stores/useStore";
+import { useStore, useHydration } from "../stores/useStore";
 
 export default function GeometryTerrainEditor() {
+  // Refs
+  const planeRef = useRef();
+  const materialRef = useRef();
+  const mousePos = useRef(new THREE.Vector2(0.5, 0.5));
+
+  // Store state
   const planeSubdivisions = useStore(state => state.planeSubdivisions);
-  const [pointerDown, setPointerDown] = useState(false);
   const { persisted, actions } = useStore();
   const { wireframe } = persisted;
   const setWireframe = actions.setWireframe;
   const { sculptMode, setSculptMode } = useStore();
-  const planeRef = useRef();
-  const materialRef = useRef();
-  const mousePos = useRef(new THREE.Vector2(0.5, 0.5));
+  const hydrated = useHydration(); // Check if the component is hydrated (from local storage)
+
+  // Local state
+  const [brushing, setBrushing] = useState(false);
+  const [pointerDown, setPointerDown] = useState(false);
   const [edgeClampRadius, setEdgeClampRadius] = useState(0.1); // Configurable edge clamp radius
   const [showControls, setShowControls] = useState(true); // Toggle for UI controls
 
@@ -291,7 +298,7 @@ export default function GeometryTerrainEditor() {
 
     // Store the update function for later use
     materialRef.current.updateTerrainColors = updateColors;
-  }, [wireframe]);
+  }, [wireframe, hydrated]);
 
   /**
    * Apply brush effect to the terrain
@@ -460,6 +467,20 @@ export default function GeometryTerrainEditor() {
   };
 
   /**
+   * handlePointerUp
+   */
+  const handlePointerUp = e => {
+    console.log("Pointer up");
+
+    setPointerDown(false);
+    setBrushing(false);
+
+    // Log the current terrain state
+    const currentTerrain = planeRef.current.geometry.attributes.position.array;
+    console.log("Current terrain state:", currentTerrain);
+  };
+
+  /**
    * handlePointerMove
    * - Apply brush effect if pointer is down
    */
@@ -470,6 +491,7 @@ export default function GeometryTerrainEditor() {
       // Find the intersection with our plane
       const intersection = e.intersections.find(i => i.object === planeRef.current);
       if (intersection) {
+        setBrushing(true);
         const uv = intersection.uv;
         mousePos.current.set(uv.x, uv.y);
         applyBrush(uv.x, uv.y);
@@ -506,7 +528,7 @@ export default function GeometryTerrainEditor() {
         rotation={[-Math.PI * 0.5, 0, 0]}
         onPointerDown={handlePointerDown}
         onPointerMove={handlePointerMove}
-        onPointerUp={() => setPointerDown(false)}
+        onPointerUp={handlePointerUp}
         onPointerLeave={() => setPointerDown(false)}
       >
         {materialRef.current && <primitive object={materialRef.current} />}
