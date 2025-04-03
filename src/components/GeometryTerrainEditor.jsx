@@ -1,7 +1,8 @@
 import * as THREE from "three/webgpu";
 import React, { useEffect, useRef, useState } from "react";
 import { Html, Plane } from "@react-three/drei";
-import { useStore, useHydration } from "../stores/useStore";
+import { TERRAIN_RESOLUTION, useIslandStore, useIslandHydration } from "../stores/useIslandStore";
+import { useHistoryStore, useHistoryHydration } from "../stores/useHistoryStore";
 
 export default function GeometryTerrainEditor() {
   // Refs
@@ -10,12 +11,14 @@ export default function GeometryTerrainEditor() {
   const mousePos = useRef(new THREE.Vector2(0.5, 0.5));
 
   // Store state
-  const planeSubdivisions = useStore(state => state.planeSubdivisions);
-  const { persisted, actions } = useStore();
+  const getTerrainData = useHistoryStore(state => state.getTerrainData);
+  const setTerrainGeomAttrsPosArr = useHistoryStore(state => state.setTerrainGeomAttrsPosArr);
+  const { persisted, actions } = useIslandStore();
   const { wireframe } = persisted;
   const setWireframe = actions.setWireframe;
-  const { sculptMode, setSculptMode } = useStore();
-  const hydrated = useHydration(); // Check if the component is hydrated (from local storage)
+  const { sculptMode, setSculptMode } = useIslandStore();
+  const islandStoreHydrated = useIslandHydration();
+  const historyStoreHydrated = useHistoryHydration();
 
   // Local state
   const [brushing, setBrushing] = useState(false);
@@ -29,6 +32,34 @@ export default function GeometryTerrainEditor() {
     strength: 0.01,
     mode: 1, // 1 for raise, -1 for lower
   });
+
+  /**
+   * Set the initial state of the plane
+   */
+  useEffect(() => {
+    if (!historyStoreHydrated || !planeRef.current) return;
+
+    // Get data from store as proper Float32Array
+    const terrainData = getTerrainData();
+
+    console.log("Setting initial terrain data:", terrainData);
+    console.log("Terrain data length:", terrainData.length);
+
+    if (terrainData.length > 0) {
+      // Apply to geometry if we have valid data
+      if (planeRef.current.geometry.attributes.position) {
+        planeRef.current.geometry.attributes.position.array = terrainData;
+        const geometry = planeRef.current.geometry;
+        geometry.attributes.position.needsUpdate = true;
+        geometry.computeVertexNormals();
+        if (materialRef.current && materialRef.current.updateTerrainColors) {
+          materialRef.current.updateTerrainColors();
+        }
+      }
+    } else {
+      console.warn("No terrain data found after hydration");
+    }
+  }, [historyStoreHydrated, getTerrainData]);
 
   /**
    * Edge clamping effect
@@ -298,7 +329,7 @@ export default function GeometryTerrainEditor() {
 
     // Store the update function for later use
     materialRef.current.updateTerrainColors = updateColors;
-  }, [wireframe, hydrated]);
+  }, [wireframe, islandStoreHydrated]);
 
   /**
    * Apply brush effect to the terrain
@@ -473,11 +504,17 @@ export default function GeometryTerrainEditor() {
     console.log("Pointer up");
 
     setPointerDown(false);
-    setBrushing(false);
 
-    // Log the current terrain state
-    const currentTerrain = planeRef.current.geometry.attributes.position.array;
-    console.log("Current terrain state:", currentTerrain);
+    if (brushing) {
+      setBrushing(false);
+
+      // Log the current terrain state
+      const currentTerrain = planeRef.current.geometry.attributes.position.array;
+      console.log("Current terrain state:", currentTerrain);
+
+      // Store the current terrain state in the history store
+      setTerrainGeomAttrsPosArr(currentTerrain);
+    }
   };
 
   /**
@@ -524,7 +561,7 @@ export default function GeometryTerrainEditor() {
     <>
       <Plane
         ref={planeRef}
-        args={[2, 2, planeSubdivisions, planeSubdivisions]} // Adjusted for better resolution
+        args={[2, 2, TERRAIN_RESOLUTION, TERRAIN_RESOLUTION]}
         rotation={[-Math.PI * 0.5, 0, 0]}
         onPointerDown={handlePointerDown}
         onPointerMove={handlePointerMove}
