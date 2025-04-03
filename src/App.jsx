@@ -3,7 +3,7 @@ import React, { useEffect, useRef } from "react";
 import { Canvas, extend } from "@react-three/fiber";
 import { OrbitControls } from "@react-three/drei";
 import GeometryTerrainEditor from "./components/GeometryTerrainEditor";
-import { useStore } from "./stores/useStore";
+import { useIslandStore } from "./stores/useIslandStore";
 
 extend(THREE);
 
@@ -21,7 +21,7 @@ const ToggleableOrbitControls = ({ enabled }) => {
 };
 
 const Experience = () => {
-  const { sculptMode } = useStore();
+  const { sculptMode } = useIslandStore();
 
   return (
     <Canvas
