@@ -1,8 +1,9 @@
 import * as THREE from "three/webgpu";
-import React, { useEffect, useRef, useState } from "react";
+import React, { useEffect, useRef, useState, useMemo } from "react";
 import { Html, Plane } from "@react-three/drei";
 import { TERRAIN_RESOLUTION, useIslandStore, useIslandHydration } from "../stores/useIslandStore";
 import { useHistoryStore, useHistoryHydration } from "../stores/useHistoryStore";
+import { color, Fn, positionGeometry, step, vec4 } from "three/tsl";
 
 export default function GeometryTerrainEditor() {
   // Refs
@@ -34,6 +35,48 @@ export default function GeometryTerrainEditor() {
   });
 
   /**
+   * Create a spatial index for the plane geometry
+   * This allows for efficient vertex selection based on UV coordinates
+   * and is particularly useful for brush operations.
+   * The spatial index is a grid that maps UV coordinates to vertex indices.
+   */
+  const spatialIndex = useMemo(() => {
+    if (!planeRef.current) return null;
+
+    const geometry = planeRef.current.geometry;
+    const positions = geometry.attributes.position.array;
+    const uvs = geometry.attributes.uv.array;
+
+    // Create a more efficient data structure that maps UV coordinates to vertices
+    const verticesByUV = [];
+    const gridSize = 20; // Number of cells to divide the UV space into
+
+    // Initialize the spatial grid
+    for (let i = 0; i < gridSize; i++) {
+      verticesByUV[i] = [];
+      for (let j = 0; j < gridSize; j++) {
+        verticesByUV[i][j] = [];
+      }
+    }
+
+    // Populate the grid with vertex indices
+    for (let i = 0; i < positions.length / 3; i++) {
+      const uvIndex = i * 2;
+      const u = uvs[uvIndex];
+      const v = uvs[uvIndex + 1];
+
+      // Calculate which grid cell this vertex belongs to
+      const gridU = Math.min(gridSize - 1, Math.floor(u * gridSize));
+      const gridV = Math.min(gridSize - 1, Math.floor(v * gridSize));
+
+      // Add this vertex to the appropriate cell
+      verticesByUV[gridU][gridV].push(i);
+    }
+
+    return { grid: verticesByUV, size: gridSize };
+  }, [planeRef.current?.geometry]); // Recalculate when geometry changes
+
+  /**
    * Set the initial state of the plane
    */
   useEffect(() => {
@@ -42,8 +85,8 @@ export default function GeometryTerrainEditor() {
     // Get data from store as proper Float32Array
     const terrainData = getTerrainData();
 
-    console.log("Setting initial terrain data:", terrainData);
-    console.log("Terrain data length:", terrainData.length);
+    // console.log("Setting initial terrain data:", terrainData);
+    // console.log("Terrain data length:", terrainData.length);
 
     if (terrainData.length > 0) {
       // Apply to geometry if we have valid data
@@ -52,12 +95,9 @@ export default function GeometryTerrainEditor() {
         const geometry = planeRef.current.geometry;
         geometry.attributes.position.needsUpdate = true;
         geometry.computeVertexNormals();
-        if (materialRef.current && materialRef.current.updateTerrainColors) {
-          materialRef.current.updateTerrainColors();
-        }
       }
     } else {
-      console.warn("No terrain data found after hydration");
+      console.warn("No terrain data available to set.");
     }
   }, [historyStoreHydrated, getTerrainData]);
 
@@ -246,89 +286,22 @@ export default function GeometryTerrainEditor() {
    * - Create a new material if it doesn't exist
    */
   useEffect(() => {
-    const material = new THREE.MeshStandardMaterial({
-      vertexColors: true, // Set vertex colors based on height
+    const material = new THREE.MeshStandardNodeMaterial({
       // flatShading: true,
+      color: "blue",
+      transparent: true,
       wireframe,
     });
 
     materialRef.current = material;
 
-    // Function to update vertex colors based on height
-    const updateColors = () => {
-      if (!planeRef.current) return;
+    const transparentRim = Fn(({ height }) => {
+      const diffuse = color(0x0000ff);
+      const alpha = step(0.01, height);
+      return vec4(diffuse, alpha);
+    });
 
-      const geometry = planeRef.current.geometry;
-      const positions = geometry.attributes.position.array;
-
-      // Find min and max height
-      let minHeight = Infinity;
-      let maxHeight = -Infinity;
-
-      for (let i = 0; i < positions.length; i += 3) {
-        const height = positions[i + 2]; // z is height
-        minHeight = Math.min(minHeight, height);
-        maxHeight = Math.max(maxHeight, height);
-      }
-
-      // Add padding to range
-      const padding = (maxHeight - minHeight) * 0.1;
-      const effectiveMin = minHeight - padding;
-      const effectiveMax = maxHeight + padding;
-
-      // Create color attribute if it doesn't exist
-      if (!geometry.attributes.color) {
-        const colors = new Float32Array(positions.length);
-        geometry.setAttribute("color", new THREE.BufferAttribute(colors, 3));
-      }
-
-      const colors = geometry.attributes.color.array;
-
-      // Color palette
-      const deepColor = new THREE.Color(0x2c3e50);
-      const lowColor = new THREE.Color(0x3498db);
-      const midColor = new THREE.Color(0x27ae60);
-      const highColor = new THREE.Color(0xf1c40f);
-      const peakColor = new THREE.Color(0xe74c3c);
-      const topColor = new THREE.Color(0xecf0f1);
-
-      // Set color for each vertex based on height
-      for (let i = 0; i < positions.length; i += 3) {
-        const height = positions[i + 2];
-
-        // Normalize height to 0-1 range
-        const t = Math.max(0, Math.min(1, (height - effectiveMin) / (effectiveMax - effectiveMin)));
-
-        let color = new THREE.Color();
-
-        // Color gradient logic
-        if (t < 0.2) {
-          color.lerpColors(deepColor, lowColor, t / 0.2);
-        } else if (t < 0.4) {
-          color.lerpColors(lowColor, midColor, (t - 0.2) / 0.2);
-        } else if (t < 0.7) {
-          color.lerpColors(midColor, highColor, (t - 0.4) / 0.3);
-        } else if (t < 0.9) {
-          color.lerpColors(highColor, peakColor, (t - 0.7) / 0.2);
-        } else {
-          color.lerpColors(peakColor, topColor, (t - 0.9) / 0.1);
-        }
-
-        // Set RGB color values
-        colors[i] = color.r;
-        colors[i + 1] = color.g;
-        colors[i + 2] = color.b;
-      }
-
-      // Mark colors for update
-      geometry.attributes.color.needsUpdate = true;
-    };
-
-    // Initial color update
-    updateColors();
-
-    // Store the update function for later use
-    materialRef.current.updateTerrainColors = updateColors;
+    material.colorNode = transparentRim({ height: positionGeometry.z });
   }, [wireframe, islandStoreHydrated]);
 
   /**
@@ -345,41 +318,8 @@ export default function GeometryTerrainEditor() {
     const positions = geometry.attributes.position.array;
     const uvs = geometry.attributes.uv.array;
 
-    // We'll build a spatial index first - a mapping from UV regions to vertex indices
-    // This is an initial implementation - for production, you'd want to build this once and reuse
-    if (!planeRef.current.spatialIndex) {
-      // Create a more efficient data structure that maps UV coordinates to vertices
-      const verticesByUV = [];
-      const gridSize = 20; // Number of cells to divide the UV space into (adjust based on performance needs)
-
-      // Initialize the spatial grid
-      for (let i = 0; i < gridSize; i++) {
-        verticesByUV[i] = [];
-        for (let j = 0; j < gridSize; j++) {
-          verticesByUV[i][j] = [];
-        }
-      }
-
-      // Populate the grid with vertex indices
-      for (let i = 0; i < positions.length / 3; i++) {
-        const uvIndex = i * 2;
-        const u = uvs[uvIndex];
-        const v = uvs[uvIndex + 1];
-
-        // Calculate which grid cell this vertex belongs to
-        const gridU = Math.min(gridSize - 1, Math.floor(u * gridSize));
-        const gridV = Math.min(gridSize - 1, Math.floor(v * gridSize));
-
-        // Add this vertex to the appropriate cell
-        verticesByUV[gridU][gridV].push(i);
-      }
-
-      // Store the spatial index on the mesh for reuse
-      planeRef.current.spatialIndex = { grid: verticesByUV, size: gridSize };
-    }
-
     // Use the spatial index to efficiently find vertices within the brush radius
-    const spatialIndex = planeRef.current.spatialIndex;
+    // const spatialIndex = planeRef.current.spatialIndex;
     const modifiedVertices = [];
 
     // Calculate which grid cells the brush overlaps
@@ -441,13 +381,8 @@ export default function GeometryTerrainEditor() {
     // Recalculate normals
     geometry.computeVertexNormals();
 
-    // Update terrain colors if available
-    if (materialRef.current && materialRef.current.updateTerrainColors) {
-      materialRef.current.updateTerrainColors();
-    }
-
     // For debugging
-    // console.log(`Processed ${modifiedVertices.length} vertices instead of ${positions.length / 3}`);
+    console.log(`Processed ${modifiedVertices.length} vertices instead of ${positions.length / 3}`);
   };
 
   /**
@@ -474,9 +409,6 @@ export default function GeometryTerrainEditor() {
 
     // Update normals and colors
     geometry.computeVertexNormals();
-    if (materialRef.current && materialRef.current.updateTerrainColors) {
-      materialRef.current.updateTerrainColors();
-    }
   };
 
   /**
@@ -508,11 +440,8 @@ export default function GeometryTerrainEditor() {
     if (brushing) {
       setBrushing(false);
 
-      // Log the current terrain state
-      const currentTerrain = planeRef.current.geometry.attributes.position.array;
-      console.log("Current terrain state:", currentTerrain);
-
       // Store the current terrain state in the history store
+      const currentTerrain = planeRef.current.geometry.attributes.position.array;
       setTerrainGeomAttrsPosArr(currentTerrain);
     }
   };
@@ -547,15 +476,6 @@ export default function GeometryTerrainEditor() {
       document.body.style.cursor = "default";
     };
   }, [sculptMode]);
-
-  /**
-   * Update terrain colors when geometry changes
-   */
-  useEffect(() => {
-    if (materialRef.current && materialRef.current.updateTerrainColors) {
-      materialRef.current.updateTerrainColors();
-    }
-  }, [pointerDown]);
 
   return (
     <>
