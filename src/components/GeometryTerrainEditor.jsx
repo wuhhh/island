@@ -296,7 +296,7 @@ export default function GeometryTerrainEditor() {
     materialRef.current = material;
 
     const transparentRim = Fn(({ height }) => {
-      const diffuse = color(0x0000ff);
+      const diffuse = color("#a19438");
       const alpha = step(0.01, height);
       return vec4(diffuse, alpha);
     });
@@ -490,8 +490,6 @@ export default function GeometryTerrainEditor() {
       >
         {materialRef.current && <primitive object={materialRef.current} />}
       </Plane>
-      <directionalLight position={[-1, 1, 1]} />
-      <ambientLight intensity={0.4} />
 
       {/* Optional UI controls */}
       {showControls && (
