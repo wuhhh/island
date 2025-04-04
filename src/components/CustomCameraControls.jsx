@@ -8,6 +8,7 @@ const CustomCameraControls = forwardRef(
       makeDefaultRotation = false, // If true, rotation is default and shift+drag rotates
       panSpeed = 1,
       rotateSpeed = 1,
+      onReady = () => {}, // Add onReady callback prop with default empty function
 
       // Pass through all other CameraControls props
       ...cameraControlsProps
@@ -17,6 +18,7 @@ const CustomCameraControls = forwardRef(
     // Create local ref if no ref is passed
     const localRef = useRef();
     const controlsRef = ref || localRef;
+    const hasCalledOnReady = useRef(false);
 
     useEffect(() => {
       if (!controlsRef.current) return;
@@ -36,6 +38,12 @@ const CustomCameraControls = forwardRef(
       // Disable middle mouse panning if we're using shift+left instead
       if (!makeDefaultRotation) {
         controlsRef.current.mouseButtons.middle = 0;
+      }
+
+      // Call onReady only once when the controls are initialized
+      if (!hasCalledOnReady.current) {
+        onReady(controlsRef.current);
+        hasCalledOnReady.current = true;
       }
 
       // Create event listeners to check for shift key
@@ -74,7 +82,7 @@ const CustomCameraControls = forwardRef(
         window.removeEventListener("keydown", onKeyDown);
         window.removeEventListener("keyup", onKeyUp);
       };
-    }, [controlsRef, makeDefaultRotation, panSpeed, rotateSpeed]);
+    }, [controlsRef, makeDefaultRotation, panSpeed, rotateSpeed, onReady]);
 
     return <CameraControls ref={controlsRef} {...cameraControlsProps} />;
   }
