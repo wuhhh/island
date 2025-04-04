@@ -6,7 +6,7 @@ import { TERRAIN_RESOLUTION } from "./useIslandStore";
 export const useHistoryStore = createBoundStore(
   (set, get) => ({
     // Terrain (geometry.attributes.position.array)
-    terrainGeomAttrsPosArr: new Float32Array((TERRAIN_RESOLUTION + 1) * (TERRAIN_RESOLUTION + 1) * 3).fill(0),
+    terrainGeomAttrsPosArr: null,
 
     /**
      * setTerrainGeomAttrsPosArr
