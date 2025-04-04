@@ -1,6 +1,8 @@
 import { createBoundStore, useHydration } from "./useBoundStore";
 
 export const TERRAIN_RESOLUTION = 128; // Resolution of the terrain (number of vertices along one side)
+export const CAMERA_POSITION = [1, 1, 2]; // Default camera position
+export const CAMERA_TARGET = [0, 0, 0]; // Default camera target position
 
 // Create store with the extracted bound store utility
 export const useIslandStore = createBoundStore(
@@ -11,6 +13,8 @@ export const useIslandStore = createBoundStore(
 
     persisted: {
       wireframe: false,
+      cameraPosition: CAMERA_POSITION,
+      cameraTarget: CAMERA_TARGET,
     },
 
     actions: {
@@ -19,6 +23,20 @@ export const useIslandStore = createBoundStore(
           persisted: {
             ...state.persisted,
             wireframe,
+          },
+        })),
+      setCameraPosition: cameraPosition =>
+        set(state => ({
+          persisted: {
+            ...state.persisted,
+            cameraPosition,
+          },
+        })),
+      setCameraTarget: cameraTarget =>
+        set(state => ({
+          persisted: {
+            ...state.persisted,
+            cameraTarget,
           },
         })),
     },
