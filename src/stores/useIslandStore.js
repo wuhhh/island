@@ -13,8 +13,8 @@ export const useIslandStore = createBoundStore(
 
     persisted: {
       wireframe: false,
-      cameraPosition: CAMERA_POSITION,
-      cameraTarget: CAMERA_TARGET,
+      cameraPosition: null,
+      cameraTarget: null,
     },
 
     actions: {

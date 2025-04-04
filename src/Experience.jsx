@@ -1,6 +1,6 @@
 import * as THREE from "three/webgpu";
 import { Suspense, useEffect, useRef, useState } from "react";
-import { Canvas, extend } from "@react-three/fiber";
+import { Canvas, extend, useThree } from "@react-three/fiber";
 import CustomCameraControls from "./components/CustomCameraControls";
 import GeometryTerrainEditor from "./components/GeometryTerrainEditor";
 import { CAMERA_POSITION, CAMERA_TARGET, useIslandStore, useIslandHydration } from "./stores/useIslandStore";
@@ -8,14 +8,13 @@ import debounce from "debounce";
 
 extend(THREE);
 
-const Experience = () => {
+const Scene = () => {
   const [cameraReady, setCameraReady] = useState(false);
   const cameraControls = useRef();
   const { sculptMode } = useIslandStore();
   const { actions, persisted } = useIslandStore();
   const { setCameraPosition, setCameraTarget } = actions;
   const { cameraPosition, cameraTarget } = persisted;
-
   const islandStoreHydrated = useIslandHydration();
 
   /**
@@ -25,8 +24,11 @@ const Experience = () => {
    */
   useEffect(() => {
     if (cameraControls.current && islandStoreHydrated) {
-      cameraControls.current.setPosition(cameraPosition.x, cameraPosition.y, cameraPosition.z, true);
-      cameraControls.current.setTarget(cameraTarget.x, cameraTarget.y, cameraTarget.z);
+      if (cameraPosition && cameraTarget) {
+        // console.log("Camera controls are ready and store is hydrated", cameraPosition, cameraTarget);
+        cameraControls.current.setPosition(cameraPosition.x, cameraPosition.y, cameraPosition.z);
+        cameraControls.current.setTarget(cameraTarget.x, cameraTarget.y, cameraTarget.z);
+      }
     }
   }, [islandStoreHydrated, cameraReady]);
 
@@ -36,8 +38,12 @@ const Experience = () => {
    * @description Handles camera controls change event and updates the camera position and target in the store.
    */
   const handleCameraControlsChange = event => {
-    setCameraPosition(event.target.getPosition());
-    setCameraTarget(event.target.getTarget());
+    console.log("Camera controls changed", event, event.target.enabled);
+
+    if (event.target.enabled) {
+      setCameraPosition(event.target.getPosition());
+      setCameraTarget(event.target.getTarget());
+    }
   };
 
   /**
@@ -50,14 +56,7 @@ const Experience = () => {
   };
 
   return (
-    <Canvas
-      gl={async props => {
-        const renderer = new THREE.WebGPURenderer(props);
-        await renderer.init();
-        return renderer;
-      }}
-      camera={{ fov: 35, position: CAMERA_POSITION, target: CAMERA_TARGET }}
-    >
+    <>
       <GeometryTerrainEditor />
       <directionalLight position={[-1, 1, 1]} />
       <ambientLight intensity={1} />
@@ -70,6 +69,21 @@ const Experience = () => {
         onChange={debounce(handleCameraControlsChange, 100)}
         onReady={handleControlsReady}
       />
+    </>
+  );
+};
+
+const Experience = () => {
+  return (
+    <Canvas
+      gl={async props => {
+        const renderer = new THREE.WebGPURenderer(props);
+        await renderer.init();
+        return renderer;
+      }}
+      camera={{ fov: 35, position: CAMERA_POSITION, target: CAMERA_TARGET }}
+    >
+      <Scene />
     </Canvas>
   );
 };

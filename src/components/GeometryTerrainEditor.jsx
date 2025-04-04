@@ -301,7 +301,7 @@ export default function GeometryTerrainEditor() {
       return vec4(diffuse, alpha);
     });
 
-    material.colorNode = transparentRim({ height: positionGeometry.z });
+    // material.colorNode = transparentRim({ height: positionGeometry.z });
   }, [wireframe, islandStoreHydrated]);
 
   /**
