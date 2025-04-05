@@ -3,7 +3,27 @@ import React, { useEffect, useRef, useState, useMemo } from "react";
 import { Html, Plane } from "@react-three/drei";
 import { TERRAIN_RESOLUTION, useIslandStore, useIslandHydration } from "../stores/useIslandStore";
 import { useHistoryStore, useHistoryHydration } from "../stores/useHistoryStore";
-import { color, Fn, positionGeometry, smoothstep, step, vec4 } from "three/tsl";
+import {
+  abs,
+  clamp,
+  color,
+  div,
+  Fn,
+  fwidth,
+  materialColor,
+  max,
+  min,
+  modelNormalMatrix,
+  mul,
+  normalLocal,
+  positionGeometry,
+  positionWorld,
+  smoothstep,
+  step,
+  vec2,
+  vec4,
+} from "three/tsl";
+import { vertexStage } from "three/src/nodes/TSL.js";
 
 export default function GeometryTerrainEditor() {
   // Refs
@@ -295,13 +315,48 @@ export default function GeometryTerrainEditor() {
 
     materialRef.current = material;
 
-    const transparentRim = Fn(({ height }) => {
+    /* const transparentRim = Fn(({ height }) => {
       const diffuse = color("#E9A83A");
       const alpha = smoothstep(0.01, 0.015, height);
       return vec4(diffuse, alpha);
     });
 
-    material.colorNode = transparentRim({ height: positionGeometry.z });
+    material.colorNode = transparentRim({ height: positionGeometry.z }); */
+
+    // Create an SDF function for the z-transition
+    const zTransitionSDF = Fn(({ position }) => {
+      // Simple SDF: distance to the z=0 plane
+      // Negative inside (z ≤ 0), positive outside (z > 0)
+      const signedDistance = position.z;
+
+      // Optional: Scale the distance based on the gradient magnitude
+      // This makes the transition sharper in areas where z changes rapidly
+      const gradientMagnitude = fwidth(position.z);
+      const scaledDistance = div(signedDistance, max(gradientMagnitude, 0.1));
+
+      return scaledDistance;
+    });
+
+    // Create the transparent rim effect using the SDF
+    const transparentRim = Fn(({ position }) => {
+      const diffuse = color("#E9A83A");
+
+      // Calculate the SDF value
+      let sdf = zTransitionSDF({ position: position });
+      sdf = sdf < 0 ? 0 : sdf; // Clamp to non-negative values
+
+      // Create a rim effect at the boundary where sdf ≈ 0
+      // The constants 0.01 and 0.015 control the width of the transition band
+      // const alpha = clamp(min(1.0, smoothstep(0.0, 0.015, sdf)), 0.0, 1.0);
+
+      // Smoother ..
+      const alpha = step(0.01, min(1, sdf));
+
+      return vec4(diffuse, alpha);
+    });
+
+    // Apply the material
+    material.colorNode = transparentRim({ position: positionGeometry });
   }, [wireframe, islandStoreHydrated]);
 
   /**
