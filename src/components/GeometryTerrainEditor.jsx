@@ -3,7 +3,7 @@ import React, { useEffect, useRef, useState, useMemo } from "react";
 import { Html, Plane } from "@react-three/drei";
 import { TERRAIN_RESOLUTION, useIslandStore, useIslandHydration } from "../stores/useIslandStore";
 import { useHistoryStore, useHistoryHydration } from "../stores/useHistoryStore";
-import { color, Fn, positionGeometry, step, vec4 } from "three/tsl";
+import { color, Fn, positionGeometry, smoothstep, step, vec4 } from "three/tsl";
 
 export default function GeometryTerrainEditor() {
   // Refs
@@ -296,12 +296,12 @@ export default function GeometryTerrainEditor() {
     materialRef.current = material;
 
     const transparentRim = Fn(({ height }) => {
-      const diffuse = color("#a19438");
-      const alpha = step(0.01, height);
+      const diffuse = color("#E9A83A");
+      const alpha = smoothstep(0.01, 0.015, height);
       return vec4(diffuse, alpha);
     });
 
-    // material.colorNode = transparentRim({ height: positionGeometry.z });
+    material.colorNode = transparentRim({ height: positionGeometry.z });
   }, [wireframe, islandStoreHydrated]);
 
   /**
