@@ -1,6 +1,5 @@
 import { temporal } from "zundo";
 import { createBoundStore, useHydration } from "./useBoundStore";
-import { TERRAIN_RESOLUTION } from "./useIslandStore";
 
 // Create history store with temporal middleware for undo/redo functionality
 export const useHistoryStore = createBoundStore(
