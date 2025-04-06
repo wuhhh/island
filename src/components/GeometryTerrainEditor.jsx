@@ -1,29 +1,10 @@
 import * as THREE from "three/webgpu";
 import React, { useEffect, useRef, useState, useMemo } from "react";
 import { Html, Plane } from "@react-three/drei";
+import { useControls } from "leva";
 import { TERRAIN_RESOLUTION, useIslandStore, useIslandHydration } from "../stores/useIslandStore";
 import { useHistoryStore, useHistoryHydration } from "../stores/useHistoryStore";
-import {
-  abs,
-  clamp,
-  color,
-  div,
-  Fn,
-  fwidth,
-  materialColor,
-  max,
-  min,
-  modelNormalMatrix,
-  mul,
-  normalLocal,
-  positionGeometry,
-  positionWorld,
-  smoothstep,
-  step,
-  vec2,
-  vec4,
-} from "three/tsl";
-import { vertexStage } from "three/src/nodes/TSL.js";
+import { clamp, color, div, Fn, mix, positionGeometry, step, vec4 } from "three/tsl";
 
 export default function GeometryTerrainEditor() {
   // Refs
@@ -301,62 +282,39 @@ export default function GeometryTerrainEditor() {
   }, [sculptMode, showControls]);
 
   /**
-   * Update the material and colors based on height
-   * - Set vertex colors based on height
-   * - Create a new material if it doesn't exist
+   * Set up the material for the terrain
    */
+  const oceanLand = Fn(({ position, colour }) => {
+    return vec4(color(colour), step(0.02, position.z));
+  });
+
+  const terrainMaterialConfig = useControls("terrain material", {
+    wireframe: { value: false },
+    color: {
+      value: "#db9c0d",
+      onChange: v => {
+        if (materialRef.current) {
+          materialRef.current.colorNode = oceanLand({ position: positionGeometry, colour: v });
+          materialRef.current.needsUpdate = true;
+        }
+      },
+      transient: false,
+    },
+  });
+
   useEffect(() => {
     const material = new THREE.MeshStandardNodeMaterial({
-      // flatShading: true,
-      color: "blue",
+      flatShading: true,
       transparent: true,
       wireframe,
     });
 
     materialRef.current = material;
 
-    /* const transparentRim = Fn(({ height }) => {
-      const diffuse = color("#E9A83A");
-      const alpha = smoothstep(0.01, 0.015, height);
-      return vec4(diffuse, alpha);
-    });
-
-    material.colorNode = transparentRim({ height: positionGeometry.z }); */
-
-    // Create an SDF function for the z-transition
-    const zTransitionSDF = Fn(({ position }) => {
-      // Simple SDF: distance to the z=0 plane
-      // Negative inside (z ≤ 0), positive outside (z > 0)
-      const signedDistance = position.z;
-
-      // Optional: Scale the distance based on the gradient magnitude
-      // This makes the transition sharper in areas where z changes rapidly
-      const gradientMagnitude = fwidth(position.z);
-      const scaledDistance = div(signedDistance, max(gradientMagnitude, 0.1));
-
-      return scaledDistance;
-    });
-
-    // Create the transparent rim effect using the SDF
-    const transparentRim = Fn(({ position }) => {
-      const diffuse = color("#E9A83A");
-
-      // Calculate the SDF value
-      let sdf = zTransitionSDF({ position: position });
-      sdf = sdf < 0 ? 0 : sdf; // Clamp to non-negative values
-
-      // Create a rim effect at the boundary where sdf ≈ 0
-      // The constants 0.01 and 0.015 control the width of the transition band
-      // const alpha = clamp(min(1.0, smoothstep(0.0, 0.015, sdf)), 0.0, 1.0);
-
-      // Smoother ..
-      const alpha = step(0.01, min(1, sdf));
-
-      return vec4(diffuse, alpha);
-    });
+    console.log(terrainMaterialConfig, "<= material color");
 
     // Apply the material
-    material.colorNode = transparentRim({ position: positionGeometry });
+    material.colorNode = oceanLand({ position: positionGeometry, colour: terrainMaterialConfig.color });
   }, [wireframe, islandStoreHydrated]);
 
   /**
@@ -421,6 +379,8 @@ export default function GeometryTerrainEditor() {
 
             // Apply the height change with the current mode, scaled by edge weight
             const posIndex = vertexIndex * 3 + 2; // z component
+
+            // Set the new height
             positions[posIndex] += strength * 0.5 * falloff * mode * edgeWeight;
 
             // Track the modified vertex

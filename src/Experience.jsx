@@ -58,10 +58,10 @@ const Scene = () => {
     setCameraReady(true);
   };
 
-  const waterConfig = useControls("water material", {
+  const waterMaterialConfig = useControls("water material", {
     color: "#347e93",
     opacity: { value: 0.7, min: 0, max: 1 },
-    roughness: { value: 0.5, min: 0, max: 1 },
+    roughness: { value: 0.7, min: 0, max: 1 },
     metalness: { value: 0, min: 0, max: 1 },
     blending: {
       value: "Additive",
@@ -83,7 +83,7 @@ const Scene = () => {
     <>
       <GeometryTerrainEditor />
       <Plane rotation={[-Math.PI / 2, 0, 0]} args={[2, 2]} position={[0, 0.08, 0]}>
-        <meshStandardMaterial ref={waterMaterial} {...waterConfig} />
+        <meshStandardMaterial ref={waterMaterial} {...waterMaterialConfig} />
       </Plane>
       <directionalLight position={[1, 1, 1]} intensity={1} color='red' />
       <directionalLight position={[1, 1, -1]} intensity={1} color='pink' />
