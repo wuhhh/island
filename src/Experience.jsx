@@ -1,14 +1,17 @@
 import * as THREE from "three/webgpu";
 import { Suspense, useEffect, useRef, useState } from "react";
 import { Canvas, extend, useThree } from "@react-three/fiber";
+import { Plane } from "@react-three/drei";
 import CustomCameraControls from "./components/CustomCameraControls";
 import GeometryTerrainEditor from "./components/GeometryTerrainEditor";
 import { CAMERA_POSITION, CAMERA_TARGET, useIslandStore, useIslandHydration } from "./stores/useIslandStore";
 import debounce from "debounce";
+import { Leva, useControls } from "leva";
 
 extend(THREE);
 
 const Scene = () => {
+  const waterMaterial = useRef();
   const [cameraReady, setCameraReady] = useState(false);
   const cameraControls = useRef();
   const { sculptMode } = useIslandStore();
@@ -38,7 +41,7 @@ const Scene = () => {
    * @description Handles camera controls change event and updates the camera position and target in the store.
    */
   const handleCameraControlsChange = event => {
-    console.log("Camera controls changed", event, event.target.enabled);
+    // console.log("Camera controls changed", event, event.target.enabled);
 
     if (event.target.enabled) {
       setCameraPosition(event.target.getPosition());
@@ -55,11 +58,39 @@ const Scene = () => {
     setCameraReady(true);
   };
 
+  const waterConfig = useControls("water material", {
+    color: "#347e93",
+    opacity: { value: 0.7, min: 0, max: 1 },
+    roughness: { value: 0.5, min: 0, max: 1 },
+    metalness: { value: 0, min: 0, max: 1 },
+    blending: {
+      value: "Additive",
+      options: ["Normal", "Additive", "Multiply", "Subtractive", "None"],
+      onChange: value => {
+        console.log("Blending changed", value);
+        if (value === "None") {
+          waterMaterial.current.blending = THREE.NoBlending;
+        } else {
+          waterMaterial.current.blending = THREE[`${value}Blending`];
+        }
+        waterMaterial.current.needsUpdate = true;
+      },
+    },
+    transparent: true,
+  });
+
   return (
     <>
       <GeometryTerrainEditor />
-      <directionalLight position={[-1, 1, 1]} />
-      <ambientLight intensity={1} />
+      <Plane rotation={[-Math.PI / 2, 0, 0]} args={[2, 2]} position={[0, 0.08, 0]}>
+        <meshStandardMaterial ref={waterMaterial} {...waterConfig} />
+      </Plane>
+      <directionalLight position={[1, 1, 1]} intensity={1} color='red' />
+      <directionalLight position={[1, 1, -1]} intensity={1} color='pink' />
+      <directionalLight position={[-1, 1, -1]} intensity={1} color='orange' />
+      <directionalLight position={[-1, 1, 1]} intensity={1} color='yellow' />
+
+      <ambientLight intensity={1.5} />
       <CustomCameraControls
         ref={cameraControls}
         enabled={!sculptMode}
@@ -75,16 +106,19 @@ const Scene = () => {
 
 const Experience = () => {
   return (
-    <Canvas
-      gl={async props => {
-        const renderer = new THREE.WebGPURenderer(props);
-        await renderer.init();
-        return renderer;
-      }}
-      camera={{ fov: 35, position: CAMERA_POSITION, target: CAMERA_TARGET }}
-    >
-      <Scene />
-    </Canvas>
+    <>
+      <Canvas
+        gl={async props => {
+          const renderer = new THREE.WebGPURenderer(props);
+          await renderer.init();
+          return renderer;
+        }}
+        camera={{ fov: 35, position: CAMERA_POSITION, target: CAMERA_TARGET }}
+      >
+        <Scene />
+      </Canvas>
+      <Leva />
+    </>
   );
 };
 
