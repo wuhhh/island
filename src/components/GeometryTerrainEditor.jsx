@@ -1,7 +1,7 @@
 import * as THREE from "three/webgpu";
 import React, { useEffect, useRef, useState, useMemo } from "react";
-import { Html, Plane } from "@react-three/drei";
-import { useControls } from "leva";
+import { Plane } from "@react-three/drei";
+import { useControls, button, folder } from "leva";
 import { TERRAIN_RESOLUTION, useIslandStore, useIslandHydration } from "../stores/useIslandStore";
 import { useHistoryStore, useHistoryHydration } from "../stores/useHistoryStore";
 import { clamp, color, div, Fn, mix, positionGeometry, step, vec4 } from "three/tsl";
@@ -14,7 +14,9 @@ export default function GeometryTerrainEditor() {
 
   // Store state
   const getTerrainData = useHistoryStore(state => state.getTerrainData);
+  const terrainGeomAttrsPosArr = useHistoryStore(state => state.terrainGeomAttrsPosArr);
   const setTerrainGeomAttrsPosArr = useHistoryStore(state => state.setTerrainGeomAttrsPosArr);
+  const { undo: useHistoryStoreUndo, redo: useHistoryStoreRedo, clear: useHistoryStoreClear } = useHistoryStore.temporal.getState();
   const { persisted, actions } = useIslandStore();
   const { wireframe } = persisted;
   const setWireframe = actions.setWireframe;
@@ -25,8 +27,6 @@ export default function GeometryTerrainEditor() {
   // Local state
   const [brushing, setBrushing] = useState(false);
   const [pointerDown, setPointerDown] = useState(false);
-  const [edgeClampRadius, setEdgeClampRadius] = useState(0.1); // Configurable edge clamp radius
-  const [showControls, setShowControls] = useState(true); // Toggle for UI controls
 
   // Brush settings with default values
   const brushSettings = useRef({
@@ -34,6 +34,61 @@ export default function GeometryTerrainEditor() {
     strength: 0.01,
     mode: 1, // 1 for raise, -1 for lower
   });
+
+  // Set up Leva controls
+  const { edgeClampRadius } = useControls("Island Settings", {
+    edgeClampRadius: {
+      value: 0.1,
+      min: 0.05,
+      max: 0.4,
+      step: 0.01,
+      label: "Edge Clamp Radius",
+    },
+    reset: button(() => resetTerrain(), {
+      label: "Reset Terrain",
+    }),
+  });
+
+  // Add brush controls to Leva
+  useControls("Brush Settings", {
+    radius: {
+      value: 0.1,
+      min: 0.02,
+      max: 0.5,
+      step: 0.01,
+      onChange: v => {
+        brushSettings.current.radius = v;
+      },
+    },
+    strength: {
+      value: 0.01,
+      min: 0.01,
+      max: 0.2,
+      step: 0.01,
+      onChange: v => {
+        brushSettings.current.strength = v;
+      },
+    },
+    sculptMode: {
+      value: sculptMode,
+      label: "Sculpt Mode",
+      onChange: v => setSculptMode(v),
+    },
+  });
+
+  // Add keyboard shortcuts info to Leva
+  useControls(
+    "Keyboard Shortcuts",
+    {
+      tab: { value: "Toggle Sculpt Mode", editable: false },
+      w: { value: "Toggle Wireframe", editable: false },
+      brackets: { value: "[ ] Adjust Brush Size", editable: false },
+      minusEquals: { value: "- = Adjust Strength", editable: false },
+      shift: { value: "Hold to Lower Terrain", editable: false },
+      R: { value: "Reset Terrain", editable: false },
+    },
+    { collapsed: true }
+  );
 
   /**
    * Create a spatial index for the plane geometry
@@ -206,7 +261,6 @@ export default function GeometryTerrainEditor() {
    * - Shift: Lower terrain instead of raising
    * - [ ]: Adjust brush size
    * - - =: Adjust brush strength
-   * - H: Toggle UI controls
    * - R: Reset terrain
    */
   useEffect(() => {
@@ -225,6 +279,17 @@ export default function GeometryTerrainEditor() {
           materialRef.current.wireframe = !materialRef.current.wireframe;
           console.log(`Wireframe: ${materialRef.current.wireframe ? "On" : "Off"}`);
         }
+      }
+
+      // Undo with u
+      if (e.key === "u" || e.key === "U") {
+        useHistoryStoreUndo();
+        console.log("Undo");
+      }
+      // Redo with y
+      if (e.key === "y" || e.key === "Y") {
+        useHistoryStoreRedo();
+        console.log("Redo");
       }
 
       // Shift key to lower terrain instead of raising
@@ -253,13 +318,8 @@ export default function GeometryTerrainEditor() {
         console.log(`Brush strength: ${brushSettings.current.strength.toFixed(2)}`);
       }
 
-      // H key to toggle UI controls
-      if (e.key === "h" || e.key === "H") {
-        setShowControls(!showControls);
-      }
-
       // R key to reset terrain
-      if (e.key === "r" || e.key === "R") {
+      if (e.key === "R") {
         resetTerrain();
         console.log("Terrain reset");
       }
@@ -279,19 +339,19 @@ export default function GeometryTerrainEditor() {
       window.removeEventListener("keydown", handleKeyDown);
       window.removeEventListener("keyup", handleKeyUp);
     };
-  }, [sculptMode, showControls]);
+  }, [sculptMode, wireframe, setWireframe, setSculptMode]);
 
   /**
    * Set up the material for the terrain
    */
   const oceanLand = Fn(({ position, colour }) => {
-    return vec4(color(colour), step(0.02, position.z));
+    // return vec4(color(colour), step(0.0, position.z));
+    return vec4(color(colour), 1);
   });
 
-  const terrainMaterialConfig = useControls("terrain material", {
-    wireframe: { value: false },
+  const terrainMaterialConfig = useControls("Terrain Material", {
     color: {
-      value: "#db9c0d",
+      value: "#093b41",
       onChange: v => {
         if (materialRef.current) {
           materialRef.current.colorNode = oceanLand({ position: positionGeometry, colour: v });
@@ -304,7 +364,7 @@ export default function GeometryTerrainEditor() {
 
   useEffect(() => {
     const material = new THREE.MeshStandardNodeMaterial({
-      flatShading: true,
+      // flatShading: true,
       transparent: true,
       wireframe,
     });
@@ -315,7 +375,7 @@ export default function GeometryTerrainEditor() {
 
     // Apply the material
     material.colorNode = oceanLand({ position: positionGeometry, colour: terrainMaterialConfig.color });
-  }, [wireframe, islandStoreHydrated]);
+  }, [wireframe, islandStoreHydrated, terrainMaterialConfig.color]);
 
   /**
    * Apply brush effect to the terrain
@@ -424,7 +484,36 @@ export default function GeometryTerrainEditor() {
 
     // Update normals and colors
     geometry.computeVertexNormals();
+
+    // Clear the history store
+    useHistoryStoreClear();
+    setTerrainGeomAttrsPosArr(geometry.attributes.position.array);
+    console.log("Terrain reset and history cleared");
   };
+
+  /**
+   * useEffect to update terrain on undo / redo
+   */
+  useEffect(() => {
+    if (!planeRef.current) return;
+
+    // Get the current positions array
+    const positions = planeRef.current.geometry.attributes.position.array;
+
+    // Restore the terrain data from the store
+    const terrainData = getTerrainData();
+
+    // Apply to geometry if we have valid data
+    if (terrainData.length > 0) {
+      for (let i = 0; i < positions.length; i++) {
+        positions[i] = terrainData[i];
+      }
+
+      // Mark positions for update
+      planeRef.current.geometry.attributes.position.needsUpdate = true;
+      planeRef.current.geometry.computeVertexNormals();
+    }
+  }, [useHistoryStoreUndo, useHistoryStoreRedo, terrainGeomAttrsPosArr]);
 
   /**
    * handlePointerDown
@@ -493,71 +582,16 @@ export default function GeometryTerrainEditor() {
   }, [sculptMode]);
 
   return (
-    <>
-      <Plane
-        ref={planeRef}
-        args={[2, 2, TERRAIN_RESOLUTION, TERRAIN_RESOLUTION]}
-        rotation={[-Math.PI * 0.5, 0, 0]}
-        onPointerDown={handlePointerDown}
-        onPointerMove={handlePointerMove}
-        onPointerUp={handlePointerUp}
-        onPointerLeave={() => setPointerDown(false)}
-      >
-        {materialRef.current && <primitive object={materialRef.current} />}
-      </Plane>
-
-      {/* Optional UI controls */}
-      {showControls && (
-        <Html position={[-2, 0.5, 0]}>
-          <div
-            style={{
-              background: "rgba(0,0,0,0.7)",
-              padding: "10px",
-              borderRadius: "5px",
-              color: "white",
-              width: "200px",
-              fontFamily: "Arial, sans-serif",
-            }}
-          >
-            <div style={{ marginBottom: "10px" }}>
-              <strong>Edge Clamp Radius:</strong>
-              <input
-                type='range'
-                min='0.05'
-                max='0.4'
-                step='0.01'
-                value={edgeClampRadius}
-                onChange={e => setEdgeClampRadius(parseFloat(e.target.value))}
-                style={{ width: "100%" }}
-              />
-              <span>{edgeClampRadius.toFixed(2)}</span>
-            </div>
-            <button
-              onClick={resetTerrain}
-              style={{
-                padding: "5px 10px",
-                marginRight: "5px",
-                background: "#3498db",
-                border: "none",
-                borderRadius: "3px",
-                color: "white",
-                cursor: "pointer",
-              }}
-            >
-              Reset Terrain
-            </button>
-            <div style={{ marginTop: "10px", fontSize: "12px" }}>
-              <div>[Tab] Toggle Sculpt Mode</div>
-              <div>[W] Toggle Wireframe</div>
-              <div>[[ ]] Adjust Brush Size</div>
-              <div>[- =] Adjust Strength</div>
-              <div>[Shift] Lower Terrain</div>
-              <div>[R] Reset Terrain</div>
-              <div>[H] Hide Controls</div>
-            </div>
-          </div>
-        </Html>
-      )}
-    </>
+    <Plane
+      ref={planeRef}
+      args={[2, 2, TERRAIN_RESOLUTION, TERRAIN_RESOLUTION]}
+      rotation={[-Math.PI * 0.5, 0, 0]}
+      onPointerDown={handlePointerDown}
+      onPointerMove={handlePointerMove}
+      onPointerUp={handlePointerUp}
+      onPointerLeave={() => setPointerDown(false)}
+    >
+      {materialRef.current && <primitive object={materialRef.current} />}
+    </Plane>
   );
 }

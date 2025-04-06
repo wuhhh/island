@@ -1,7 +1,8 @@
 import * as THREE from "three/webgpu";
 import { Suspense, useEffect, useRef, useState } from "react";
 import { Canvas, extend, useThree } from "@react-three/fiber";
-import { Plane } from "@react-three/drei";
+import { Box, Plane } from "@react-three/drei";
+import WebGPUReflectorSurface from "./components/WebGPUReflector";
 import CustomCameraControls from "./components/CustomCameraControls";
 import GeometryTerrainEditor from "./components/GeometryTerrainEditor";
 import { CAMERA_POSITION, CAMERA_TARGET, useIslandStore, useIslandHydration } from "./stores/useIslandStore";
@@ -19,6 +20,11 @@ const Scene = () => {
   const { setCameraPosition, setCameraTarget } = actions;
   const { cameraPosition, cameraTarget } = persisted;
   const islandStoreHydrated = useIslandHydration();
+  const { gl } = useThree();
+
+  useEffect(() => {
+    console.log("gl.state: ", gl.state);
+  }, [gl]);
 
   /**
    * useEffect
@@ -58,38 +64,44 @@ const Scene = () => {
     setCameraReady(true);
   };
 
-  const waterMaterialConfig = useControls("water material", {
-    color: "#347e93",
-    opacity: { value: 0.7, min: 0, max: 1 },
-    roughness: { value: 0.7, min: 0, max: 1 },
-    metalness: { value: 0, min: 0, max: 1 },
-    blending: {
-      value: "Additive",
-      options: ["Normal", "Additive", "Multiply", "Subtractive", "None"],
-      onChange: value => {
-        console.log("Blending changed", value);
-        if (value === "None") {
-          waterMaterial.current.blending = THREE.NoBlending;
-        } else {
-          waterMaterial.current.blending = THREE[`${value}Blending`];
-        }
-        waterMaterial.current.needsUpdate = true;
-      },
-    },
-    transparent: true,
-  });
+  // const waterMaterialConfig = useControls("water material", {
+  //   color: "#347e93",
+  //   opacity: { value: 0.7, min: 0, max: 1 },
+  //   roughness: { value: 0.7, min: 0, max: 1 },
+  //   metalness: { value: 0, min: 0, max: 1 },
+  //   blending: {
+  //     value: "Additive",
+  //     options: ["Normal", "Additive", "Multiply", "Subtractive", "None"],
+  //     onChange: value => {
+  //       console.log("Blending changed", value);
+  //       if (value === "None") {
+  //         waterMaterial.current.blending = THREE.NoBlending;
+  //       } else {
+  //         waterMaterial.current.blending = THREE[`${value}Blending`];
+  //       }
+  //       waterMaterial.current.needsUpdate = true;
+  //     },
+  //   },
+  //   transparent: true,
+  // });
 
   return (
     <>
-      <GeometryTerrainEditor />
-      <Plane rotation={[-Math.PI / 2, 0, 0]} args={[2, 2]} position={[0, 0.08, 0]}>
+      {/* <Plane renderOrder={1} rotation={[-Math.PI / 2, 0, 0]} args={[2, 2]} position={[0, 0.08, 0]}>
         <meshStandardMaterial ref={waterMaterial} {...waterMaterialConfig} />
-      </Plane>
+      </Plane> */}
+      {/* <Plane args={[4000, 4000]} position={[0, 2, 0]} rotation={[Math.PI / 2, 0, 0]}>
+        <meshStandardMaterial color='blue' />
+      </Plane> */}
+      <Box scale={0.15} position={[0, 1, 0]} rotation={[Math.PI / 2, 0, 0]}>
+        <meshStandardMaterial color='white' />
+      </Box>
+      <WebGPUReflectorSurface position={[0, 0, 0]} rotation={[-Math.PI / 2, 0, 0]} args={[30, 0.001, 30]} resolution={2} />
+      <GeometryTerrainEditor />
       <directionalLight position={[1, 1, 1]} intensity={1} color='red' />
       <directionalLight position={[1, 1, -1]} intensity={1} color='pink' />
       <directionalLight position={[-1, 1, -1]} intensity={1} color='orange' />
       <directionalLight position={[-1, 1, 1]} intensity={1} color='yellow' />
-
       <ambientLight intensity={1.5} />
       <CustomCameraControls
         ref={cameraControls}
