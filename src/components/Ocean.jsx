@@ -4,20 +4,20 @@ import * as THREE from "three/webgpu";
 import { color, reflector, texture, uv } from "three/tsl";
 
 // Create a component for the reflective surface
-export const Ocean = ({
+export default function Ocean({
   resolution = 0.5,
   position = [0, 0, 0],
-  rotation = [-Math.PI / 2, 0, 0], // Default to horizontal reflector
+  rotation = [-Math.PI / 2, 0, 0],
   args = [50, 0.001, 50],
   normalMap,
   colorMap,
   normalScale = 0.02,
   colorMapRepeat = 15,
   ...props
-}) => {
+}) {
   const meshRef = useRef();
   const [reflectionNode, setReflectionNode] = useState(null);
-  const { scene, gl } = useThree();
+  const { scene } = useThree();
 
   // Create the reflector once on component mount
   useEffect(() => {
@@ -81,7 +81,7 @@ export const Ocean = ({
       <boxGeometry args={args} />
     </mesh>
   );
-};
+}
 
 // A wrapper component that also handles loading textures
 export const OceanSurface = ({
@@ -116,6 +116,3 @@ export const OceanSurface = ({
 
   return <Ocean normalMap={normalMap} colorMap={colorMap} color={color} {...props} />;
 };
-
-// Default export as a convenience
-export default OceanSurface;
