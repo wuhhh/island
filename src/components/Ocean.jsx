@@ -1,11 +1,10 @@
 import React, { useRef, useState, useEffect } from "react";
-import { extend, useThree, useFrame } from "@react-three/fiber";
+import { useThree } from "@react-three/fiber";
 import * as THREE from "three/webgpu";
-import { color, pass, reflector, normalWorld, texture, uv, screenUV } from "three/tsl";
-import { float } from "three/tsl";
+import { color, reflector, texture, uv } from "three/tsl";
 
 // Create a component for the reflective surface
-export const WebGPUReflector = ({
+export const Ocean = ({
   resolution = 0.5,
   position = [0, 0, 0],
   rotation = [-Math.PI / 2, 0, 0], // Default to horizontal reflector
@@ -85,7 +84,7 @@ export const WebGPUReflector = ({
 };
 
 // A wrapper component that also handles loading textures
-export const WebGPUReflectorSurface = ({
+export const OceanSurface = ({
   normalMapUrl,
   colorMapUrl,
   color, // Add color property
@@ -115,8 +114,8 @@ export const WebGPUReflectorSurface = ({
     }
   }, [normalMapUrl, colorMapUrl]);
 
-  return <WebGPUReflector normalMap={normalMap} colorMap={colorMap} color={color} {...props} />;
+  return <Ocean normalMap={normalMap} colorMap={colorMap} color={color} {...props} />;
 };
 
 // Default export as a convenience
-export default WebGPUReflectorSurface;
+export default OceanSurface;

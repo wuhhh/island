@@ -2,7 +2,7 @@ import * as THREE from "three/webgpu";
 import { Suspense, useEffect, useRef, useState } from "react";
 import { Canvas, extend, useThree } from "@react-three/fiber";
 import { Box, Plane } from "@react-three/drei";
-import WebGPUReflectorSurface from "./components/WebGPUReflector";
+import Ocean from "./components/Ocean";
 import CustomCameraControls from "./components/CustomCameraControls";
 import GeometryTerrainEditor from "./components/GeometryTerrainEditor";
 import { CAMERA_POSITION, CAMERA_TARGET, useIslandStore, useIslandHydration } from "./stores/useIslandStore";
@@ -96,7 +96,7 @@ const Scene = () => {
       <Box scale={0.15} position={[0, 1, 0]} rotation={[Math.PI / 2, 0, 0]}>
         <meshStandardMaterial color='white' />
       </Box>
-      <WebGPUReflectorSurface position={[0, 0, 0]} rotation={[-Math.PI / 2, 0, 0]} args={[30, 0.001, 30]} resolution={1} />
+      <Ocean position={[0, 0, 0]} rotation={[-Math.PI / 2, 0, 0]} args={[30, 0.001, 30]} resolution={1} />
       <GeometryTerrainEditor />
       <directionalLight position={[1, 1, 1]} intensity={1} color='red' />
       <directionalLight position={[1, 1, -1]} intensity={1} color='pink' />
