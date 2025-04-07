@@ -7,7 +7,7 @@ import { TERRAIN_RESOLUTION, useIslandStore, useIslandHydration } from "../store
 import { useHistoryStore, useHistoryHydration } from "../stores/useHistoryStore";
 import * as t from "three/tsl";
 
-export default function GeometryTerrainEditor() {
+export default function Terrain() {
   // Refs
   const planeRef = useRef();
   const materialRef = useRef();
@@ -18,16 +18,13 @@ export default function GeometryTerrainEditor() {
   const terrainGeomAttrsPosArr = useHistoryStore(state => state.terrainGeomAttrsPosArr);
   const setTerrainGeomAttrsPosArr = useHistoryStore(state => state.setTerrainGeomAttrsPosArr);
   const { undo: useHistoryStoreUndo, redo: useHistoryStoreRedo, clear: useHistoryStoreClear } = useHistoryStore.temporal.getState();
-  const { persisted, actions } = useIslandStore();
-  const { wireframe } = persisted;
-  const setWireframe = actions.setWireframe;
-  const { sculptMode, setSculptMode } = useIslandStore();
+  const { pointerDown, sculptMode, wireframe, actions } = useIslandStore();
+  const { setSculptMode, setWireframe } = actions;
   const islandStoreHydrated = useIslandHydration();
   const historyStoreHydrated = useHistoryHydration();
 
   // Local state
   const [brushing, setBrushing] = useState(false);
-  const [pointerDown, setPointerDown] = useState(false);
 
   // Brush settings with default values
   const brushSettings = useRef({
@@ -296,7 +293,6 @@ export default function GeometryTerrainEditor() {
       // Shift key to lower terrain instead of raising
       if (e.key === "Shift") {
         brushSettings.current.mode = -1;
-        console.log("Lowering terrain");
       }
 
       // Bracket keys to adjust brush size
@@ -371,8 +367,6 @@ export default function GeometryTerrainEditor() {
     });
 
     materialRef.current = material;
-
-    console.log(terrainMaterialConfig, "<= material color");
 
     // Apply the material
     material.colorNode = oceanLand({ position: t.positionGeometry, colour: terrainMaterialConfig.color });
@@ -458,7 +452,7 @@ export default function GeometryTerrainEditor() {
     geometry.computeVertexNormals();
 
     // For debugging
-    console.log(`Processed ${modifiedVertices.length} vertices instead of ${positions.length / 3}`);
+    // console.log(`Processed ${modifiedVertices.length} vertices instead of ${positions.length / 3}`);
   };
 
   /**
@@ -517,34 +511,26 @@ export default function GeometryTerrainEditor() {
   }, [useHistoryStoreUndo, useHistoryStoreRedo, terrainGeomAttrsPosArr]);
 
   /**
-   * handlePointerDown
+   * Handle pointer down/up
    */
-  const handlePointerDown = e => {
-    setPointerDown(true);
-  };
-
-  /**
-   * handlePointerUp
-   */
-  const handlePointerUp = e => {
-    console.log("Pointer up");
-
-    setPointerDown(false);
-
-    if (brushing) {
+  useEffect(() => {
+    if (!pointerDown && brushing) {
       setBrushing(false);
-
       // Store the current terrain state in the history store
       const currentTerrain = planeRef.current.geometry.attributes.position.array;
       setTerrainGeomAttrsPosArr(currentTerrain);
+      console.log("Terrain state stored in history");
     }
-  };
+  }, [pointerDown]);
 
+  /**
+   * useFrame to handle brush application
+   */
   useFrame(({ raycaster }) => {
-    // Handle pointer move if the pointer is down
     if (pointerDown && sculptMode) {
       setBrushing(true);
       const intersection = raycaster.intersectObject(planeRef.current);
+
       if (intersection.length > 0) {
         const uv = intersection[0].uv;
         mousePos.current.set(uv.x, uv.y);
@@ -566,14 +552,7 @@ export default function GeometryTerrainEditor() {
   }, [sculptMode]);
 
   return (
-    <Plane
-      ref={planeRef}
-      args={[2, 2, TERRAIN_RESOLUTION, TERRAIN_RESOLUTION]}
-      rotation={[-Math.PI * 0.5, 0, 0]}
-      onPointerDown={handlePointerDown}
-      onPointerUp={handlePointerUp}
-      onPointerLeave={() => setPointerDown(false)}
-    >
+    <Plane renderOrder={2} ref={planeRef} args={[2, 2, TERRAIN_RESOLUTION, TERRAIN_RESOLUTION]} rotation={[-Math.PI * 0.5, 0, 0]}>
       {materialRef.current && <primitive object={materialRef.current} />}
     </Plane>
   );
