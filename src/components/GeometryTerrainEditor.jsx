@@ -1,10 +1,11 @@
 import * as THREE from "three/webgpu";
-import React, { useEffect, useRef, useState, useMemo } from "react";
+import { useEffect, useRef, useState, useMemo } from "react";
+import { useFrame } from "@react-three/fiber";
 import { Plane } from "@react-three/drei";
-import { useControls, button, folder } from "leva";
+import { useControls, button } from "leva";
 import { TERRAIN_RESOLUTION, useIslandStore, useIslandHydration } from "../stores/useIslandStore";
 import { useHistoryStore, useHistoryHydration } from "../stores/useHistoryStore";
-import { clamp, color, div, Fn, mix, positionGeometry, step, vec4 } from "three/tsl";
+import * as t from "three/tsl";
 
 export default function GeometryTerrainEditor() {
   // Refs
@@ -344,17 +345,17 @@ export default function GeometryTerrainEditor() {
   /**
    * Set up the material for the terrain
    */
-  const oceanLand = Fn(({ position, colour }) => {
+  const oceanLand = t.Fn(({ position, colour }) => {
     // return vec4(color(colour), step(0.0, position.z));
-    return vec4(color(colour), 1);
+    return t.vec4(t.color(colour), 1);
   });
 
   const terrainMaterialConfig = useControls("Terrain Material", {
     color: {
-      value: "#093b41",
+      value: "#246913",
       onChange: v => {
         if (materialRef.current) {
-          materialRef.current.colorNode = oceanLand({ position: positionGeometry, colour: v });
+          materialRef.current.colorNode = oceanLand({ position: t.positionGeometry, colour: v });
           materialRef.current.needsUpdate = true;
         }
       },
@@ -374,7 +375,7 @@ export default function GeometryTerrainEditor() {
     console.log(terrainMaterialConfig, "<= material color");
 
     // Apply the material
-    material.colorNode = oceanLand({ position: positionGeometry, colour: terrainMaterialConfig.color });
+    material.colorNode = oceanLand({ position: t.positionGeometry, colour: terrainMaterialConfig.color });
   }, [wireframe, islandStoreHydrated, terrainMaterialConfig.color]);
 
   /**
