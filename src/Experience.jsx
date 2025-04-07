@@ -24,8 +24,8 @@ const Scene = () => {
         position={[0, 0.001, 0]}
         rotation={[-Math.PI / 2, 0, 0]}
         gridSize={20}
-        lineWidth={1}
-        // gridAlpha={0.2}
+        lineWidth={2}
+        gridAlpha={0.1}
         lineColor='cyan'
       />
       <Ocean position={[0, 0, 0]} rotation={[-Math.PI / 2, 0, 0]} args={[30, 0.001, 30]} resolution={1} />

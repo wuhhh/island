@@ -12,7 +12,7 @@ export default function Grid({ gridSize = 20, lineWidth = 1, gridAlpha = 0.2, li
 
     // Thicken perimeter lines to account for them being at the edge
     // and effectively having half the thickness of other lines
-    const edgeLineWidth = lineWidth * 2;
+    const edgeLineWidth = lineWidth * 3;
 
     // Create grid pattern
     const gridPattern = t.mod(t.mul(t.uv(), t.float(gridSize)), t.float(1.0));

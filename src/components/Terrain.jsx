@@ -552,7 +552,7 @@ export default function Terrain() {
   }, [sculptMode]);
 
   return (
-    <Plane renderOrder={2} ref={planeRef} args={[2, 2, TERRAIN_RESOLUTION, TERRAIN_RESOLUTION]} rotation={[-Math.PI * 0.5, 0, 0]}>
+    <Plane ref={planeRef} args={[2, 2, TERRAIN_RESOLUTION, TERRAIN_RESOLUTION]} rotation={[-Math.PI * 0.5, 0, 0]}>
       {materialRef.current && <primitive object={materialRef.current} />}
     </Plane>
   );
