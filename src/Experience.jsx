@@ -20,11 +20,6 @@ const Scene = () => {
   const { setCameraPosition, setCameraTarget } = actions;
   const { cameraPosition, cameraTarget } = persisted;
   const islandStoreHydrated = useIslandHydration();
-  const { gl } = useThree();
-
-  useEffect(() => {
-    console.log("gl.state: ", gl.state);
-  }, [gl]);
 
   /**
    * useEffect
