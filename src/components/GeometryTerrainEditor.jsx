@@ -520,18 +520,7 @@ export default function GeometryTerrainEditor() {
    * handlePointerDown
    */
   const handlePointerDown = e => {
-    if (!sculptMode) return;
-
     setPointerDown(true);
-    if (e.intersections && e.intersections.length > 0) {
-      // Find the intersection with our plane
-      const intersection = e.intersections.find(i => i.object === planeRef.current);
-      if (intersection) {
-        const uv = intersection.uv;
-        mousePos.current.set(uv.x, uv.y);
-        applyBrush(uv.x, uv.y);
-      }
-    }
   };
 
   /**
@@ -551,24 +540,18 @@ export default function GeometryTerrainEditor() {
     }
   };
 
-  /**
-   * handlePointerMove
-   * - Apply brush effect if pointer is down
-   */
-  const handlePointerMove = e => {
-    if (!pointerDown || !sculptMode) return;
-
-    if (e.intersections && e.intersections.length > 0) {
-      // Find the intersection with our plane
-      const intersection = e.intersections.find(i => i.object === planeRef.current);
-      if (intersection) {
-        setBrushing(true);
-        const uv = intersection.uv;
+  useFrame(({ raycaster }) => {
+    // Handle pointer move if the pointer is down
+    if (pointerDown && sculptMode) {
+      setBrushing(true);
+      const intersection = raycaster.intersectObject(planeRef.current);
+      if (intersection.length > 0) {
+        const uv = intersection[0].uv;
         mousePos.current.set(uv.x, uv.y);
         applyBrush(uv.x, uv.y);
       }
     }
-  };
+  });
 
   /**
    * useEffect to set cursor style
@@ -588,7 +571,6 @@ export default function GeometryTerrainEditor() {
       args={[2, 2, TERRAIN_RESOLUTION, TERRAIN_RESOLUTION]}
       rotation={[-Math.PI * 0.5, 0, 0]}
       onPointerDown={handlePointerDown}
-      onPointerMove={handlePointerMove}
       onPointerUp={handlePointerUp}
       onPointerLeave={() => setPointerDown(false)}
     >
