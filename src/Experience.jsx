@@ -96,7 +96,7 @@ const Scene = () => {
       <Box scale={0.15} position={[0, 1, 0]} rotation={[Math.PI / 2, 0, 0]}>
         <meshStandardMaterial color='white' />
       </Box>
-      <WebGPUReflectorSurface position={[0, 0, 0]} rotation={[-Math.PI / 2, 0, 0]} args={[30, 0.001, 30]} resolution={2} />
+      <WebGPUReflectorSurface position={[0, 0, 0]} rotation={[-Math.PI / 2, 0, 0]} args={[30, 0.001, 30]} resolution={1} />
       <GeometryTerrainEditor />
       <directionalLight position={[1, 1, 1]} intensity={1} color='red' />
       <directionalLight position={[1, 1, -1]} intensity={1} color='pink' />
