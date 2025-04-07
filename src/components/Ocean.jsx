@@ -3,7 +3,6 @@ import { useThree } from "@react-three/fiber";
 import * as THREE from "three/webgpu";
 import { color, reflector, texture, uv } from "three/tsl";
 
-// Create a component for the reflective surface
 export default function Ocean({
   resolution = 0.5,
   position = [0, 0, 0],
@@ -19,16 +18,15 @@ export default function Ocean({
   const [reflectionNode, setReflectionNode] = useState(null);
   const { scene } = useThree();
 
-  // Create the reflector once on component mount
+  /**
+   * Create the reflector node
+   */
   useEffect(() => {
     // Create the reflector using TSL
     const reflectionEffect = reflector({ resolution });
 
-    // Important: The reflector target needs to be rotated to match the surface normal
-    // This is separate from the mesh rotation
-    reflectionEffect.target.rotateX(rotation[0]);
-    reflectionEffect.target.rotateY(rotation[1]);
-    reflectionEffect.target.rotateZ(rotation[2]);
+    // Rotate reflector target to match surface normal
+    reflectionEffect.target.rotation.set(...rotation);
 
     // Add to scene
     scene.add(reflectionEffect.target);
@@ -43,9 +41,13 @@ export default function Ocean({
     };
   }, [scene, resolution, rotation]);
 
-  // Setup the material with reflection
+  /**
+   * Setup the material with reflection
+   */
   useEffect(() => {
     if (!reflectionNode || !meshRef.current) return;
+
+    let materialColor; // colorNode
 
     // Create material nodes
     const floorUV = uv().mul(colorMapRepeat);
@@ -63,14 +65,19 @@ export default function Ocean({
       reflectionNode.uvNode = reflectionNode.uvNode.add(floorNormal);
     }
 
-    // Apply base color and/or texture with the reflection
     if (colorMap) {
       // If we have a color map, apply it with the reflection
-      material.colorNode = texture(colorMap, floorUV).add(reflectionNode);
+      materialColor = texture(colorMap, floorUV).add(reflectionNode);
     } else {
       // Just use the reflection
-      material.colorNode = reflectionNode;
+      materialColor = reflectionNode;
     }
+
+    // TODO: Add shoreline noise to the reflection
+    // materialColor = ...
+
+    // Apply final color
+    material.colorNode = materialColor;
 
     // Apply the material to our mesh
     meshRef.current.material = material;
