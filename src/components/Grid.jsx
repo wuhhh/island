@@ -5,8 +5,6 @@ import * as t from "three/tsl";
 export default function Grid({ gridSize = 20, lineWidth = 1, gridAlpha = 0.2, lineColor = "cyan", ...props }) {
   const materialRef = useRef();
 
-  console.log(gridSize, lineWidth, gridAlpha, lineColor);
-
   useEffect(() => {
     if (!materialRef.current) return;
 
