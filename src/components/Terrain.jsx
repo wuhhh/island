@@ -22,7 +22,6 @@ export default function Terrain() {
   const getTerrainData = useHistoryStore(state => state.getTerrainData);
   const terrainGeomAttrsPosArr = useHistoryStore(state => state.terrainGeomAttrsPosArr);
   const setTerrainGeomAttrsPosArr = useHistoryStore(state => state.setTerrainGeomAttrsPosArr);
-  const terrainZExtrema = useIslandStore(state => state.terrainZExtrema);
   const setTerrainZExtrema = useIslandStore(state => state.actions.setTerrainZExtrema);
   const { undo: useHistoryStoreUndo, redo: useHistoryStoreRedo, clear: useHistoryStoreClear } = useHistoryStore.temporal.getState();
   const { pointerDown, sculptMode, wireframe, actions } = useIslandStore();
