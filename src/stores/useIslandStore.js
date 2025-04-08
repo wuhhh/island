@@ -9,6 +9,7 @@ export const useIslandStore = createBoundStore(
   set => ({
     pointerDown: false,
     sculptMode: false,
+    terrainZExtrema: [0, 0],
     wireframe: false,
 
     persisted: {
@@ -42,6 +43,14 @@ export const useIslandStore = createBoundStore(
             cameraTarget,
           },
         })),
+      /**
+       * setTerrainZExtrema
+       * @param {number[]} extrema - The new terrain Z extrema
+       * @returns {void}
+       */
+      setTerrainZExtrema: extrema => {
+        set({ terrainZExtrema: extrema });
+      },
     },
   }),
   {
