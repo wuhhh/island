@@ -21,8 +21,6 @@ export function useTerrainInitialization({ planeRef, historyStoreHydrated, getTe
       // Calculate and store extrema
       let zExtrema = findZExtrema(terrainData);
       setTerrainZExtrema(zExtrema);
-
-      console.log(zExtrema);
     } else {
       console.warn("No terrain data available to set.");
     }
