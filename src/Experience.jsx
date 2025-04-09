@@ -1,10 +1,10 @@
 import * as THREE from "three/webgpu";
 import { Canvas, extend } from "@react-three/fiber";
-import { Box } from "@react-three/drei";
 import Ocean from "./components/Ocean";
 import Grid from "./components/Grid";
 import CameraController from "./components/CameraController";
-import GeometryTerrainEditor from "./components/Terrain";
+import Terrain from "./components/Terrain";
+import ShoreLine from "./components/ShoreLine";
 import { CAMERA_POSITION, CAMERA_TARGET, useIslandStore } from "./stores/useIslandStore";
 import { Leva } from "leva";
 
@@ -15,21 +15,19 @@ const Scene = () => {
 
   return (
     <>
-      <Box scale={0.15} position={[0, 1, 0]} rotation={[Math.PI / 2, 0, 0]}>
-        <meshStandardMaterial color='white' />
-      </Box>
       <Grid
         visible={sculptMode}
         args={[2, 2]}
-        position={[0, 0.001, 0]}
+        position={[0, 0.0, 0]}
         rotation={[-Math.PI / 2, 0, 0]}
         gridSize={20}
         lineWidth={2}
         gridAlpha={0.1}
         lineColor='cyan'
       />
-      <Ocean position={[0, 0, 0]} rotation={[-Math.PI / 2, 0, 0]} args={[30, 0.001, 30]} resolution={1} />
-      <GeometryTerrainEditor />
+      <Terrain position={[0, -0.02, 0]} />
+      <ShoreLine position={[0, -0.001, 0]} rotation={[-Math.PI / 2, 0, 0]} />
+      <Ocean args={[30, 0, 30]} position={[0, -0.002, 0]} rotation={[-Math.PI / 2, 0, 0]} resolution={1} />
       <directionalLight position={[1, 1, 1]} intensity={2} color='red' />
       <directionalLight position={[1, 1, -1]} intensity={2} color='pink' />
       <directionalLight position={[-1, 1, -1]} intensity={2} color='orange' />
