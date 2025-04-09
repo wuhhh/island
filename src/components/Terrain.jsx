@@ -11,7 +11,7 @@ import { useTerrainInitialization, useEdgeClampEffect, useKeyboardControls, useS
 import { TerrainSystem } from "../systems/TerrainSystem";
 import { findZExtrema } from "../utils/terrainUtils";
 
-export default function Terrain() {
+export default function Terrain({ ...props }) {
   // Refs
   const planeRef = useRef();
   const materialRef = useRef();
@@ -32,8 +32,8 @@ export default function Terrain() {
   // Local state
   const [brushing, setBrushing] = useState(false);
   const brushSettings = useRef({
-    radius: 0.1,
-    strength: 0.01,
+    radius: 0.16,
+    strength: 0.04,
     mode: 1,
   });
 
@@ -101,7 +101,7 @@ export default function Terrain() {
   // Add brush controls to Leva
   useControls("Brush Settings", {
     radius: {
-      value: 0.1,
+      value: 0.16,
       min: 0.02,
       max: 0.5,
       step: 0.01,
@@ -110,7 +110,7 @@ export default function Terrain() {
       },
     },
     strength: {
-      value: 0.01,
+      value: 0.04,
       min: 0.01,
       max: 0.2,
       step: 0.01,
@@ -122,6 +122,14 @@ export default function Terrain() {
       value: sculptMode,
       label: "Sculpt Mode",
       onChange: v => setSculptMode(v),
+    },
+    terrainVisible: {
+      value: true,
+      label: "Terrain Visible",
+      onChange: v => {
+        planeRef.current.visible = v;
+        planeRef.current.material.visible = v;
+      },
     },
   });
 
@@ -143,7 +151,7 @@ export default function Terrain() {
    * Set up the material for the terrain
    */
   const oceanLand = t.Fn(({ position, colour }) => {
-    return t.vec4(t.color(colour), 1);
+    return t.vec4(t.color(colour), t.step(0.02, position.z));
   });
 
   const terrainMaterialConfig = useControls("Terrain Material", {
@@ -234,7 +242,7 @@ export default function Terrain() {
   }, [sculptMode]);
 
   return (
-    <Plane ref={planeRef} args={[2, 2, TERRAIN_RESOLUTION, TERRAIN_RESOLUTION]} rotation={[-Math.PI * 0.5, 0, 0]}>
+    <Plane ref={planeRef} args={[2, 2, TERRAIN_RESOLUTION, TERRAIN_RESOLUTION]} rotation={[-Math.PI * 0.5, 0, 0]} {...props}>
       {materialRef.current && <primitive object={materialRef.current} />}
     </Plane>
   );
