@@ -95,7 +95,7 @@ export default function ShoreLine({ ...props }) {
 
       let output = shore;
 
-      materialRef.current.fragmentNode = output;
+      materialRef.current.fragmentNode = t.vec4(t.color("burlywood"), output);
 
       materialRef.current.needsUpdate = true;
     }
