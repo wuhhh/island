@@ -22,7 +22,6 @@ export default function Ocean({
    * Create the reflector node
    */
   useEffect(() => {
-    // Create the reflector using TSL
     const reflectionEffect = t.reflector({ resolution });
 
     // Rotate reflector target to match surface normal
@@ -53,11 +52,19 @@ export default function Ocean({
     const floorUV = t.uv().mul(colorMapRepeat);
 
     // Setup the material
-    const material = new THREE.MeshBasicNodeMaterial();
+    const material = new THREE.MeshStandardNodeMaterial();
 
-    material.emissiveNode = t.color("#4eadbc").mul(0.25); // TODO: Do color gradient map instead to get the bluey reflection colour
+    // Replace simple emissive with depth-based gradient
+    const shadeReflection = t.Fn(({ shallowColor, deepColor }) => {
+      const depthFactor = t.positionView.z.oneMinus().saturate();
+      return t.mix(t.color(shallowColor), t.color(deepColor), depthFactor).mul(0.5);
+    });
+
+    const waterBaseColor = shadeReflection({ shallowColor: "#6dcbdb", deepColor: "#2a7d8c" });
+
+    material.emissiveNode = waterBaseColor;
     material.transparent = true; // <-- Enable transparency
-    material.opacity = 0.9; // <-- Set opacity
+    // material.opacity = 0.9; // <-- Set opacity
     // material.wireframe = true;
 
     if (normalMap) {
@@ -66,22 +73,48 @@ export default function Ocean({
     } else {
       let baseUV = t.uv().mul(200);
       const time = t.time.mul(0.24);
-      const frequency = 10;
+
+      // Use multiple wave frequencies with different directions
+      const frequency1 = 8;
+      const frequency2 = 12;
       const amplitude = normalScale / 12;
-      const wobbleOffsetX = t.sin(baseUV.x.add(time).mul(frequency)).mul(amplitude);
-      const wobbleOffsetY = t.cos(baseUV.y.add(time).mul(frequency)).mul(amplitude);
+
+      // First wave set
+      const wobble1X = t.sin(baseUV.x.add(time).mul(frequency1)).mul(amplitude);
+      const wobble1Y = t.cos(baseUV.y.add(time.mul(0.8)).mul(frequency1)).mul(amplitude);
+
+      // Second wave set with different direction and speed
+      const wobble2X = t
+        .sin(baseUV.y.add(time.mul(0.5)).mul(frequency2))
+        .mul(amplitude)
+        .mul(0.7);
+      const wobble2Y = t
+        .cos(baseUV.x.add(time.mul(0.6)).mul(frequency2))
+        .mul(amplitude)
+        .mul(0.7);
+
+      // Combine the waves
+      const wobbleOffsetX = wobble1X.add(wobble2X);
+      const wobbleOffsetY = wobble1Y.add(wobble2Y);
       const wobbleOffset = t.vec2(wobbleOffsetX, wobbleOffsetY);
-      const computedNormal = wobbleOffset;
-      reflectionNode.uvNode = reflectionNode.uvNode.add(computedNormal);
+      reflectionNode.uvNode = reflectionNode.uvNode.add(wobbleOffset);
     }
+
+    // Add a subtle fresnel effect for better water edge rendering
+    // const viewDir = t.positionView.normalize();
+    // const normalDir = t.normalView;
+    // const fresnelTerm = viewDir.dot(normalDir).oneMinus().pow(96);
+    // const reflectionStrength = fresnelTerm.mul(0.2).add(0.2);
 
     if (colorMap) {
-      materialColor = t.texture(colorMap, floorUV).t.add(reflectionNode);
+      materialColor = t.texture(colorMap, floorUV);
+      // Blend with reflection based on fresnel
+      // materialColor = materialColor.mix(reflectionNode, reflectionStrength);
     } else {
-      materialColor = reflectionNode;
+      // materialColor = waterBaseColor.mix(reflectionNode, reflectionStrength);
     }
 
-    material.colorNode = materialColor;
+    material.colorNode = t.mul(reflectionNode, 0.33);
     meshRef.current.material = material;
   }, [reflectionNode, normalMap, colorMap, colorMapRepeat, normalScale]);
 
