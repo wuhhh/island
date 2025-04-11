@@ -1,7 +1,8 @@
 import React, { useEffect, useRef, useState, useCallback } from "react";
-import CustomCameraControls from "./CustomCameraControls";
-import { useIslandStore, useIslandHydration } from "../stores/useIslandStore";
+import { useControls, button } from "leva";
 import debounce from "debounce";
+import CustomCameraControls from "./CustomCameraControls";
+import { CAMERA_POSITION, CAMERA_TARGET, useIslandStore, useIslandHydration } from "../stores/useIslandStore";
 
 const CameraController = () => {
   const [cameraReady, setCameraReady] = useState(false);
@@ -35,6 +36,22 @@ const CameraController = () => {
       }
     }
   }, [islandStoreHydrated, cameraReady, cameraPosition, cameraTarget]);
+
+  useControls("Camera", {
+    reset: button(
+      () => {
+        if (cameraControls.current) {
+          cameraControls.current.setPosition(...CAMERA_POSITION);
+          cameraControls.current.setTarget(...CAMERA_TARGET);
+          // setCameraPosition(CAMERA_POSITION);
+          // setCameraTarget(CAMERA_TARGET);
+        }
+      },
+      {
+        label: "Reset Camera",
+      }
+    ),
+  });
 
   return (
     <CustomCameraControls
