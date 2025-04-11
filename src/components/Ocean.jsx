@@ -1,7 +1,7 @@
 import React, { useRef, useState, useEffect } from "react";
 import { useThree } from "@react-three/fiber";
 import * as THREE from "three/webgpu";
-import { color, reflector, texture, uv } from "three/tsl";
+import * as t from "three/tsl";
 
 export default function Ocean({
   resolution = 0.5,
@@ -23,7 +23,7 @@ export default function Ocean({
    */
   useEffect(() => {
     // Create the reflector using TSL
-    const reflectionEffect = reflector({ resolution });
+    const reflectionEffect = t.reflector({ resolution });
 
     // Rotate reflector target to match surface normal
     reflectionEffect.target.rotation.set(...rotation);
@@ -50,38 +50,40 @@ export default function Ocean({
     let materialColor; // colorNode
 
     // Create material nodes
-    const floorUV = uv().mul(colorMapRepeat);
+    const floorUV = t.uv().mul(colorMapRepeat);
 
     // Setup the material
     const material = new THREE.MeshBasicNodeMaterial();
 
-    material.emissiveNode = color("#4eadbc").mul(0.25); // TODO: Do color gradient map instead to get the bluey reflection colour
-    material.transparent = true; // <-- Enable transparency Oh My Looooooord
+    material.emissiveNode = t.color("#4eadbc").mul(0.25); // TODO: Do color gradient map instead to get the bluey reflection colour
+    material.transparent = true; // <-- Enable transparency
     material.opacity = 0.9; // <-- Set opacity
+    // material.wireframe = true;
 
-    // If we have a normal map, apply it to distort the reflection
     if (normalMap) {
-      const floorNormal = texture(normalMap, floorUV).xy.mul(2).sub(1).mul(normalScale);
+      const floorNormal = t.texture(normalMap, floorUV).xy.mul(2).sub(1).mul(normalScale);
       reflectionNode.uvNode = reflectionNode.uvNode.add(floorNormal);
+    } else {
+      let baseUV = t.uv().mul(200);
+      const time = t.time.mul(0.24);
+      const frequency = 10;
+      const amplitude = normalScale / 12;
+      const wobbleOffsetX = t.sin(baseUV.x.add(time).mul(frequency)).mul(amplitude);
+      const wobbleOffsetY = t.cos(baseUV.y.add(time).mul(frequency)).mul(amplitude);
+      const wobbleOffset = t.vec2(wobbleOffsetX, wobbleOffsetY);
+      const computedNormal = wobbleOffset;
+      reflectionNode.uvNode = reflectionNode.uvNode.add(computedNormal);
     }
 
     if (colorMap) {
-      // If we have a color map, apply it with the reflection
-      materialColor = texture(colorMap, floorUV).add(reflectionNode);
+      materialColor = t.texture(colorMap, floorUV).t.add(reflectionNode);
     } else {
-      // Just use the reflection
       materialColor = reflectionNode;
     }
 
-    // TODO: Add shoreline noise to the reflection
-    // materialColor = ...
-
-    // Apply final color
     material.colorNode = materialColor;
-
-    // Apply the material to our mesh
     meshRef.current.material = material;
-  }, [reflectionNode, normalMap, colorMap, colorMapRepeat, normalScale, color]);
+  }, [reflectionNode, normalMap, colorMap, colorMapRepeat, normalScale]);
 
   return (
     <mesh ref={meshRef} position={position} receiveShadow {...props}>
