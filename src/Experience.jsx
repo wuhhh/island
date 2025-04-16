@@ -55,7 +55,7 @@ const Experience = () => {
       >
         <Scene />
       </Canvas>
-      <Leva />
+      <Leva hidden />
     </>
   );
 };
