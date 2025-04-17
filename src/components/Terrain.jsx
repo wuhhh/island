@@ -154,12 +154,10 @@ export default function Terrain({ ...props }) {
     const gradient = t.oneMinus(t.dot(t.normalGeometry, t.vec3(0, 0, 1))); // 0.0 flat, 1.0 steep
     const waterLevel = 0.02;
     const height = t.positionGeometry.z;
-
     const level1 = t.smoothstep(0, waterLevel, t.mul(height, t.pow(gradient, 0.01)));
     const shorelineColor = t.color("burlywood");
     const level1Mix = t.mix(shorelineColor, t.color(colour), t.step(0.8, level1));
     return t.vec4(level1Mix, t.step(waterLevel, level1));
-    // return t.vec4(t.vec3(t.add(gradient, height)), 1);
   });
 
   const terrainMaterialConfig = useControls("Terrain Material", {
