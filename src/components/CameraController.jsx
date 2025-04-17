@@ -4,23 +4,35 @@ import debounce from "debounce";
 import CustomCameraControls from "./CustomCameraControls";
 import { CAMERA_POSITION, CAMERA_TARGET, useIslandStore, useIslandHydration } from "../stores/useIslandStore";
 
+// Helper to compare positions/targets without lodash
+const positionsAreEqual = (a, b) => {
+  return a && b && a.x === b.x && a.y === b.y && a.z === b.z;
+};
+
 const CameraController = () => {
   const [cameraReady, setCameraReady] = useState(false);
   const cameraControls = useRef();
   const editMode = useIslandStore(state => state.editMode);
   const sculpt = useIslandStore(state => state.sculpt);
   const persisted = useIslandStore(state => state.persisted);
+  const cameraPosition = persisted.cameraPosition;
+  const cameraTarget = persisted.cameraTarget;
   const setCameraPosition = useIslandStore(state => state.actions.setCameraPosition);
   const setCameraTarget = useIslandStore(state => state.actions.setCameraTarget);
-  const cameraPosition = persisted.cameraPosition || CAMERA_POSITION;
-  const cameraTarget = persisted.cameraTarget || CAMERA_TARGET;
   const islandStoreHydrated = useIslandHydration();
 
   const handleCameraControlsChange = useCallback(
     event => {
+      const newPos = event.target.getPosition();
+      const newTarget = event.target.getTarget();
+
       if (event.target.enabled) {
-        setCameraPosition(event.target.getPosition());
-        setCameraTarget(event.target.getTarget());
+        if (!positionsAreEqual(newPos, cameraPosition)) {
+          setCameraPosition(newPos);
+        }
+        if (!positionsAreEqual(newTarget, cameraTarget)) {
+          setCameraTarget(newTarget);
+        }
       }
     },
     [setCameraPosition, setCameraTarget]
@@ -37,7 +49,7 @@ const CameraController = () => {
         cameraControls.current.setTarget(cameraTarget.x, cameraTarget.y, cameraTarget.z);
       }
     }
-  }, [islandStoreHydrated, cameraReady, cameraPosition, cameraTarget]);
+  }, [islandStoreHydrated, cameraReady]);
 
   useControls("Camera", {
     reset: button(
@@ -45,8 +57,6 @@ const CameraController = () => {
         if (cameraControls.current) {
           cameraControls.current.setPosition(...CAMERA_POSITION);
           cameraControls.current.setTarget(...CAMERA_TARGET);
-          // setCameraPosition(CAMERA_POSITION);
-          // setCameraTarget(CAMERA_TARGET);
         }
       },
       {
