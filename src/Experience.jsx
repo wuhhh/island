@@ -18,15 +18,15 @@ const Scene = () => {
       <Grid
         visible={sculptMode}
         args={[2, 2]}
-        position={[0, 0.0, 0]}
+        position={[0, 0.001, 0]}
         rotation={[-Math.PI / 2, 0, 0]}
         gridSize={20}
         lineWidth={2}
         gridAlpha={0.1}
         lineColor='cyan'
       />
-      <Terrain position={[0, -0.02, 0]} />
-      <ShoreLine position={[0, -0.001, 0]} rotation={[-Math.PI / 2, 0, 0]} />
+      <Terrain renderOrder={1} position={[0, 0, 0]} />
+      {/* <ShoreLine position={[0, -0.001, 0]} rotation={[-Math.PI / 2, 0, 0]} /> */}
       <Ocean args={[30, 0, 30]} position={[0, -0.002, 0]} rotation={[-Math.PI / 2, 0, 0]} resolution={1} />
       <directionalLight position={[1, 1, 1]} intensity={2} color='red' />
       <directionalLight position={[1, 1, -1]} intensity={2} color='pink' />
