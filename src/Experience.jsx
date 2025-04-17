@@ -5,6 +5,7 @@ import Grid from "./components/Grid";
 import CameraController from "./components/CameraController";
 import Terrain from "./components/Terrain";
 import ShoreLine from "./components/ShoreLine";
+import UI from "./components/UI";
 import { CAMERA_POSITION, CAMERA_TARGET, useIslandStore } from "./stores/useIslandStore";
 import { Leva } from "leva";
 
@@ -55,6 +56,7 @@ const Experience = () => {
       >
         <Scene />
       </Canvas>
+      <UI />
       <Leva hidden />
     </>
   );
