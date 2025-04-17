@@ -1,10 +1,10 @@
 import { MathUtils } from "three";
 import { findZExtrema } from "../utils/terrainUtils";
 
-const MAX_RADIUS = 0.2;
-const MIN_RADIUS = 0.08;
-const MAX_STRENGTH = 0.04;
-const MIN_STRENGTH = 0.0025;
+const MAX_RADIUS = 0.15;
+const MIN_RADIUS = 0.04;
+const MAX_STRENGTH = 0.025;
+const MIN_STRENGTH = 0.00125;
 
 export class TerrainSystem {
   constructor(geometry, spatialIndex) {
@@ -21,12 +21,8 @@ export class TerrainSystem {
     const { brushSize, brushStrength, mode } = brushSettings;
     const { grid, size } = this.spatialIndex;
 
-    // Scale brush size and strength
-    // const radius = brushSize * 0.2;
-    // const strength = brushStrength * 0.02;
-
-    const radius = MathUtils.clamp(brushSize, MIN_RADIUS, MAX_RADIUS);
-    const strength = MathUtils.clamp(brushStrength, MIN_STRENGTH, MAX_STRENGTH);
+    const radius = MathUtils.mapLinear(brushSize, 0, 1, MIN_RADIUS, MAX_RADIUS);
+    let strength = MathUtils.mapLinear(brushStrength, 0, 1, MIN_STRENGTH, MAX_STRENGTH);
 
     // Calculate which grid cells the brush overlaps
     const brushRadiusInGrid = Math.ceil(radius * size);
