@@ -57,8 +57,10 @@ export class TerrainSystem {
             const falloff = Math.pow(1.0 - dist / radius, 2);
 
             // Calculate height change
+            const minHeight = -0.1; // Minimum height
             const posIndex = vertexIndex * 3 + 2; // z component
-            this.positions[posIndex] += strength * 0.5 * falloff * mode * edgeWeight;
+            const newPos = this.positions[posIndex] + strength * 0.5 * falloff * mode * edgeWeight;
+            this.positions[posIndex] = newPos < minHeight ? minHeight : newPos;
           }
         }
       }
