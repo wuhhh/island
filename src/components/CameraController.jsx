@@ -7,11 +7,13 @@ import { CAMERA_POSITION, CAMERA_TARGET, useIslandStore, useIslandHydration } fr
 const CameraController = () => {
   const [cameraReady, setCameraReady] = useState(false);
   const cameraControls = useRef();
-  const sculptMode = useIslandStore(state => state.sculptMode);
-  const actions = useIslandStore(state => state.actions);
+  const editMode = useIslandStore(state => state.editMode);
+  const sculpt = useIslandStore(state => state.sculpt);
   const persisted = useIslandStore(state => state.persisted);
-  const { setCameraPosition, setCameraTarget } = actions;
-  const { cameraPosition, cameraTarget } = persisted;
+  const setCameraPosition = useIslandStore(state => state.actions.setCameraPosition);
+  const setCameraTarget = useIslandStore(state => state.actions.setCameraTarget);
+  const cameraPosition = persisted.cameraPosition || CAMERA_POSITION;
+  const cameraTarget = persisted.cameraTarget || CAMERA_TARGET;
   const islandStoreHydrated = useIslandHydration();
 
   const handleCameraControlsChange = useCallback(
@@ -56,7 +58,7 @@ const CameraController = () => {
   return (
     <CustomCameraControls
       ref={cameraControls}
-      enabled={!sculptMode}
+      enabled={!(editMode && sculpt.active)}
       makeDefault
       makeDefaultRotation={true}
       onChange={debounce(handleCameraControlsChange, 100)}

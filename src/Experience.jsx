@@ -12,12 +12,12 @@ import { Leva } from "leva";
 extend(THREE);
 
 const Scene = () => {
-  const sculptMode = useIslandStore(state => state.sculptMode);
+  const editMode = useIslandStore(state => state.editMode);
 
   return (
     <>
       <Grid
-        visible={sculptMode}
+        visible={editMode}
         args={[2, 2]}
         position={[0, 0.001, 0]}
         rotation={[-Math.PI / 2, 0, 0]}

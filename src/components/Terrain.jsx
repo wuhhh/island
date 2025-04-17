@@ -24,18 +24,13 @@ export default function Terrain({ ...props }) {
   const setTerrainGeomAttrsPosArr = useHistoryStore(state => state.setTerrainGeomAttrsPosArr);
   const setTerrainZExtrema = useIslandStore(state => state.actions.setTerrainZExtrema);
   const { undo: useHistoryStoreUndo, redo: useHistoryStoreRedo, clear: useHistoryStoreClear } = useHistoryStore.temporal.getState();
-  const { pointerDown, sculptMode, wireframe, actions } = useIslandStore();
-  const { setSculptMode, setWireframe } = actions;
+  const { pointerDown, editMode, sculpt, wireframe, actions } = useIslandStore();
+  const { setEditMode, setSculptProp, setWireframe } = actions;
   const islandStoreHydrated = useIslandHydration();
   const historyStoreHydrated = useHistoryHydration();
 
   // Local state
   const [brushing, setBrushing] = useState(false);
-  const brushSettings = useRef({
-    radius: 0.16,
-    strength: 0.04,
-    mode: 1,
-  });
 
   // Set up Leva controls
   const { edgeClampRadius } = useControls("Island Settings", {
@@ -82,11 +77,16 @@ export default function Terrain({ ...props }) {
 
   // Use keyboard controls
   useKeyboardControls({
-    sculptMode,
-    setSculptMode,
+    editMode,
+    setEditMode,
+    setSculptProp,
     wireframe,
     setWireframe,
-    brushSettings,
+    brushSettings: {
+      mode: sculpt.mode,
+      brushSize: sculpt.brushSize,
+      brushStrength: sculpt.brushStrength,
+    },
     resetTerrain: () => {
       terrainSystem.current?.resetTerrain();
       useHistoryStoreClear();
@@ -97,55 +97,6 @@ export default function Terrain({ ...props }) {
     useHistoryStoreUndo,
     useHistoryStoreRedo,
   });
-
-  // Add brush controls to Leva
-  useControls("Brush Settings", {
-    radius: {
-      value: 0.16,
-      min: 0.02,
-      max: 0.5,
-      step: 0.01,
-      onChange: v => {
-        brushSettings.current.radius = v;
-      },
-    },
-    strength: {
-      value: 0.04,
-      min: 0.01,
-      max: 0.2,
-      step: 0.01,
-      onChange: v => {
-        brushSettings.current.strength = v;
-      },
-    },
-    sculptMode: {
-      value: sculptMode,
-      label: "Sculpt Mode",
-      onChange: v => setSculptMode(v),
-    },
-    terrainVisible: {
-      value: true,
-      label: "Terrain Visible",
-      onChange: v => {
-        planeRef.current.visible = v;
-        planeRef.current.material.visible = v;
-      },
-    },
-  });
-
-  // Add keyboard shortcuts info to Leva
-  useControls(
-    "Keyboard Shortcuts",
-    {
-      tab: { value: "Toggle Sculpt Mode", editable: false },
-      w: { value: "Toggle Wireframe", editable: false },
-      brackets: { value: "[ ] Adjust Brush Size", editable: false },
-      minusEquals: { value: "- = Adjust Strength", editable: false },
-      shift: { value: "Hold to Lower Terrain", editable: false },
-      R: { value: "Reset Terrain", editable: false },
-    },
-    { collapsed: true }
-  );
 
   /**
    * Set up the material for the terrain
@@ -225,14 +176,20 @@ export default function Terrain({ ...props }) {
    * Apply brush on pointer move
    */
   useFrame(({ raycaster }) => {
-    if (pointerDown && sculptMode && terrainSystem.current) {
+    if (pointerDown && editMode && sculpt.active && terrainSystem.current) {
       setBrushing(true);
       const intersection = raycaster.intersectObject(planeRef.current);
 
       if (intersection.length > 0) {
         const uv = intersection[0].uv;
         mousePos.current.set(uv.x, uv.y);
-        terrainSystem.current.applyBrush(uv.x, uv.y, brushSettings.current);
+        const brushSettings = {
+          mode: sculpt.mode,
+          brushSize: sculpt.brushSize,
+          brushStrength: sculpt.brushStrength,
+        };
+        terrainSystem.current.applyBrush(uv.x, uv.y, brushSettings);
+        // console.log("Applying brush at", uv.x, uv.y, brushSettings);
       }
     }
   });
@@ -241,11 +198,11 @@ export default function Terrain({ ...props }) {
    * Set cursor style based on mode
    */
   useEffect(() => {
-    document.body.style.cursor = sculptMode ? "crosshair" : "grab";
+    document.body.style.cursor = editMode && sculpt.active ? "crosshair" : "grab";
     return () => {
       document.body.style.cursor = "default";
     };
-  }, [sculptMode]);
+  }, [editMode, sculpt.active]);
 
   return (
     <Plane ref={planeRef} args={[2, 2, TERRAIN_RESOLUTION, TERRAIN_RESOLUTION]} rotation={[-Math.PI * 0.5, 0, 0]} {...props}>

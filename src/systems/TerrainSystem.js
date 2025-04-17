@@ -1,4 +1,10 @@
+import { MathUtils } from "three";
 import { findZExtrema } from "../utils/terrainUtils";
+
+const MAX_RADIUS = 0.2;
+const MIN_RADIUS = 0.08;
+const MAX_STRENGTH = 0.04;
+const MIN_STRENGTH = 0.0025;
 
 export class TerrainSystem {
   constructor(geometry, spatialIndex) {
@@ -12,8 +18,15 @@ export class TerrainSystem {
    * Apply brush to modify terrain
    */
   applyBrush(x, y, brushSettings) {
-    const { radius, strength, mode } = brushSettings;
+    const { brushSize, brushStrength, mode } = brushSettings;
     const { grid, size } = this.spatialIndex;
+
+    // Scale brush size and strength
+    // const radius = brushSize * 0.2;
+    // const strength = brushStrength * 0.02;
+
+    const radius = MathUtils.clamp(brushSize, MIN_RADIUS, MAX_RADIUS);
+    const strength = MathUtils.clamp(brushStrength, MIN_STRENGTH, MAX_STRENGTH);
 
     // Calculate which grid cells the brush overlaps
     const brushRadiusInGrid = Math.ceil(radius * size);
@@ -59,7 +72,8 @@ export class TerrainSystem {
             // Calculate height change
             const minHeight = -0.1; // Minimum height
             const posIndex = vertexIndex * 3 + 2; // z component
-            const newPos = this.positions[posIndex] + strength * 0.5 * falloff * mode * edgeWeight;
+            const _mode = mode === "add" ? 1 : -1;
+            const newPos = this.positions[posIndex] + strength * 0.5 * falloff * _mode * edgeWeight;
             this.positions[posIndex] = newPos < minHeight ? minHeight : newPos;
           }
         }

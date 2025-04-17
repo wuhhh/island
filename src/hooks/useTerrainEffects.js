@@ -51,8 +51,10 @@ export function useSpatialIndex(planeRef) {
  * Handles keyboard controls for the terrain editor
  */
 export function useKeyboardControls({
-  sculptMode,
-  setSculptMode,
+  editMode,
+  setEditMode,
+  sculpt,
+  setSculptProp,
   wireframe,
   setWireframe,
   brushSettings,
@@ -66,8 +68,8 @@ export function useKeyboardControls({
       // Toggle sculpt mode with Tab key
       if (e.key === "Tab") {
         e.preventDefault();
-        setSculptMode(!sculptMode);
-        console.log(`Mode: ${!sculptMode ? "Sculpting" : "Camera Control"}`);
+        setEditMode(!editMode);
+        console.log(`Mode: ${!editMode ? "Sculpting" : "Camera Control"}`);
       }
 
       // Toggle wireframe with W key
@@ -91,29 +93,28 @@ export function useKeyboardControls({
         console.log("Redo");
       }
 
-      // Shift key to lower terrain
-      if (e.key === "Shift") {
-        brushSettings.current.mode = -1;
-      }
-
       // Bracket keys to adjust brush size
       if (e.key === "[") {
-        brushSettings.current.radius = Math.max(0.02, brushSettings.current.radius - 0.02);
-        console.log(`Brush radius: ${brushSettings.current.radius.toFixed(2)}`);
+        brushSettings.brushSize = Math.max(0.02, brushSettings.brushSize - 0.02);
+        setSculptProp("brushSize", brushSettings.brushSize);
+        console.log(`brushSize: ${brushSettings.brushSize.toFixed(2)}`);
       }
       if (e.key === "]") {
-        brushSettings.current.radius = Math.min(0.5, brushSettings.current.radius + 0.02);
-        console.log(`Brush radius: ${brushSettings.current.radius.toFixed(2)}`);
+        brushSettings.brushSize = Math.min(0.5, brushSettings.brushSize + 0.02);
+        setSculptProp("brushSize", brushSettings.brushSize);
+        console.log(`brushSize: ${brushSettings.brushSize.toFixed(2)}`);
       }
 
       // - and = keys to adjust brush strength
       if (e.key === "-") {
-        brushSettings.current.strength = Math.max(0.01, brushSettings.current.strength - 0.01);
-        console.log(`Brush strength: ${brushSettings.current.strength.toFixed(2)}`);
+        brushSettings.brushStrength = Math.max(0.01, brushSettings.brushStrength - 0.01);
+        setSculptProp("brushStrength", brushSettings.brushStrength);
+        console.log(`brushStrength: ${brushSettings.brushStrength.toFixed(2)}`);
       }
       if (e.key === "=") {
-        brushSettings.current.strength = Math.min(0.2, brushSettings.current.strength + 0.01);
-        console.log(`Brush strength: ${brushSettings.current.strength.toFixed(2)}`);
+        brushSettings.brushStrength = Math.min(0.2, brushSettings.brushStrength + 0.01);
+        setSculptProp("brushStrength", brushSettings.brushStrength);
+        console.log(`Brush brushStrength: ${brushSettings.brushStrength.toFixed(2)}`);
       }
 
       // R key to reset terrain
@@ -126,7 +127,7 @@ export function useKeyboardControls({
     const handleKeyUp = e => {
       // Reset to raising terrain when Shift is released
       if (e.key === "Shift") {
-        brushSettings.current.mode = 1;
+        brushSettings.mode = 1;
       }
     };
 
@@ -137,7 +138,7 @@ export function useKeyboardControls({
       window.removeEventListener("keydown", handleKeyDown);
       window.removeEventListener("keyup", handleKeyUp);
     };
-  }, [sculptMode, wireframe, setWireframe, setSculptMode, resetTerrain, materialRef, useHistoryStoreUndo, useHistoryStoreRedo]);
+  }, [editMode, wireframe, setWireframe, setEditMode, resetTerrain, materialRef, useHistoryStoreUndo, useHistoryStoreRedo]);
 }
 
 /**

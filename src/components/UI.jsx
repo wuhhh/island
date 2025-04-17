@@ -18,25 +18,40 @@ const ToolTip = ({ label }) => (
 );
 
 export default function IslandEditorUI() {
-  const sculptMode = useIslandStore(state => state.sculptMode);
-  const setSculptMode = useIslandStore(state => state.actions.setSculptMode);
+  const editMode = useIslandStore(state => state.editMode);
+  const setEditMode = useIslandStore(state => state.actions.setEditMode);
+  const sculpt = useIslandStore(state => state.sculpt);
+  const setSculptProp = useIslandStore(state => state.actions.setSculptProp);
   const { undo: useHistoryStoreUndo, redo: useHistoryStoreRedo } = useHistoryStore.temporal.getState();
   const [activeTool, setActiveTool] = useState(null);
-  const [strength, setStrength] = useState(50);
-  const [size, setSize] = useState(50);
+  // const [strength, setStrength] = useState(50);
+  // const [size, setSize] = useState(50);
   const [showHelpModal, setShowHelpModal] = useState(false);
   const [showResetConfirm, setShowResetConfirm] = useState(false);
 
   const toggleEditMode = () => {
-    setSculptMode(!sculptMode);
+    setEditMode(!editMode);
     setActiveTool(null);
   };
   const handleToolClick = toolId => {
+    console.log(`Tool clicked: ${toolId}`);
+
+    if (toolId === activeTool) {
+      setActiveTool(null);
+      setSculptProp("active", false);
+      return;
+    }
+
     if (toolId === "strength" || toolId === "size") {
       setActiveTool(activeTool === toolId ? null : toolId);
     } else {
       setActiveTool(toolId);
-      // TODO: integrate sculpt logic here
+      if (toolId === "sculpt+") {
+        setSculptProp("mode", "add");
+      } else if (toolId === "sculpt-") {
+        setSculptProp("mode", "subtract");
+      }
+      setSculptProp("active", true);
     }
   };
 
@@ -48,18 +63,18 @@ export default function IslandEditorUI() {
       {/* Unified Drawer: toolbar + puller */}
       <motion.div
         initial={{ x: `calc(-${toolbarWidth} + ${pullerWidth})` }}
-        animate={{ x: sculptMode ? 0 : `calc(-${toolbarWidth} + ${pullerWidth})` }}
+        animate={{ x: editMode ? 0 : `calc(-${toolbarWidth} + ${pullerWidth})` }}
         transition={{ type: "tween", ease: "easeInOut", duration: 0.2 }}
         className='cursor-default fixed top-4 left-4 z-40 flex flex-col items-center space-y-2 bg-white p-2 rounded-xl shadow-md h-auto'
       >
         {/* Puller (toggle) */}
         <button
           onClick={toggleEditMode}
-          aria-label={sculptMode ? "Close toolbar" : "Open toolbar"}
+          aria-label={editMode ? "Close toolbar" : "Open toolbar"}
           className='cursor-pointer w-10 h-10 flex items-center justify-center bg-blue-600 text-white rounded-full shadow-lg focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-blue-400 relative'
         >
           <AnimatePresence mode='wait'>
-            {sculptMode ? (
+            {editMode ? (
               <motion.div
                 key='close'
                 initial={{ rotate: -20, opacity: 0 }}
@@ -84,7 +99,7 @@ export default function IslandEditorUI() {
         </button>
 
         {/* Toolbar buttons (only when open) */}
-        {sculptMode && (
+        {editMode && (
           <>
             {TOOL_OPTIONS.map(opt => {
               const isSlider = activeTool === opt.id && ["strength", "size"].includes(opt.id);
@@ -93,8 +108,8 @@ export default function IslandEditorUI() {
                   <button
                     onClick={() => handleToolClick(opt.id)}
                     aria-label={opt.label}
-                    className={`cursor-pointer w-10 h-10 flex items-center justify-center bg-gray-700 text-white rounded-full focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-blue-400 ${
-                      activeTool === opt.id ? "bg-blue-500" : ""
+                    className={`cursor-pointer w-10 h-10 flex items-center justify-center text-white rounded-full focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-blue-400 ${
+                      activeTool === opt.id ? "bg-blue-500" : "bg-gray-700"
                     }`}
                   >
                     <opt.icon />
@@ -108,10 +123,15 @@ export default function IslandEditorUI() {
                       <input
                         id={`${opt.id}-slider`}
                         type='range'
-                        min='1'
-                        max='100'
-                        value={opt.id === "strength" ? strength : size}
-                        onChange={e => (opt.id === "strength" ? setStrength(+e.target.value) : setSize(+e.target.value))}
+                        min='0.01'
+                        max='1'
+                        step='0.01'
+                        value={opt.id === "strength" ? sculpt.brushStrength : sculpt.brushSize}
+                        onChange={e =>
+                          opt.id === "strength"
+                            ? setSculptProp("brushStrength", +e.target.value)
+                            : setSculptProp("brushSize", +e.target.value)
+                        }
                         className='w-full'
                       />
                     </div>
@@ -148,7 +168,7 @@ export default function IslandEditorUI() {
       </motion.div>
 
       {/* Undo/Redo controls */}
-      {sculptMode && (
+      {editMode && (
         <div className='fixed bottom-4 left-1/2 transform -translate-x-1/2 flex space-x-2 z-50'>
           <button
             onClick={() => useHistoryStoreUndo()}
