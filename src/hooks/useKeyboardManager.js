@@ -73,6 +73,20 @@ export function useKeyboardManager() {
         case "R":
           // resetTerrain();
           break;
+        case "a":
+        case "A":
+          if (editMode) {
+            setSculptProp("mode", "add");
+            setSculptProp("active", true);
+          }
+          break;
+        case "s":
+        case "S":
+          if (editMode) {
+            setSculptProp("mode", "subtract");
+            setSculptProp("active", true);
+          }
+          break;
         default:
           break;
       }

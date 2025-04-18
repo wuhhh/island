@@ -205,16 +205,17 @@ export default function IslandEditorUI() {
             <h2 className='text-xl font-semibold mb-4'>Tips & Shortcuts</h2>
             <div className='mb-4'>
               <h3 className='font-medium'>Tips & Tricks:</h3>
-              <ul className='list-disc list-inside ml-2'>
+              <ul className='list-disc list-outside ml-4'>
                 <li>Use Sculpt + / Sculpt - to raise or lower terrain.</li>
                 <li>Adjust brush size/strength via toolbar sliders or keyboard shortcuts.</li>
                 <li>Undo/redo frequently to refine your edits.</li>
                 <li>Hit Reset to start fresh (irreversible).</li>
+                <li>Hold Alt while sculpting to quickly switch between add/subtract modes.</li>
               </ul>
             </div>
             <div className='mb-4'>
               <h3 className='font-medium'>Keyboard Shortcuts:</h3>
-              <ul className='list-none ml-0'>
+              <ul className='list-outside list-none ml-0'>
                 <li>
                   <kbd>]</kbd>: Increase brush size
                 </li>
@@ -238,6 +239,15 @@ export default function IslandEditorUI() {
                 </li>
                 <li>
                   <kbd>Tab</kbd>: Toggle edit mode
+                </li>
+                <li>
+                  <kbd>V</kbd>: Move tool (camera control)
+                </li>
+                <li>
+                  <kbd>A</kbd>: Sculpt + (Hold Alt to switch to subtract)
+                </li>
+                <li>
+                  <kbd>S</kbd>: Sculpt - (Hold Alt to switch to add)
                 </li>
               </ul>
             </div>
