@@ -30,8 +30,8 @@ export default function IslandEditorUI() {
 
   const toggleEditMode = () => {
     setEditMode(!editMode);
-    setActiveTool(null);
   };
+
   const handleToolClick = toolId => {
     setActiveTool(toolId);
 
@@ -59,14 +59,15 @@ export default function IslandEditorUI() {
   const pullerWidth = "2.5rem"; // button width (p-2 → 2.5rem)
   const toolbarWidth = "4rem"; // panel width (w-16 → 4rem)
 
+  // Sync activeTool with current editMode and sculpt state
   useEffect(() => {
-    if (sculpt.mode === "add") {
-      setActiveTool("sculpt+");
+    if (!editMode) return;
+    if (sculpt.active) {
+      setActiveTool(sculpt.mode === "add" ? "sculpt+" : "sculpt-");
+    } else {
+      setActiveTool("move");
     }
-    if (sculpt.mode === "subtract") {
-      setActiveTool("sculpt-");
-    }
-  }, [sculpt.mode]);
+  }, [editMode, sculpt.active, sculpt.mode]);
 
   return (
     <>

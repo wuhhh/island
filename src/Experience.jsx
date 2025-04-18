@@ -8,6 +8,7 @@ import ShoreLine from "./components/ShoreLine";
 import UI from "./components/UI";
 import { CAMERA_POSITION, CAMERA_TARGET, useIslandStore } from "./stores/useIslandStore";
 import { Leva } from "leva";
+import { useKeyboardManager } from "./hooks/useKeyboardManager";
 
 extend(THREE);
 
@@ -40,6 +41,8 @@ const Scene = () => {
 };
 
 const Experience = () => {
+  useKeyboardManager();
+
   const { setPointerDown } = useIslandStore(state => state.actions);
 
   return (

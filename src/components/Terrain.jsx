@@ -7,7 +7,7 @@ import { TERRAIN_RESOLUTION, useIslandStore, useIslandHydration } from "../store
 import { useHistoryStore, useHistoryHydration } from "../stores/useHistoryStore";
 import * as t from "three/tsl";
 
-import { useTerrainInitialization, useEdgeClampEffect, useKeyboardControls, useSpatialIndex } from "../hooks/useTerrainEffects";
+import { useTerrainInitialization, useEdgeClampEffect, useSpatialIndex } from "../hooks/useTerrainEffects";
 import { TerrainSystem } from "../systems/TerrainSystem";
 import { findZExtrema } from "../utils/terrainUtils";
 
@@ -75,32 +75,6 @@ export default function Terrain({ ...props }) {
     if (!planeRef.current || !spatialIndex) return;
     terrainSystem.current = new TerrainSystem(planeRef.current.geometry, spatialIndex);
   }, [planeRef.current, spatialIndex]);
-
-  // Use keyboard controls
-  useKeyboardControls({
-    altIsPressed,
-    setAltIsPressed,
-    editMode,
-    setEditMode,
-    sculpt,
-    setSculptProp,
-    wireframe,
-    setWireframe,
-    brushSettings: {
-      mode: sculpt.mode,
-      brushSize: sculpt.brushSize,
-      brushStrength: sculpt.brushStrength,
-    },
-    resetTerrain: () => {
-      terrainSystem.current?.resetTerrain();
-      useHistoryStoreClear();
-      setTerrainGeomAttrsPosArr(planeRef.current.geometry.attributes.position.array);
-      console.log("Terrain reset and history cleared");
-    },
-    materialRef,
-    useHistoryStoreUndo,
-    useHistoryStoreRedo,
-  });
 
   /**
    * Set up the material for the terrain
