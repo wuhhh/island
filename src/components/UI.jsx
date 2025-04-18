@@ -1,10 +1,11 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Edit2, X, Plus, Minus, SlidersHorizontal, Circle, RotateCcw, RotateCw, RefreshCw, HelpCircle } from "lucide-react";
+import { Edit2, X, Plus, Minus, SlidersHorizontal, Circle, RotateCcw, RotateCw, RefreshCw, HelpCircle, Grab } from "lucide-react";
 import { useIslandStore } from "../stores/useIslandStore";
 import { useHistoryStore, useHistoryHydration } from "../stores/useHistoryStore";
 
 const TOOL_OPTIONS = [
+  { id: "move", icon: Grab, label: "Move" },
   { id: "sculpt+", icon: Plus, label: "Sculpt +" },
   { id: "sculpt-", icon: Minus, label: "Sculpt -" },
   { id: "strength", icon: SlidersHorizontal, label: "Brush Strength" },
@@ -24,8 +25,6 @@ export default function IslandEditorUI() {
   const setSculptProp = useIslandStore(state => state.actions.setSculptProp);
   const { undo: useHistoryStoreUndo, redo: useHistoryStoreRedo } = useHistoryStore.temporal.getState();
   const [activeTool, setActiveTool] = useState(null);
-  // const [strength, setStrength] = useState(50);
-  // const [size, setSize] = useState(50);
   const [showHelpModal, setShowHelpModal] = useState(false);
   const [showResetConfirm, setShowResetConfirm] = useState(false);
 
@@ -34,29 +33,40 @@ export default function IslandEditorUI() {
     setActiveTool(null);
   };
   const handleToolClick = toolId => {
-    console.log(`Tool clicked: ${toolId}`);
+    setActiveTool(toolId);
 
-    if (toolId === activeTool) {
-      setActiveTool(null);
-      setSculptProp("active", false);
-      return;
-    }
-
-    if (toolId === "strength" || toolId === "size") {
-      setActiveTool(activeTool === toolId ? null : toolId);
-    } else {
-      setActiveTool(toolId);
-      if (toolId === "sculpt+") {
+    switch (toolId) {
+      case "move":
+        setSculptProp("active", false);
+        break;
+      case "sculpt+":
         setSculptProp("mode", "add");
-      } else if (toolId === "sculpt-") {
+        setSculptProp("active", true);
+        break;
+      case "sculpt-":
         setSculptProp("mode", "subtract");
-      }
-      setSculptProp("active", true);
+        setSculptProp("active", true);
+        break;
+      case "strength":
+      case "size":
+        setActiveTool(activeTool === toolId ? null : toolId);
+        break;
+      default:
+        break;
     }
   };
 
   const pullerWidth = "2.5rem"; // button width (p-2 → 2.5rem)
   const toolbarWidth = "4rem"; // panel width (w-16 → 4rem)
+
+  useEffect(() => {
+    if (sculpt.mode === "add") {
+      setActiveTool("sculpt+");
+    }
+    if (sculpt.mode === "subtract") {
+      setActiveTool("sculpt-");
+    }
+  }, [sculpt.mode]);
 
   return (
     <>

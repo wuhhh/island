@@ -11,7 +11,7 @@ export const useIslandStore = createBoundStore(
     pointerDown: false,
     sculpt: {
       active: false,
-      mode: "add", // "add" or "subtract"
+      mode: "add", // "add", "subtract"
       brushSize: 0.5,
       brushStrength: 0.5,
     },

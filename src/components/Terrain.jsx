@@ -31,6 +31,7 @@ export default function Terrain({ ...props }) {
 
   // Local state
   const [brushing, setBrushing] = useState(false);
+  const [altIsPressed, setAltIsPressed] = useState(false);
 
   // Set up Leva controls
   const { edgeClampRadius } = useControls("Island Settings", {
@@ -77,8 +78,11 @@ export default function Terrain({ ...props }) {
 
   // Use keyboard controls
   useKeyboardControls({
+    altIsPressed,
+    setAltIsPressed,
     editMode,
     setEditMode,
+    sculpt,
     setSculptProp,
     wireframe,
     setWireframe,

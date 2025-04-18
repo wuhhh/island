@@ -81,6 +81,16 @@ export function useKeyboardControls({
         }
       }
 
+      // Hold alt to switch to alternate sculpt mode (e.g. sub if raising, add if lowering)
+      if (e.key === "Alt") {
+        e.preventDefault();
+        if (editMode && sculpt.active) {
+          sculpt.mode = sculpt.mode === "add" ? "subtract" : "add";
+          setSculptProp("mode", sculpt.mode);
+          console.log(`Sculpt Mode: ${sculpt.mode}`);
+        }
+      }
+
       // Undo with u
       if (e.key === "u" || e.key === "U") {
         useHistoryStoreUndo();
@@ -125,9 +135,13 @@ export function useKeyboardControls({
     };
 
     const handleKeyUp = e => {
-      // Reset to raising terrain when Shift is released
-      if (e.key === "Shift") {
-        brushSettings.mode = 1;
+      if (e.key === "Alt") {
+        e.preventDefault();
+        if (editMode && sculpt.active) {
+          sculpt.mode = sculpt.mode === "add" ? "subtract" : "add";
+          setSculptProp("mode", sculpt.mode);
+          console.log(`Sculpt Mode: ${sculpt.mode}`);
+        }
       }
     };
 
