@@ -75,9 +75,9 @@ export default function IslandEditorUI() {
     <>
       {/* Unified Drawer: toolbar + puller */}
       <motion.div
-        initial={{ x: `calc(-${toolbarWidth} + ${pullerWidth})` }}
-        animate={{ x: editMode ? 0 : `calc(-${toolbarWidth} + ${pullerWidth})` }}
-        transition={{ type: "tween", ease: "easeInOut", duration: 0.2 }}
+        // initial={{ x: `calc(-${toolbarWidth} + ${pullerWidth})` }}
+        // animate={{ x: editMode ? 0 : `calc(-${toolbarWidth} + ${pullerWidth})` }}
+        // transition={{ type: "tween", ease: "easeInOut", duration: 0.2 }}
         className='cursor-default fixed top-4 left-4 z-40 flex flex-col items-center space-y-2 bg-white p-2 rounded-xl shadow-md h-auto'
       >
         {/* Puller (toggle) */}
