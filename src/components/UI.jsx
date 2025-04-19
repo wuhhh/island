@@ -137,8 +137,8 @@ function SliderTool({ tool, openSlider, setOpenSlider, sculpt, setSculptProp }) 
         </ToolTip>
       )}
       {isActive && (
-        <div className='absolute left-full top-1/2 transform -translate-y-1/2 ml-[20px] w-48 p-2 bg-gray-700 rounded'>
-          <label htmlFor={`${tool.id}-slider`} className='block text-white text-sm mb-1'>
+        <div className='absolute left-full top-1/2 transform -translate-y-1/2 ml-[20px] w-48 p-2 bg-slate-50 shadow-sm text-sm rounded-sm'>
+          <label htmlFor={`${tool.id}-slider`} className='block text-slate-500 text-xs uppercase tracking-wide mb-1'>
             {tool.label.split(" ")[1]}
           </label>
           <input
