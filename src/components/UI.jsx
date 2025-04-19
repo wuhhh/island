@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Brush, CircleDotDashed, CircleFadingPlus, Eraser, Hand, HelpCircle, Pencil, Redo, RefreshCw, Undo, X } from "lucide-react";
 import KeyBindingItem from "./KeyBindingItem";
@@ -123,11 +123,21 @@ function ActionTool({ tool, setShowHelpModal, setShowResetConfirm }) {
 
 function SliderTool({ tool, openSlider, setOpenSlider, sculpt, setSculptProp }) {
   const isActive = openSlider === tool.id;
+  const ref = useRef(null);
+  useEffect(() => {
+    const handleClickOutside = e => {
+      if (isActive && ref.current && !ref.current.contains(e.target)) {
+        setOpenSlider(null);
+      }
+    };
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, [isActive, setOpenSlider]);
   const handleClick = () => setOpenSlider(isActive ? null : tool.id);
   const value = tool.id === "strength" ? sculpt.brushStrength : sculpt.brushSize;
   const setValue = val => (tool.id === "strength" ? setSculptProp("brushStrength", val) : setSculptProp("brushSize", val));
   return (
-    <div className='relative group'>
+    <div ref={ref} className='relative group'>
       <ToolbarButton label={tool.label} onClick={handleClick} active={isActive} subtle>
         <tool.icon strokeWidth={1} />
       </ToolbarButton>
