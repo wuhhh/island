@@ -6,37 +6,76 @@ import { useIslandStore } from "../stores/useIslandStore";
 import { useHistoryStore } from "../stores/useHistoryStore";
 
 const TOOL_OPTIONS = [
-  { id: "move", icon: Hand, props: { "stroke-width": 1 }, label: "Move", shortcut: ["v"] },
-  { id: "sculpt+", icon: Brush, label: "Raise terrain", shortcut: ["a"] },
-  { id: "sculpt-", icon: Eraser, label: "Lower terrain", shortcut: ["s"] },
-  { id: "size", icon: CircleDotDashed, label: "Brush Size", shortcut: ["[", "]"] },
-  { id: "strength", icon: CircleFadingPlus, label: "Brush Strength", shortcut: ["-", "+"] },
+  { id: "move", icon: Hand, label: "Move", shortcut: ["v"], type: "toggle" },
+  { id: "sculpt+", icon: Brush, label: "Raise terrain", shortcut: ["a"], type: "toggle" },
+  { id: "sculpt-", icon: Eraser, label: "Lower terrain", shortcut: ["s"], type: "toggle" },
+  { id: "size", icon: CircleDotDashed, label: "Brush Size", shortcut: ["[", "]"], type: "slider" },
+  { id: "strength", icon: CircleFadingPlus, label: "Brush Strength", shortcut: ["-", "+"], type: "slider" },
+  { id: "undo", icon: Undo, label: "Undo", shortcut: ["u"], type: "action" },
+  { id: "redo", icon: Redo, label: "Redo", shortcut: ["y"], type: "action" },
+  { id: "reset", icon: RefreshCw, label: "Reset", shortcut: ["Shift", "r"], type: "action" },
+  { id: "help", icon: HelpCircle, label: "Help", shortcut: ["h"], type: "action" },
 ];
 
 const ToolTip = ({ children }) => (
-  <span className='group absolute left-full top-1/2 transform -translate-y-1/2 ml-4 whitespace-nowrap bg-white text-black shadow-sm text-sm rounded px-2 py-1 hidden group-hover:block'>
+  <span className='group absolute left-full top-1/2 transform -translate-y-1/2 ml-4 whitespace-nowrap bg-slate-50 text-black shadow-sm text-sm rounded-sm px-2 py-1 hidden group-hover:block'>
     {children}
   </span>
 );
 
-export default function IslandEditorUI() {
-  const editMode = useIslandStore(state => state.editMode);
-  const setEditMode = useIslandStore(state => state.actions.setEditMode);
-  const sculpt = useIslandStore(state => state.sculpt);
-  const setSculptProp = useIslandStore(state => state.actions.setSculptProp);
-  const { undo: useHistoryStoreUndo, redo: useHistoryStoreRedo } = useHistoryStore.temporal.getState();
-  const [activeTool, setActiveTool] = useState(null);
-  const [showHelpModal, setShowHelpModal] = useState(false);
-  const [showResetConfirm, setShowResetConfirm] = useState(false);
+const ToolbarButton = ({ children, label, onClick, active, subtle }) => (
+  <button
+    onClick={onClick}
+    aria-label={label}
+    className={`cursor-pointer w-10 h-10 flex items-center justify-center border rounded-full focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-blue-400 ${
+      active
+        ? subtle
+          ? "bg-orange-100 text-orange-600 border-orange-300"
+          : "bg-orange-600 text-slate-50 border-orange-600"
+        : "bg-slate-50 text-slate-600 border-slate-200 hover:bg-slate-100"
+    }`}
+  >
+    {children}
+  </button>
+);
 
-  const toggleEditMode = () => {
-    setEditMode(!editMode);
-  };
+const ToolbarToggle = ({ editMode, toggleEditMode }) => (
+  <button
+    onClick={toggleEditMode}
+    aria-label='Toggle edit mode'
+    className='relative cursor-pointer w-10 h-10 flex items-center justify-center bg-blue-600 text-white rounded-full focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-blue-400'
+  >
+    <AnimatePresence mode='wait'>
+      {editMode ? (
+        <motion.div
+          key='close'
+          initial={{ rotate: -20, opacity: 0 }}
+          animate={{ rotate: 0, opacity: 1 }}
+          exit={{ rotate: 20, opacity: 0 }}
+          className='absolute inset-0 flex items-center justify-center'
+        >
+          <X strokeWidth={1} />
+        </motion.div>
+      ) : (
+        <motion.div
+          key='edit'
+          initial={{ rotate: 20, opacity: 0 }}
+          animate={{ rotate: 0, opacity: 1 }}
+          exit={{ rotate: -20, opacity: 0 }}
+          className='absolute inset-0 flex items-center justify-center'
+        >
+          <Pencil strokeWidth={1} />
+        </motion.div>
+      )}
+    </AnimatePresence>
+  </button>
+);
 
-  const handleToolClick = toolId => {
-    setActiveTool(toolId);
-
-    switch (toolId) {
+function ToggleTool({ tool, activeTool, setActiveTool, setSculptProp }) {
+  const isActive = activeTool === tool.id;
+  const handleClick = () => {
+    setActiveTool(tool.id);
+    switch (tool.id) {
       case "move":
         setSculptProp("active", false);
         break;
@@ -48,19 +87,80 @@ export default function IslandEditorUI() {
         setSculptProp("mode", "subtract");
         setSculptProp("active", true);
         break;
-      case "strength":
-      case "size":
-        setActiveTool(activeTool === toolId ? null : toolId);
-        break;
-      default:
-        break;
     }
   };
+  return (
+    <div className='relative group'>
+      <ToolbarButton label={tool.label} onClick={handleClick} active={isActive}>
+        <tool.icon strokeWidth={1} />
+      </ToolbarButton>
+      <ToolTip>{tool.label}</ToolTip>
+    </div>
+  );
+}
 
-  const pullerWidth = "2.5rem"; // button width (p-2 → 2.5rem)
-  const toolbarWidth = "4rem"; // panel width (w-16 → 4rem)
+function ActionTool({ tool, setShowHelpModal, setShowResetConfirm }) {
+  const { undo, redo } = useHistoryStore.temporal.getState();
+  const handleClick = () => {
+    if (tool.id === "undo") return undo();
+    if (tool.id === "redo") return redo();
+    if (tool.id === "reset") return setShowResetConfirm(true);
+    if (tool.id === "help") return setShowHelpModal(true);
+  };
+  return (
+    <div className='relative group'>
+      <ToolbarButton label={tool.label} onClick={handleClick} active={false}>
+        <tool.icon strokeWidth={1} />
+      </ToolbarButton>
+      <ToolTip>{tool.label}</ToolTip>
+    </div>
+  );
+}
 
-  // Sync activeTool with current editMode and sculpt state
+function SliderTool({ tool, openSlider, setOpenSlider, sculpt, setSculptProp }) {
+  const isActive = openSlider === tool.id;
+  const handleClick = () => setOpenSlider(isActive ? null : tool.id);
+  const value = tool.id === "strength" ? sculpt.brushStrength : sculpt.brushSize;
+  const setValue = val => (tool.id === "strength" ? setSculptProp("brushStrength", val) : setSculptProp("brushSize", val));
+  return (
+    <div className='relative group'>
+      <ToolbarButton label={tool.label} onClick={handleClick} active={isActive} subtle>
+        <tool.icon strokeWidth={1} />
+      </ToolbarButton>
+      {!isActive && <ToolTip>{tool.label}</ToolTip>}
+      {isActive && (
+        <div className='absolute left-full top-1/2 transform -translate-y-1/2 ml-[20px] w-48 p-2 bg-gray-700 rounded'>
+          <label htmlFor={`${tool.id}-slider`} className='block text-white text-sm mb-1'>
+            {tool.label.split(" ")[1]}
+          </label>
+          <input
+            id={`${tool.id}-slider`}
+            type='range'
+            min='0.01'
+            max='1'
+            step='0.01'
+            value={value}
+            onChange={e => setValue(+e.target.value)}
+            className='w-full'
+          />
+        </div>
+      )}
+    </div>
+  );
+}
+
+export default function IslandEditorUI() {
+  const editMode = useIslandStore(state => state.editMode);
+  const setEditMode = useIslandStore(state => state.actions.setEditMode);
+  const sculpt = useIslandStore(state => state.sculpt);
+  const setSculptProp = useIslandStore(state => state.actions.setSculptProp);
+  const [activeTool, setActiveTool] = useState(null);
+  const [openSlider, setOpenSlider] = useState(null);
+  const [showHelpModal, setShowHelpModal] = useState(false);
+  const [showResetConfirm, setShowResetConfirm] = useState(false);
+
+  const toggleEditMode = () => setEditMode(!editMode);
+
   useEffect(() => {
     if (!editMode) return;
     if (sculpt.active) {
@@ -71,143 +171,34 @@ export default function IslandEditorUI() {
   }, [editMode, sculpt.active, sculpt.mode]);
 
   return (
-    <>
-      {/* Unified Drawer: toolbar + puller */}
-      <motion.div
-        // initial={{ x: `calc(-${toolbarWidth} + ${pullerWidth})` }}
-        // animate={{ x: editMode ? 0 : `calc(-${toolbarWidth} + ${pullerWidth})` }}
-        // transition={{ type: "tween", ease: "easeInOut", duration: 0.2 }}
-        className='cursor-default fixed top-4 left-4 z-40 flex flex-col items-center space-y-2 bg-white p-2 rounded-xl shadow-md h-auto'
-      >
-        {/* Puller (toggle) */}
-        <button
-          onClick={toggleEditMode}
-          aria-label={editMode ? "Close toolbar" : "Open toolbar"}
-          className='cursor-pointer w-10 h-10 flex items-center justify-center bg-blue-600 text-white rounded-full shadow-lg focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-blue-400 relative'
-        >
-          <AnimatePresence mode='wait'>
-            {editMode ? (
-              <motion.div
-                key='close'
-                initial={{ rotate: -20, opacity: 0 }}
-                animate={{ rotate: 0, opacity: 1 }}
-                exit={{ rotate: 20, opacity: 0 }}
-                className='absolute inset-0 flex items-center justify-center'
-              >
-                <X strokeWidth={1} />
-              </motion.div>
-            ) : (
-              <motion.div
-                key='edit'
-                initial={{ rotate: 20, opacity: 0 }}
-                animate={{ rotate: 0, opacity: 1 }}
-                exit={{ rotate: -20, opacity: 0 }}
-                className='absolute inset-0 flex items-center justify-center'
-              >
-                <Pencil strokeWidth={1} />
-              </motion.div>
-            )}
-          </AnimatePresence>
-        </button>
+    <motion.div className='cursor-default fixed top-4 left-4 z-40 flex flex-col items-center space-y-2 bg-white p-2 rounded-4xl shadow-md h-auto'>
+      <ToolbarToggle editMode={editMode} toggleEditMode={toggleEditMode} />
 
-        {/* Toolbar buttons (only when open) */}
-        {editMode && (
-          <>
-            {TOOL_OPTIONS.map(opt => {
-              const isSlider = activeTool === opt.id && ["strength", "size"].includes(opt.id);
+      {editMode &&
+        TOOL_OPTIONS.map(tool => {
+          switch (tool.type) {
+            case "toggle":
               return (
-                <div key={opt.id} className='relative group'>
-                  <button
-                    onClick={() => handleToolClick(opt.id)}
-                    aria-label={opt.label}
-                    className={`cursor-pointer w-10 h-10 flex items-center justify-center text-white rounded-full focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-blue-400 ${
-                      activeTool === opt.id ? "bg-blue-500" : "bg-gray-700"
-                    }`}
-                  >
-                    <opt.icon strokeWidth={1} />
-                  </button>
-                  {!isSlider && (
-                    <ToolTip>
-                      <KeyBindingItem keyCombination={opt.shortcut} action={opt.label} tag='span' flip />
-                    </ToolTip>
-                  )}
-                  {isSlider && (
-                    <div className='absolute left-full top-1/2 transform -translate-y-1/2 ml-[20px] w-48 p-2 bg-gray-700 rounded'>
-                      <label htmlFor={`${opt.id}-slider`} className='block text-white text-sm mb-1'>
-                        {opt.label.split(" ")[1]}
-                      </label>
-                      <input
-                        id={`${opt.id}-slider`}
-                        type='range'
-                        min='0.01'
-                        max='1'
-                        step='0.01'
-                        value={opt.id === "strength" ? sculpt.brushStrength : sculpt.brushSize}
-                        onChange={e =>
-                          opt.id === "strength"
-                            ? setSculptProp("brushStrength", +e.target.value)
-                            : setSculptProp("brushSize", +e.target.value)
-                        }
-                        className='w-full'
-                      />
-                    </div>
-                  )}
-                </div>
+                <ToggleTool key={tool.id} tool={tool} activeTool={activeTool} setActiveTool={setActiveTool} setSculptProp={setSculptProp} />
               );
-            })}
+            case "action":
+              return <ActionTool key={tool.id} tool={tool} setShowHelpModal={setShowHelpModal} setShowResetConfirm={setShowResetConfirm} />;
+            case "slider":
+              return (
+                <SliderTool
+                  key={tool.id}
+                  tool={tool}
+                  openSlider={openSlider}
+                  setOpenSlider={setOpenSlider}
+                  sculpt={sculpt}
+                  setSculptProp={setSculptProp}
+                />
+              );
+            default:
+              return null;
+          }
+        })}
 
-            {/* Reset & Help at bottom */}
-            <div className='flex flex-col items-center space-y-4'>
-              <div className='relative group'>
-                <button
-                  onClick={() => setShowResetConfirm(true)}
-                  aria-label='Reset all changes'
-                  className='cursor-pointer w-10 h-10 flex items-center justify-center bg-red-600 text-white rounded-full shadow-lg focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-red-400'
-                >
-                  <RefreshCw strokeWidth={1} />
-                </button>
-                <ToolTip>
-                  <KeyBindingItem keyCombination={["Shift", "r"]} action='Reset' tag='span' flip />
-                </ToolTip>
-              </div>
-              <div className='relative group'>
-                <button
-                  onClick={() => setShowHelpModal(true)}
-                  aria-label='Show help and shortcuts'
-                  className='cursor-pointer w-10 h-10 flex items-center justify-center bg-gray-700 text-white rounded-full shadow-lg focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-blue-400'
-                >
-                  <HelpCircle strokeWidth={1} />
-                </button>
-                <ToolTip>
-                  <KeyBindingItem keyCombination={["h"]} action='Help' tag='span' flip />
-                </ToolTip>
-              </div>
-            </div>
-          </>
-        )}
-      </motion.div>
-
-      {/* Undo/Redo controls */}
-      {editMode && (
-        <div className='fixed bottom-4 left-1/2 transform -translate-x-1/2 flex space-x-2 z-50'>
-          <button
-            onClick={() => useHistoryStoreUndo()}
-            aria-label='Undo'
-            className='cursor-pointer w-10 h-10 flex items-center justify-center transition-colors duration-100 bg-gray-700 hover:bg-gray-600 text-white rounded-full shadow-lg focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-blue-400'
-          >
-            <Undo strokeWidth={1} />
-          </button>
-          <button
-            onClick={() => useHistoryStoreRedo()}
-            aria-label='Redo'
-            className='cursor-pointer w-10 h-10 flex items-center justify-center transition-colors duration-100 bg-gray-700 hover:bg-gray-600 text-white rounded-full shadow-lg focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-blue-400'
-          >
-            <Redo strokeWidth={1} />
-          </button>
-        </div>
-      )}
-
-      {/* Help Modal */}
       {showHelpModal && (
         <div role='dialog' aria-modal='true' className='fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-50'>
           <div className='bg-white rounded-lg max-w-2xl w-full p-6'>
@@ -269,8 +260,6 @@ export default function IslandEditorUI() {
           </div>
         </div>
       )}
-
-      {/* Reset Confirmation Modal */}
       {showResetConfirm && (
         <div role='dialog' aria-modal='true' className='fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-50'>
           <div className='bg-white rounded-lg max-w-sm w-full p-6'>
@@ -296,6 +285,6 @@ export default function IslandEditorUI() {
           </div>
         </div>
       )}
-    </>
+    </motion.div>
   );
 }
