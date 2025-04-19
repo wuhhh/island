@@ -1,22 +1,21 @@
 import React, { useEffect, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Edit2, X, Plus, Minus, SlidersHorizontal, Circle, RotateCcw, RotateCw, RefreshCw, HelpCircle, Grab } from "lucide-react";
-import Kbd from "./Kbd";
+import { Brush, CircleDotDashed, CircleFadingPlus, Eraser, Hand, HelpCircle, Pencil, Redo, RefreshCw, Undo, X } from "lucide-react";
 import KeyBindingItem from "./KeyBindingItem";
 import { useIslandStore } from "../stores/useIslandStore";
 import { useHistoryStore } from "../stores/useHistoryStore";
 
 const TOOL_OPTIONS = [
-  { id: "move", icon: Grab, label: "Move" },
-  { id: "sculpt+", icon: Plus, label: "Sculpt +" },
-  { id: "sculpt-", icon: Minus, label: "Sculpt -" },
-  { id: "strength", icon: SlidersHorizontal, label: "Brush Strength" },
-  { id: "size", icon: Circle, label: "Brush Size" },
+  { id: "move", icon: Hand, props: { "stroke-width": 1 }, label: "Move", shortcut: ["v"] },
+  { id: "sculpt+", icon: Brush, label: "Raise terrain", shortcut: ["a"] },
+  { id: "sculpt-", icon: Eraser, label: "Lower terrain", shortcut: ["s"] },
+  { id: "size", icon: CircleDotDashed, label: "Brush Size", shortcut: ["[", "]"] },
+  { id: "strength", icon: CircleFadingPlus, label: "Brush Strength", shortcut: ["-", "+"] },
 ];
 
-const ToolTip = ({ label }) => (
-  <span className='absolute left-full top-1/2 transform -translate-y-1/2 ml-2 whitespace-nowrap bg-black text-white text-sm rounded px-2 py-1 hidden group-hover:block'>
-    {label}
+const ToolTip = ({ children }) => (
+  <span className='group absolute left-full top-1/2 transform -translate-y-1/2 ml-4 whitespace-nowrap bg-white text-black shadow-sm text-sm rounded px-2 py-1 hidden group-hover:block'>
+    {children}
   </span>
 );
 
@@ -95,7 +94,7 @@ export default function IslandEditorUI() {
                 exit={{ rotate: 20, opacity: 0 }}
                 className='absolute inset-0 flex items-center justify-center'
               >
-                <X />
+                <X strokeWidth={1} />
               </motion.div>
             ) : (
               <motion.div
@@ -105,7 +104,7 @@ export default function IslandEditorUI() {
                 exit={{ rotate: -20, opacity: 0 }}
                 className='absolute inset-0 flex items-center justify-center'
               >
-                <Edit2 />
+                <Pencil strokeWidth={1} />
               </motion.div>
             )}
           </AnimatePresence>
@@ -125,9 +124,13 @@ export default function IslandEditorUI() {
                       activeTool === opt.id ? "bg-blue-500" : "bg-gray-700"
                     }`}
                   >
-                    <opt.icon />
+                    <opt.icon strokeWidth={1} />
                   </button>
-                  {!isSlider && <ToolTip label={opt.label} />}
+                  {!isSlider && (
+                    <ToolTip>
+                      <KeyBindingItem keyCombination={opt.shortcut} action={opt.label} tag='span' flip />
+                    </ToolTip>
+                  )}
                   {isSlider && (
                     <div className='absolute left-full top-1/2 transform -translate-y-1/2 ml-[20px] w-48 p-2 bg-gray-700 rounded'>
                       <label htmlFor={`${opt.id}-slider`} className='block text-white text-sm mb-1'>
@@ -161,9 +164,11 @@ export default function IslandEditorUI() {
                   aria-label='Reset all changes'
                   className='cursor-pointer w-10 h-10 flex items-center justify-center bg-red-600 text-white rounded-full shadow-lg focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-red-400'
                 >
-                  <RefreshCw />
+                  <RefreshCw strokeWidth={1} />
                 </button>
-                <ToolTip label='Reset' />
+                <ToolTip>
+                  <KeyBindingItem keyCombination={["Shift", "r"]} action='Reset' tag='span' flip />
+                </ToolTip>
               </div>
               <div className='relative group'>
                 <button
@@ -171,9 +176,11 @@ export default function IslandEditorUI() {
                   aria-label='Show help and shortcuts'
                   className='cursor-pointer w-10 h-10 flex items-center justify-center bg-gray-700 text-white rounded-full shadow-lg focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-blue-400'
                 >
-                  <HelpCircle />
+                  <HelpCircle strokeWidth={1} />
                 </button>
-                <ToolTip label='Help' />
+                <ToolTip>
+                  <KeyBindingItem keyCombination={["h"]} action='Help' tag='span' flip />
+                </ToolTip>
               </div>
             </div>
           </>
@@ -188,14 +195,14 @@ export default function IslandEditorUI() {
             aria-label='Undo'
             className='cursor-pointer w-10 h-10 flex items-center justify-center transition-colors duration-100 bg-gray-700 hover:bg-gray-600 text-white rounded-full shadow-lg focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-blue-400'
           >
-            <RotateCcw />
+            <Undo strokeWidth={1} />
           </button>
           <button
             onClick={() => useHistoryStoreRedo()}
             aria-label='Redo'
             className='cursor-pointer w-10 h-10 flex items-center justify-center transition-colors duration-100 bg-gray-700 hover:bg-gray-600 text-white rounded-full shadow-lg focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-blue-400'
           >
-            <RotateCw />
+            <Redo strokeWidth={1} />
           </button>
         </div>
       )}
