@@ -9,7 +9,7 @@ const KeyBindingItem = ({ keyCombination, action, tag = "li", flip }) => {
       {keyCombination.map((key, index) => (
         <React.Fragment key={index}>
           <Kbd>{key}</Kbd>
-          {index < keyCombination.length - 1 && " + "}
+          {index < keyCombination.length - 1 && " "}
         </React.Fragment>
       ))}
     </span>,
