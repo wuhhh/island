@@ -19,7 +19,7 @@ export function useKeyboardManager() {
   useEffect(() => {
     const handleKeyDown = e => {
       switch (e.key) {
-        case "Tab":
+        case "e":
           e.preventDefault();
           setEditMode(!editMode);
           break;

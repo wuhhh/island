@@ -1,8 +1,10 @@
 import React, { useEffect, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Edit2, X, Plus, Minus, SlidersHorizontal, Circle, RotateCcw, RotateCw, RefreshCw, HelpCircle, Grab } from "lucide-react";
+import Kbd from "./Kbd";
+import KeyBindingItem from "./KeyBindingItem";
 import { useIslandStore } from "../stores/useIslandStore";
-import { useHistoryStore, useHistoryHydration } from "../stores/useHistoryStore";
+import { useHistoryStore } from "../stores/useHistoryStore";
 
 const TOOL_OPTIONS = [
   { id: "move", icon: Grab, label: "Move" },
@@ -201,11 +203,49 @@ export default function IslandEditorUI() {
       {/* Help Modal */}
       {showHelpModal && (
         <div role='dialog' aria-modal='true' className='fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-50'>
-          <div className='bg-white rounded-lg max-w-lg w-full p-6'>
+          <div className='bg-white rounded-lg max-w-2xl w-full p-6'>
             <h2 className='text-xl font-semibold mb-4'>Tips & Shortcuts</h2>
             <div className='mb-4'>
-              <h3 className='font-medium'>Tips & Tricks:</h3>
-              <ul className='list-disc list-outside ml-4'>
+              <h3 className='font-medium mb-4'>Keyboard Shortcuts:</h3>
+              <ul className='list-outside list-none ml-0 space-y-1'>
+                <li>
+                  <KeyBindingItem keyCombination={["a"]} action='Sculpt + (Hold Alt to switch to subtract)' />
+                </li>
+                <li>
+                  <KeyBindingItem keyCombination={["s"]} action='Sculpt - (Hold Alt to switch to add)' />
+                </li>
+                <li>
+                  <KeyBindingItem keyCombination={["]"]} action='Increase brush size' />
+                </li>
+                <li>
+                  <KeyBindingItem keyCombination={["["]} action='Decrease brush size' />
+                </li>
+                <li>
+                  <KeyBindingItem keyCombination={["+"]} action='Increase brush strength' />
+                </li>
+                <li>
+                  <KeyBindingItem keyCombination={["-"]} action='Decrease brush strength' />
+                </li>
+                <li>
+                  <KeyBindingItem keyCombination={["u"]} action='Undo' />
+                </li>
+                <li>
+                  <KeyBindingItem keyCombination={["y"]} action='Redo' />
+                </li>
+                <li>
+                  <KeyBindingItem keyCombination={["Shift", "r"]} action='Reset' />
+                </li>
+                <li>
+                  <KeyBindingItem keyCombination={["e"]} action='Toggle edit mode' />
+                </li>
+                <li>
+                  <KeyBindingItem keyCombination={["m"]} action='Move tool (Camera control)' />
+                </li>
+              </ul>
+            </div>
+            <div className='mb-4'>
+              <h3 className='font-medium mb-4'>Tips & Tricks:</h3>
+              <ul className='list-disc list-outside ml-4 space-y-1'>
                 <li>Use Sculpt + / Sculpt - to raise or lower terrain.</li>
                 <li>Adjust brush size/strength via toolbar sliders or keyboard shortcuts.</li>
                 <li>Undo/redo frequently to refine your edits.</li>
@@ -213,47 +253,9 @@ export default function IslandEditorUI() {
                 <li>Hold Alt while sculpting to quickly switch between add/subtract modes.</li>
               </ul>
             </div>
-            <div className='mb-4'>
-              <h3 className='font-medium'>Keyboard Shortcuts:</h3>
-              <ul className='list-outside list-none ml-0'>
-                <li>
-                  <kbd>]</kbd>: Increase brush size
-                </li>
-                <li>
-                  <kbd>[</kbd>: Decrease brush size
-                </li>
-                <li>
-                  <kbd>+</kbd>: Increase brush strength
-                </li>
-                <li>
-                  <kbd>-</kbd>: Decrease brush strength
-                </li>
-                <li>
-                  <kbd>u</kbd>: Undo
-                </li>
-                <li>
-                  <kbd>y</kbd>: Redo
-                </li>
-                <li>
-                  <kbd>R</kbd>: Reset
-                </li>
-                <li>
-                  <kbd>Tab</kbd>: Toggle edit mode
-                </li>
-                <li>
-                  <kbd>V</kbd>: Move tool (camera control)
-                </li>
-                <li>
-                  <kbd>A</kbd>: Sculpt + (Hold Alt to switch to subtract)
-                </li>
-                <li>
-                  <kbd>S</kbd>: Sculpt - (Hold Alt to switch to add)
-                </li>
-              </ul>
-            </div>
             <button
               onClick={() => setShowHelpModal(false)}
-              className='mt-2 px-4 py-2 bg-blue-600 text-white rounded focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-blue-400'
+              className='cursor-pointer mt-2 px-4 py-2 bg-blue-600 text-white rounded focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-blue-400'
             >
               Close
             </button>
