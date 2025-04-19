@@ -94,7 +94,9 @@ function ToggleTool({ tool, activeTool, setActiveTool, setSculptProp }) {
       <ToolbarButton label={tool.label} onClick={handleClick} active={isActive}>
         <tool.icon strokeWidth={1} />
       </ToolbarButton>
-      <ToolTip>{tool.label}</ToolTip>
+      <ToolTip>
+        <KeyBindingItem keyCombination={tool.shortcut} action={tool.label} tag='span' flip />
+      </ToolTip>
     </div>
   );
 }
@@ -112,7 +114,9 @@ function ActionTool({ tool, setShowHelpModal, setShowResetConfirm }) {
       <ToolbarButton label={tool.label} onClick={handleClick} active={false}>
         <tool.icon strokeWidth={1} />
       </ToolbarButton>
-      <ToolTip>{tool.label}</ToolTip>
+      <ToolTip>
+        <KeyBindingItem keyCombination={tool.shortcut} action={tool.label} tag='span' flip />
+      </ToolTip>
     </div>
   );
 }
@@ -127,7 +131,11 @@ function SliderTool({ tool, openSlider, setOpenSlider, sculpt, setSculptProp }) 
       <ToolbarButton label={tool.label} onClick={handleClick} active={isActive} subtle>
         <tool.icon strokeWidth={1} />
       </ToolbarButton>
-      {!isActive && <ToolTip>{tool.label}</ToolTip>}
+      {!isActive && (
+        <ToolTip>
+          <KeyBindingItem keyCombination={tool.shortcut} action={tool.label} tag='span' flip />
+        </ToolTip>
+      )}
       {isActive && (
         <div className='absolute left-full top-1/2 transform -translate-y-1/2 ml-[20px] w-48 p-2 bg-gray-700 rounded'>
           <label htmlFor={`${tool.id}-slider`} className='block text-white text-sm mb-1'>
