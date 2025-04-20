@@ -2,6 +2,7 @@ import React, { useEffect, useState, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Brush, CircleDotDashed, CircleFadingPlus, Eraser, Hand, HelpCircle, Pencil, Redo, RefreshCw, Undo, X } from "lucide-react";
 import KeyBindingItem from "./KeyBindingItem";
+import Kbd from "./Kbd";
 import { useIslandStore } from "../stores/useIslandStore";
 import { useHistoryStore } from "../stores/useHistoryStore";
 
@@ -225,48 +226,32 @@ export default function IslandEditorUI() {
               <h3 className='font-medium mb-4'>Keyboard Shortcuts:</h3>
               <ul className='list-outside list-none ml-0 space-y-1'>
                 <li>
-                  <KeyBindingItem keyCombination={["a"]} action='Sculpt + (Hold Alt to switch to subtract)' />
-                </li>
-                <li>
-                  <KeyBindingItem keyCombination={["s"]} action='Sculpt - (Hold Alt to switch to add)' />
-                </li>
-                <li>
-                  <KeyBindingItem keyCombination={["]"]} action='Increase brush size' />
-                </li>
-                <li>
-                  <KeyBindingItem keyCombination={["["]} action='Decrease brush size' />
-                </li>
-                <li>
-                  <KeyBindingItem keyCombination={["+"]} action='Increase brush strength' />
-                </li>
-                <li>
-                  <KeyBindingItem keyCombination={["-"]} action='Decrease brush strength' />
-                </li>
-                <li>
-                  <KeyBindingItem keyCombination={["u"]} action='Undo' />
-                </li>
-                <li>
-                  <KeyBindingItem keyCombination={["y"]} action='Redo' />
-                </li>
-                <li>
-                  <KeyBindingItem keyCombination={["Shift", "r"]} action='Reset' />
-                </li>
-                <li>
                   <KeyBindingItem keyCombination={["e"]} action='Toggle edit mode' />
                 </li>
                 <li>
-                  <KeyBindingItem keyCombination={["m"]} action='Move tool (Camera control)' />
+                  <KeyBindingItem keyCombination={["v"]} action='Move tool (Camera control)' />
                 </li>
-              </ul>
-            </div>
-            <div className='mb-4'>
-              <h3 className='font-medium mb-4'>Tips & Tricks:</h3>
-              <ul className='list-disc list-outside ml-4 space-y-1'>
-                <li>Use Sculpt + / Sculpt - to raise or lower terrain.</li>
-                <li>Adjust brush size/strength via toolbar sliders or keyboard shortcuts.</li>
-                <li>Undo/redo frequently to refine your edits.</li>
-                <li>Hit Reset to start fresh (irreversible).</li>
-                <li>Hold Alt while sculpting to quickly switch between add/subtract modes.</li>
+                <li className='flex items-center gap-x-3'>
+                  <KeyBindingItem keyCombination={["a", "s"]} action='Raise / Lower terrain mode' separator=' ' />
+                </li>
+                <li className='pt-2 pb-3 text-sm'>
+                  <strong className='text-blue-600'>Tip!</strong> In either terrain mode, hold <Kbd>Alt</Kbd> to quickly switch between
+                  modes.
+                  <br />
+                  Hold <Kbd>Ctrl</Kbd> to access the move tool and adjust the camera.
+                </li>
+                <li>
+                  <KeyBindingItem keyCombination={["[", "]"]} action='Make brush size smaller / bigger' separator=' ' />
+                </li>
+                <li>
+                  <KeyBindingItem keyCombination={["-", "+"]} action='Make brush strength smaller / bigger' separator=' ' />
+                </li>
+                <li>
+                  <KeyBindingItem keyCombination={["u", "y"]} action='Undo / Redo' />
+                </li>
+                <li>
+                  <KeyBindingItem keyCombination={["Shift + R"]} action='Reset' />
+                </li>
               </ul>
             </div>
             <button
