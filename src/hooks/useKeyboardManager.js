@@ -18,6 +18,9 @@ export function useKeyboardManager() {
 
   useEffect(() => {
     const handleKeyDown = e => {
+      if (e.key === "Control" && editMode && sculpt.active) {
+        setSculptProp("active", false); // Temporarily deactivate sculpting
+      }
       switch (e.key) {
         case "e":
           e.preventDefault();
@@ -92,14 +95,18 @@ export function useKeyboardManager() {
       }
     };
 
-    window.addEventListener("keydown", handleKeyDown);
-    // Momentary toggle: revert mode on Alt key release
     const handleKeyUp = e => {
+      if (e.key === "Control" && editMode && !sculpt.active) {
+        setSculptProp("active", true); // Reactivate sculpting
+      }
       if (e.key === "Alt" && editMode && sculpt.active) {
         const newMode = sculpt.mode === "add" ? "subtract" : "add";
         setSculptProp("mode", newMode);
       }
     };
+
+    window.addEventListener("keydown", handleKeyDown);
+    // Momentary toggle: revert mode on Alt key release
     window.addEventListener("keyup", handleKeyUp);
 
     return () => {
