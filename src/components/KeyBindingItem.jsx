@@ -1,7 +1,7 @@
 import React from "react";
 import Kbd from "./Kbd";
 
-const KeyBindingItem = ({ keyCombination, action, tag = "li", flip }) => {
+const KeyBindingItem = ({ keyCombination, action, tag = "li", separator = " ", flip }) => {
   return React.createElement(
     tag,
     { className: "flex items-center gap-x-2" + (flip ? " flex-row-reverse" : "") },
@@ -9,7 +9,7 @@ const KeyBindingItem = ({ keyCombination, action, tag = "li", flip }) => {
       {keyCombination.map((key, index) => (
         <React.Fragment key={index}>
           <Kbd>{key}</Kbd>
-          {index < keyCombination.length - 1 && " "}
+          {index < keyCombination.length - 1 && separator}
         </React.Fragment>
       ))}
     </span>,
