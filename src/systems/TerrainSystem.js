@@ -67,10 +67,15 @@ export class TerrainSystem {
 
             // Calculate height change
             const minHeight = -0.1; // Minimum height
+            const maxHeight = 1; // Maximum height
             const posIndex = vertexIndex * 3 + 2; // z component
             const _mode = mode === "add" ? 1 : -1;
             const newPos = this.positions[posIndex] + strength * 0.5 * falloff * _mode * edgeWeight;
-            this.positions[posIndex] = newPos < minHeight ? minHeight : newPos;
+
+            if (newPos >= minHeight && newPos <= maxHeight) {
+              this.positions[posIndex] = newPos;
+            }
+            // this.positions[posIndex] = newPos < minHeight ? minHeight : newPos;
           }
         }
       }
