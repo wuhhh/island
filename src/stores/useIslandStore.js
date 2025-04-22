@@ -15,6 +15,7 @@ export const useIslandStore = createBoundStore(
       brushSize: 0.5,
       brushStrength: 0.5,
     },
+    terrainSystem: null,
     terrainZExtrema: [0, 0],
     wireframe: false,
 
@@ -27,8 +28,6 @@ export const useIslandStore = createBoundStore(
       setEditMode: editMode => set({ editMode }),
       setPointerDown: pointerDown => set({ pointerDown }),
       setSculptProp(property, value) {
-        console.log(`setSculptProp: ${property} = ${value}`);
-
         set(state => ({
           sculpt: {
             ...state.sculpt,
@@ -56,6 +55,14 @@ export const useIslandStore = createBoundStore(
             ...state.persisted,
             cameraTarget,
           },
+        })),
+      /**
+       * setTerrainSystem
+       * @param {TerrainSystem} terrainSystem
+       */
+      setTerrainSystem: terrainSystem =>
+        set(state => ({
+          terrainSystem,
         })),
       /**
        * setTerrainZExtrema

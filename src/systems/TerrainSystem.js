@@ -6,12 +6,17 @@ const MIN_RADIUS = 0.04;
 const MAX_STRENGTH = 0.025;
 const MIN_STRENGTH = 0.00125;
 
+/**
+ * TerrainSystem class
+ * Handles terrain modification and management
+ */
 export class TerrainSystem {
-  constructor(geometry, spatialIndex) {
-    this.geometry = geometry;
+  constructor(mesh, spatialIndex) {
+    this.mesh = mesh;
+    this.geometry = mesh.geometry;
     this.spatialIndex = spatialIndex;
-    this.positions = geometry.attributes.position.array;
-    this.uvs = geometry.attributes.uv.array;
+    this.positions = mesh.geometry.attributes.position.array;
+    this.uvs = mesh.geometry.attributes.uv.array;
   }
 
   /**

@@ -102,12 +102,17 @@ function ToggleTool({ tool, activeTool, setActiveTool, setSculptProp }) {
   );
 }
 
-function ActionTool({ tool, setShowHelpModal, setShowResetConfirm }) {
+function ActionTool({ tool, setShowHelpModal }) {
+  const terrainSystem = useIslandStore(state => state.terrainSystem);
+  const setTerrainGeomAttrsPosArr = useHistoryStore(state => state.setTerrainGeomAttrsPosArr);
   const { undo, redo } = useHistoryStore.temporal.getState();
   const handleClick = () => {
     if (tool.id === "undo") return undo();
     if (tool.id === "redo") return redo();
-    if (tool.id === "reset") return setShowResetConfirm(true);
+    if (tool.id === "reset") {
+      terrainSystem.resetTerrain();
+      setTerrainGeomAttrsPosArr(terrainSystem.positions);
+    }
     if (tool.id === "help") return setShowHelpModal(true);
   };
   return (
@@ -173,10 +178,11 @@ export default function IslandEditorUI() {
   const setEditMode = useIslandStore(state => state.actions.setEditMode);
   const sculpt = useIslandStore(state => state.sculpt);
   const setSculptProp = useIslandStore(state => state.actions.setSculptProp);
+  const terrainSystem = useIslandStore(state => state.terrainSystem);
+  const setTerrainGeomAttrsPosArr = useIslandStore(state => state.actions.setTerrainGeomAttrsPosArr);
   const [activeTool, setActiveTool] = useState(null);
   const [openSlider, setOpenSlider] = useState(null);
   const [showHelpModal, setShowHelpModal] = useState(false);
-  const [showResetConfirm, setShowResetConfirm] = useState(false);
 
   const toggleEditMode = () => setEditMode(!editMode);
 
@@ -201,7 +207,7 @@ export default function IslandEditorUI() {
                 <ToggleTool key={tool.id} tool={tool} activeTool={activeTool} setActiveTool={setActiveTool} setSculptProp={setSculptProp} />
               );
             case "action":
-              return <ActionTool key={tool.id} tool={tool} setShowHelpModal={setShowHelpModal} setShowResetConfirm={setShowResetConfirm} />;
+              return <ActionTool key={tool.id} tool={tool} setShowHelpModal={setShowHelpModal} />;
             case "slider":
               return (
                 <SliderTool
@@ -260,31 +266,6 @@ export default function IslandEditorUI() {
             >
               Close
             </button>
-          </div>
-        </div>
-      )}
-      {showResetConfirm && (
-        <div role='dialog' aria-modal='true' className='fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-50'>
-          <div className='bg-white rounded-lg max-w-sm w-full p-6'>
-            <h2 className='text-lg font-semibold mb-4'>Confirm Reset</h2>
-            <p className='mb-4'>Are you sure you want to reset all changes? This action cannot be undone.</p>
-            <div className='flex justify-end space-x-2'>
-              <button
-                onClick={() => setShowResetConfirm(false)}
-                className='px-4 py-2 bg-gray-300 rounded focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-gray-500'
-              >
-                Cancel
-              </button>
-              <button
-                onClick={() => {
-                  setShowResetConfirm(false);
-                  // TODO: your reset logic here
-                }}
-                className='px-4 py-2 bg-red-600 text-white rounded focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-red-400'
-              >
-                Reset
-              </button>
-            </div>
           </div>
         </div>
       )}

@@ -16,22 +16,21 @@ export default function Terrain({ ...props }) {
   const planeRef = useRef();
   const materialRef = useRef();
   const mousePos = useRef(new THREE.Vector2(0.5, 0.5));
-  const terrainSystem = useRef(null);
 
   // Store state
   const getTerrainData = useHistoryStore(state => state.getTerrainData);
   const terrainGeomAttrsPosArr = useHistoryStore(state => state.terrainGeomAttrsPosArr);
   const setTerrainGeomAttrsPosArr = useHistoryStore(state => state.setTerrainGeomAttrsPosArr);
+  const terrainSystem = useIslandStore(state => state.terrainSystem);
+  const setTerrainSystem = useIslandStore(state => state.actions.setTerrainSystem);
   const setTerrainZExtrema = useIslandStore(state => state.actions.setTerrainZExtrema);
   const { undo: useHistoryStoreUndo, redo: useHistoryStoreRedo, clear: useHistoryStoreClear } = useHistoryStore.temporal.getState();
-  const { pointerDown, editMode, sculpt, wireframe, actions } = useIslandStore();
-  const { setEditMode, setSculptProp, setWireframe } = actions;
+  const { pointerDown, editMode, sculpt, wireframe } = useIslandStore();
   const islandStoreHydrated = useIslandHydration();
   const historyStoreHydrated = useHistoryHydration();
 
   // Local state
   const [brushing, setBrushing] = useState(false);
-  const [altIsPressed, setAltIsPressed] = useState(false);
 
   // Set up Leva controls
   const { edgeClampRadius } = useControls("Island Settings", {
@@ -44,7 +43,7 @@ export default function Terrain({ ...props }) {
     },
     reset: button(
       () => {
-        terrainSystem.current?.resetTerrain();
+        terrainSystem?.resetTerrain();
         useHistoryStoreClear();
         setTerrainGeomAttrsPosArr(planeRef.current.geometry.attributes.position.array);
       },
@@ -73,7 +72,8 @@ export default function Terrain({ ...props }) {
   // Initialize terrain system when geometry is ready
   useEffect(() => {
     if (!planeRef.current || !spatialIndex) return;
-    terrainSystem.current = new TerrainSystem(planeRef.current.geometry, spatialIndex);
+    // terrainSystem.current = new TerrainSystem(planeRef.current.geometry, spatialIndex);
+    setTerrainSystem(new TerrainSystem(planeRef.current, spatialIndex));
   }, [planeRef.current, spatialIndex]);
 
   /**
@@ -154,7 +154,7 @@ export default function Terrain({ ...props }) {
    * Apply brush on pointer move
    */
   useFrame(({ raycaster }) => {
-    if (pointerDown && editMode && sculpt.active && terrainSystem.current) {
+    if (pointerDown && editMode && sculpt.active && terrainSystem) {
       setBrushing(true);
       const intersection = raycaster.intersectObject(planeRef.current);
 
@@ -166,7 +166,7 @@ export default function Terrain({ ...props }) {
           brushSize: sculpt.brushSize,
           brushStrength: sculpt.brushStrength,
         };
-        terrainSystem.current.applyBrush(uv.x, uv.y, brushSettings);
+        terrainSystem.applyBrush(uv.x, uv.y, brushSettings);
         // console.log("Applying brush at", uv.x, uv.y, brushSettings);
       }
     }

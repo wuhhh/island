@@ -10,11 +10,12 @@ export function useKeyboardManager() {
   const setEditMode = useIslandStore(state => state.actions.setEditMode);
   const sculpt = useIslandStore(state => state.sculpt);
   const setSculptProp = useIslandStore(state => state.actions.setSculptProp);
+  const setTerrainGeomAttrsPosArr = useHistoryStore(state => state.setTerrainGeomAttrsPosArr);
+  const terrainSystem = useIslandStore(state => state.terrainSystem);
   const wireframe = useIslandStore(state => state.wireframe);
   const setWireframe = useIslandStore(state => state.actions.setWireframe);
   const undo = useHistoryStore.temporal.getState().undo;
   const redo = useHistoryStore.temporal.getState().redo;
-  // const resetTerrain = useHistoryStore(state => state.actions.clear); // assuming clear resets
 
   useEffect(() => {
     const handleKeyDown = e => {
@@ -74,7 +75,8 @@ export function useKeyboardManager() {
           setSculptProp("active", false);
           break;
         case "R":
-          // resetTerrain();
+          terrainSystem.resetTerrain();
+          setTerrainGeomAttrsPosArr(terrainSystem.positions);
           break;
         case "a":
         case "A":
