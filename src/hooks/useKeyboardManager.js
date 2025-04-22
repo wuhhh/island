@@ -46,25 +46,25 @@ export function useKeyboardManager() {
           break;
         case "[":
           if (sculpt.brushSize != null) {
-            const newSize = Math.max(0.02, sculpt.brushSize - 0.02);
+            const newSize = Math.max(0.01, sculpt.brushSize - 0.1);
             setSculptProp("brushSize", newSize);
           }
           break;
         case "]":
           if (sculpt.brushSize != null) {
-            const newSizeUp = Math.min(0.5, sculpt.brushSize + 0.02);
+            const newSizeUp = Math.min(1, sculpt.brushSize + 0.1);
             setSculptProp("brushSize", newSizeUp);
           }
           break;
         case "-":
           if (sculpt.brushStrength != null) {
-            const newStr = Math.max(0.01, sculpt.brushStrength - 0.01);
+            const newStr = Math.max(0.01, sculpt.brushStrength - 0.1);
             setSculptProp("brushStrength", newStr);
           }
           break;
         case "=":
           if (sculpt.brushStrength != null) {
-            const newStrUp = Math.min(0.2, sculpt.brushStrength + 0.01);
+            const newStrUp = Math.min(1, sculpt.brushStrength + 0.1);
             setSculptProp("brushStrength", newStrUp);
           }
           break;
