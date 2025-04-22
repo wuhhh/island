@@ -2,7 +2,7 @@ import * as THREE from "three/webgpu";
 import { useEffect, useRef, useState } from "react";
 import { useFrame } from "@react-three/fiber";
 import { Plane } from "@react-three/drei";
-import { useControls, button } from "leva";
+import { useControls } from "leva";
 import { TERRAIN_RESOLUTION, useIslandStore, useIslandHydration } from "../stores/useIslandStore";
 import { useHistoryStore, useHistoryHydration } from "../stores/useHistoryStore";
 import * as t from "three/tsl";
@@ -24,34 +24,13 @@ export default function Terrain({ ...props }) {
   const terrainSystem = useIslandStore(state => state.terrainSystem);
   const setTerrainSystem = useIslandStore(state => state.actions.setTerrainSystem);
   const setTerrainZExtrema = useIslandStore(state => state.actions.setTerrainZExtrema);
-  const { undo: useHistoryStoreUndo, redo: useHistoryStoreRedo, clear: useHistoryStoreClear } = useHistoryStore.temporal.getState();
+  const { undo: useHistoryStoreUndo, redo: useHistoryStoreRedo } = useHistoryStore.temporal.getState();
   const { pointerDown, editMode, sculpt, wireframe } = useIslandStore();
   const islandStoreHydrated = useIslandHydration();
   const historyStoreHydrated = useHistoryHydration();
 
   // Local state
   const [brushing, setBrushing] = useState(false);
-
-  // Set up Leva controls
-  const { edgeClampRadius } = useControls("Island Settings", {
-    edgeClampRadius: {
-      value: 0.1,
-      min: 0.05,
-      max: 0.4,
-      step: 0.01,
-      label: "Edge Clamp Radius",
-    },
-    reset: button(
-      () => {
-        terrainSystem?.resetTerrain();
-        useHistoryStoreClear();
-        setTerrainGeomAttrsPosArr(planeRef.current.geometry.attributes.position.array);
-      },
-      {
-        label: "Reset Terrain",
-      }
-    ),
-  });
 
   // Use custom hooks
   useTerrainInitialization({
@@ -63,7 +42,7 @@ export default function Terrain({ ...props }) {
 
   useEdgeClampEffect({
     planeRef,
-    edgeClampRadius,
+    edgeClampRadius: 0.1,
   });
 
   // Get spatial index
