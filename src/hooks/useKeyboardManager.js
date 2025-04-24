@@ -26,13 +26,8 @@ export function useKeyboardManager() {
   useEffect(() => {
     const handleKeyDown = e => {
       if (e.key === "Control" && editMode) {
-        if (sculpt.active) {
-          setSculptProp("active", false);
-          preControlMode.current = "sculpt";
-        } else if (place.active) {
-          setPlaceProp("active", false);
-          preControlMode.current = "place";
-        }
+        preControlMode.current = activeTool;
+        setActiveTool("move");
       }
       switch (e.key) {
         case "e":
@@ -45,8 +40,7 @@ export function useKeyboardManager() {
           break;
         case "Alt":
           if (editMode && sculpt.active) {
-            const newMode = sculpt.mode === "add" ? "subtract" : "add";
-            setSculptProp("mode", newMode);
+            setActiveTool(activeTool === "sculpt+" ? "sculpt-" : "sculpt+");
           }
           break;
         case "u":
@@ -83,9 +77,9 @@ export function useKeyboardManager() {
           break;
         case "v":
         case "V":
-          // Switch to move tool (disable sculpt)
-          setSculptProp("active", false);
-          setActiveTool("move");
+          if (editMode) {
+            setActiveTool("move");
+          }
           break;
         case "R":
           terrainSystem.resetTerrain();
@@ -94,15 +88,13 @@ export function useKeyboardManager() {
         case "a":
         case "A":
           if (editMode) {
-            setSculptProp("mode", "add");
-            setSculptProp("active", true);
+            setActiveTool("sculpt+");
           }
           break;
         case "s":
         case "S":
           if (editMode) {
-            setSculptProp("mode", "subtract");
-            setSculptProp("active", true);
+            setActiveTool("sculpt-");
           }
           break;
         default:
@@ -112,17 +104,11 @@ export function useKeyboardManager() {
 
     const handleKeyUp = e => {
       if (e.key === "Control" && editMode) {
-        console.log("PreControlMode", preControlMode.current);
-        if (preControlMode.current === "sculpt") {
-          setSculptProp("active", true);
-        } else if (preControlMode.current === "place") {
-          setPlaceProp("active", true);
-        }
+        setActiveTool(preControlMode.current);
         preControlMode.current = null;
       }
       if (e.key === "Alt" && editMode && sculpt.active) {
-        const newMode = sculpt.mode === "add" ? "subtract" : "add";
-        setSculptProp("mode", newMode);
+        setActiveTool(activeTool === "sculpt+" ? "sculpt-" : "sculpt+");
       }
     };
 

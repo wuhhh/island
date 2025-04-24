@@ -23,7 +23,7 @@ export class TerrainSystem {
    * Apply brush to modify terrain
    */
   applyBrush(x, y, brushSettings) {
-    const { brushSize, brushStrength, mode } = brushSettings;
+    const { brushSize, brushStrength, activeTool } = brushSettings;
     const { grid, size } = this.spatialIndex;
 
     const radius = MathUtils.mapLinear(brushSize, 0, 1, MIN_RADIUS, MAX_RADIUS);
@@ -74,7 +74,7 @@ export class TerrainSystem {
             const minHeight = -0.1; // Minimum height
             const maxHeight = 1; // Maximum height
             const posIndex = vertexIndex * 3 + 2; // z component
-            const _mode = mode === "add" ? 1 : -1;
+            const _mode = activeTool === "sculpt+" ? 1 : -1;
             const newPos = this.positions[posIndex] + strength * 0.5 * falloff * _mode * edgeWeight;
 
             if (newPos >= minHeight && newPos <= maxHeight) {

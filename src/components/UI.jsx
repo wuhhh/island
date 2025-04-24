@@ -97,12 +97,10 @@ function ToggleTool({ tool, activeTool, setActiveTool, setPlaceProp, setSculptPr
         break;
       case "sculpt+":
         setPlaceProp("active", false);
-        setSculptProp("mode", "add");
         setSculptProp("active", true);
         break;
       case "sculpt-":
         setPlaceProp("active", false);
-        setSculptProp("mode", "subtract");
         setSculptProp("active", true);
         break;
       case "place":
@@ -204,22 +202,30 @@ export default function IslandEditorUI() {
   const setSculptProp = useIslandStore(state => state.actions.setSculptProp);
   const activeTool = useIslandStore(state => state.activeTool);
   const setActiveTool = useIslandStore(state => state.actions.setActiveTool);
-  // const [activeTool, setActiveTool] = useState(null);
   const [openSlider, setOpenSlider] = useState(null);
   const [showHelpModal, setShowHelpModal] = useState(false);
 
   const toggleEditMode = () => setEditMode(!editMode);
 
+  // Manage mutually exclusive state for sculpt and place tools
   useEffect(() => {
-    if (!editMode) return;
-    if (sculpt.active) {
-      setActiveTool(sculpt.mode === "add" ? "sculpt+" : "sculpt-");
-    } else if (place.active) {
-      setActiveTool("place");
-    } else {
-      setActiveTool("move");
+    const tool = activeTool;
+    setActiveTool(null);
+    setActiveTool(tool);
+
+    if (tool === "sculpt+" || tool === "sculpt-") {
+      setSculptProp("active", true);
+      setPlaceProp("active", false);
     }
-  }, [editMode, place.active, sculpt.active, sculpt.mode]);
+    if (tool === "place") {
+      setPlaceProp("active", true);
+      setSculptProp("active", false);
+    }
+    if (tool === "move") {
+      setPlaceProp("active", false);
+      setSculptProp("active", false);
+    }
+  }, [activeTool]);
 
   return (
     <motion.div className='cursor-default fixed top-4 left-4 z-40 flex flex-col items-center space-y-2 bg-white p-2 rounded-4xl shadow-md h-auto'>

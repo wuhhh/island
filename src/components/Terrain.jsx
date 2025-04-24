@@ -18,6 +18,7 @@ export default function Terrain({ ...props }) {
   const mousePos = useRef(new THREE.Vector2(0.5, 0.5));
 
   // Store state
+  const activeTool = useIslandStore(state => state.activeTool);
   const getTerrainData = useHistoryStore(state => state.getTerrainData);
   const terrainGeomAttrsPosArr = useHistoryStore(state => state.terrainGeomAttrsPosArr);
   const setTerrainGeomAttrsPosArr = useHistoryStore(state => state.setTerrainGeomAttrsPosArr);
@@ -141,7 +142,7 @@ export default function Terrain({ ...props }) {
         const uv = intersection[0].uv;
         mousePos.current.set(uv.x, uv.y);
         const brushSettings = {
-          mode: sculpt.mode,
+          activeTool,
           brushSize: sculpt.brushSize,
           brushStrength: sculpt.brushStrength,
         };
