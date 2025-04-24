@@ -1,6 +1,19 @@
 import React, { useEffect, useState, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Brush, CircleDotDashed, CircleFadingPlus, Eraser, Hand, HelpCircle, Pencil, Redo, RefreshCw, Undo, X } from "lucide-react";
+import {
+  Brush,
+  CircleDotDashed,
+  CircleFadingPlus,
+  Eraser,
+  Hand,
+  HelpCircle,
+  Pencil,
+  Redo,
+  RefreshCw,
+  TreePine,
+  Undo,
+  X,
+} from "lucide-react";
 import KeyBindingItem from "./KeyBindingItem";
 import Kbd from "./Kbd";
 import { useIslandStore } from "../stores/useIslandStore";
@@ -12,6 +25,7 @@ const TOOL_OPTIONS = [
   { id: "sculpt-", icon: Eraser, label: "Lower terrain", shortcut: ["s"], type: "toggle" },
   { id: "size", icon: CircleDotDashed, label: "Brush Size", shortcut: ["[", "]"], type: "slider" },
   { id: "strength", icon: CircleFadingPlus, label: "Brush Strength", shortcut: ["-", "+"], type: "slider" },
+  { id: "place", icon: TreePine, label: "Place Tree", shortcut: ["p"], type: "toggle" },
   { id: "undo", icon: Undo, label: "Undo", shortcut: ["u"], type: "action" },
   { id: "redo", icon: Redo, label: "Redo", shortcut: ["y"], type: "action" },
   { id: "reset", icon: RefreshCw, label: "Reset", shortcut: ["Shift", "r"], type: "action" },
@@ -72,21 +86,29 @@ const ToolbarToggle = ({ editMode, toggleEditMode }) => (
   </button>
 );
 
-function ToggleTool({ tool, activeTool, setActiveTool, setSculptProp }) {
+function ToggleTool({ tool, activeTool, setActiveTool, setPlaceProp, setSculptProp }) {
   const isActive = activeTool === tool.id;
   const handleClick = () => {
     setActiveTool(tool.id);
     switch (tool.id) {
       case "move":
+        setPlaceProp("active", false);
         setSculptProp("active", false);
         break;
       case "sculpt+":
+        setPlaceProp("active", false);
         setSculptProp("mode", "add");
         setSculptProp("active", true);
         break;
       case "sculpt-":
+        setPlaceProp("active", false);
         setSculptProp("mode", "subtract");
         setSculptProp("active", true);
+        break;
+      case "place":
+        setSculptProp("active", false);
+        setPlaceProp("item", "debugBox");
+        setPlaceProp("active", true);
         break;
     }
   };
@@ -176,11 +198,13 @@ function SliderTool({ tool, openSlider, setOpenSlider, sculpt, setSculptProp }) 
 export default function IslandEditorUI() {
   const editMode = useIslandStore(state => state.editMode);
   const setEditMode = useIslandStore(state => state.actions.setEditMode);
+  const place = useIslandStore(state => state.place);
   const sculpt = useIslandStore(state => state.sculpt);
+  const setPlaceProp = useIslandStore(state => state.actions.setPlaceProp);
   const setSculptProp = useIslandStore(state => state.actions.setSculptProp);
-  const terrainSystem = useIslandStore(state => state.terrainSystem);
-  const setTerrainGeomAttrsPosArr = useIslandStore(state => state.actions.setTerrainGeomAttrsPosArr);
-  const [activeTool, setActiveTool] = useState(null);
+  const activeTool = useIslandStore(state => state.activeTool);
+  const setActiveTool = useIslandStore(state => state.actions.setActiveTool);
+  // const [activeTool, setActiveTool] = useState(null);
   const [openSlider, setOpenSlider] = useState(null);
   const [showHelpModal, setShowHelpModal] = useState(false);
 
@@ -190,10 +214,12 @@ export default function IslandEditorUI() {
     if (!editMode) return;
     if (sculpt.active) {
       setActiveTool(sculpt.mode === "add" ? "sculpt+" : "sculpt-");
+    } else if (place.active) {
+      setActiveTool("place");
     } else {
       setActiveTool("move");
     }
-  }, [editMode, sculpt.active, sculpt.mode]);
+  }, [editMode, place.active, sculpt.active, sculpt.mode]);
 
   return (
     <motion.div className='cursor-default fixed top-4 left-4 z-40 flex flex-col items-center space-y-2 bg-white p-2 rounded-4xl shadow-md h-auto'>
@@ -204,7 +230,14 @@ export default function IslandEditorUI() {
           switch (tool.type) {
             case "toggle":
               return (
-                <ToggleTool key={tool.id} tool={tool} activeTool={activeTool} setActiveTool={setActiveTool} setSculptProp={setSculptProp} />
+                <ToggleTool
+                  key={tool.id}
+                  tool={tool}
+                  activeTool={activeTool}
+                  setActiveTool={setActiveTool}
+                  setPlaceProp={setPlaceProp}
+                  setSculptProp={setSculptProp}
+                />
               );
             case "action":
               return <ActionTool key={tool.id} tool={tool} setShowHelpModal={setShowHelpModal} />;

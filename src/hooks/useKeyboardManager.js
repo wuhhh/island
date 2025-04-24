@@ -1,4 +1,4 @@
-import { useEffect } from "react";
+import { useEffect, useRef } from "react";
 import { useIslandStore } from "../stores/useIslandStore";
 import { useHistoryStore } from "../stores/useHistoryStore";
 
@@ -6,8 +6,12 @@ import { useHistoryStore } from "../stores/useHistoryStore";
  * Global keyboard manager hook to handle keyboard shortcuts across the UI.
  */
 export function useKeyboardManager() {
+  const activeTool = useIslandStore(state => state.activeTool);
+  const setActiveTool = useIslandStore(state => state.actions.setActiveTool);
   const editMode = useIslandStore(state => state.editMode);
   const setEditMode = useIslandStore(state => state.actions.setEditMode);
+  const place = useIslandStore(state => state.place);
+  const setPlaceProp = useIslandStore(state => state.actions.setPlaceProp);
   const sculpt = useIslandStore(state => state.sculpt);
   const setSculptProp = useIslandStore(state => state.actions.setSculptProp);
   const setTerrainGeomAttrsPosArr = useHistoryStore(state => state.setTerrainGeomAttrsPosArr);
@@ -17,10 +21,18 @@ export function useKeyboardManager() {
   const undo = useHistoryStore.temporal.getState().undo;
   const redo = useHistoryStore.temporal.getState().redo;
 
+  const preControlMode = useRef(null);
+
   useEffect(() => {
     const handleKeyDown = e => {
-      if (e.key === "Control" && editMode && sculpt.active) {
-        setSculptProp("active", false); // Temporarily deactivate sculpting
+      if (e.key === "Control" && editMode) {
+        if (sculpt.active) {
+          setSculptProp("active", false);
+          preControlMode.current = "sculpt";
+        } else if (place.active) {
+          setPlaceProp("active", false);
+          preControlMode.current = "place";
+        }
       }
       switch (e.key) {
         case "e":
@@ -73,6 +85,7 @@ export function useKeyboardManager() {
         case "V":
           // Switch to move tool (disable sculpt)
           setSculptProp("active", false);
+          setActiveTool("move");
           break;
         case "R":
           terrainSystem.resetTerrain();
@@ -98,8 +111,14 @@ export function useKeyboardManager() {
     };
 
     const handleKeyUp = e => {
-      if (e.key === "Control" && editMode && !sculpt.active) {
-        setSculptProp("active", true); // Reactivate sculpting
+      if (e.key === "Control" && editMode) {
+        console.log("PreControlMode", preControlMode.current);
+        if (preControlMode.current === "sculpt") {
+          setSculptProp("active", true);
+        } else if (preControlMode.current === "place") {
+          setPlaceProp("active", true);
+        }
+        preControlMode.current = null;
       }
       if (e.key === "Alt" && editMode && sculpt.active) {
         const newMode = sculpt.mode === "add" ? "subtract" : "add";

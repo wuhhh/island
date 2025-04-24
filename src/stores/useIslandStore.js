@@ -7,8 +7,16 @@ export const CAMERA_TARGET = [0, 0, 0]; // Default camera target position
 // Create store with the extracted bound store utility
 export const useIslandStore = createBoundStore(
   set => ({
+    activeTool: "place",
     editMode: false,
     pointerDown: false,
+    place: {
+      active: false,
+      item: null,
+      position: [0, 0, 0],
+      rotation: [0, 0, 0],
+      scale: [1, 1, 1],
+    },
     sculpt: {
       active: false,
       mode: "add", // "add", "subtract"
@@ -25,8 +33,17 @@ export const useIslandStore = createBoundStore(
     },
 
     actions: {
+      setActiveTool: activeTool => set({ activeTool }),
       setEditMode: editMode => set({ editMode }),
       setPointerDown: pointerDown => set({ pointerDown }),
+      setPlaceProp(property, value) {
+        set(state => ({
+          place: {
+            ...state.place,
+            [property]: value,
+          },
+        }));
+      },
       setSculptProp(property, value) {
         set(state => ({
           sculpt: {
