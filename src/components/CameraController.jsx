@@ -13,6 +13,7 @@ const CameraController = () => {
   const [cameraReady, setCameraReady] = useState(false);
   const cameraControls = useRef();
   const editMode = useIslandStore(state => state.editMode);
+  const place = useIslandStore(state => state.place);
   const sculpt = useIslandStore(state => state.sculpt);
   const persisted = useIslandStore(state => state.persisted);
   const cameraPosition = persisted.cameraPosition;
@@ -68,7 +69,7 @@ const CameraController = () => {
   return (
     <CustomCameraControls
       ref={cameraControls}
-      enabled={!(editMode && sculpt.active)}
+      enabled={!(editMode && (sculpt.active || place.active))}
       makeDefault
       makeDefaultRotation={true}
       onChange={debounce(handleCameraControlsChange, 100)}

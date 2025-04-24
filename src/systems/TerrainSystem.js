@@ -1,4 +1,4 @@
-import { MathUtils } from "three";
+import { MathUtils } from "three/webgpu";
 import { findZExtrema } from "../utils/terrainUtils";
 
 const MAX_RADIUS = 0.15;
