@@ -7,6 +7,9 @@ export const useHistoryStore = createBoundStore(
     // Terrain (geometry.attributes.position.array)
     terrainGeomAttrsPosArr: null,
 
+    // Decor placement
+    placedItems: [],
+
     /**
      * setTerrainGeomAttrsPosArr
      * @param {Float32Array} terrainGeomAttrsPosArr - The new terrain geometry attributes position array
@@ -30,6 +33,29 @@ export const useHistoryStore = createBoundStore(
       return state.terrainGeomAttrsPosArr instanceof Float32Array
         ? state.terrainGeomAttrsPosArr
         : new Float32Array(state.terrainGeomAttrsPosArr || []);
+    },
+
+    /**
+     * setPlacedItems
+     * @param {Array} placedItems - The new array of placed items
+     * @returns {void}
+     * @description Sets the array of placed items in the store.
+     */
+    setPlacedItems: placedItems => {
+      // Store as Array to ensure proper serialization
+      const arrayData = Array.from(placedItems);
+      set({ placedItems: arrayData });
+    },
+
+    /**
+     * getPlacedItems
+     * @returns {Array} The array of placed items
+     * @description Gets the array of placed items from the store.
+     */
+    getPlacedItems: () => {
+      const state = get();
+      // Convert back to Array if it's not already
+      return Array.isArray(state.placedItems) ? state.placedItems : [];
     },
   }),
   {

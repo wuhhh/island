@@ -1,13 +1,10 @@
 import * as THREE from "three/webgpu";
-import { useState } from "react";
 import { Canvas, extend } from "@react-three/fiber";
-import DecorItem from "./components/DecorItem";
-import DecorPlacementSystem from "./systems/DecorPlacementSystem";
-import Ocean from "./components/Ocean";
-import Grid from "./components/Grid";
 import CameraController from "./components/CameraController";
+import DecorSystem from "./systems/DecorSystem";
+import Grid from "./components/Grid";
+import Ocean from "./components/Ocean";
 import Terrain from "./components/Terrain";
-// import ShoreLine from "./components/ShoreLine";
 import UI from "./components/UI";
 import { CAMERA_POSITION, CAMERA_TARGET, useIslandStore } from "./stores/useIslandStore";
 import { Leva } from "leva";
@@ -17,32 +14,6 @@ extend(THREE);
 
 const Scene = () => {
   const editMode = useIslandStore(state => state.editMode);
-  const placeActive = useIslandStore(state => state.place.active);
-  const placeItem = useIslandStore(state => state.place.item);
-  const terrainSystem = useIslandStore(state => state.terrainSystem);
-  const [placedItems, setPlacedItems] = useState([]);
-
-  const debugBoxGeometry = new THREE.BoxGeometry(0.1, 0.1, 0.1);
-  const debugBoxMaterial = new THREE.MeshStandardMaterial({ color: "red" });
-  const debugBoxModel = new THREE.Mesh(debugBoxGeometry, debugBoxMaterial);
-
-  // Map of available decor items
-  const decorModels = {
-    debugBox: debugBoxModel,
-    // Add more decor items here
-  };
-
-  // Handle placing a new item
-  const handlePlaceItem = itemData => {
-    setPlacedItems([
-      ...placedItems,
-      {
-        id: Date.now(),
-        material: decorModels[itemData.type].material.clone(),
-        ...itemData,
-      },
-    ]);
-  };
 
   return (
     <>
@@ -57,26 +28,7 @@ const Scene = () => {
         lineColor='cyan'
       />
       <Terrain position={[0, 0, 0]} />
-      {/* <ShoreLine position={[0, -0.001, 0]} rotation={[-Math.PI / 2, 0, 0]} /> */}
-      {/* Placed items */}
-      {placedItems.map(item => (
-        <DecorItem
-          key={item.id}
-          type={item.type}
-          model={decorModels[item.type].clone()}
-          material={item.material}
-          position={item.position}
-          rotation={item.rotation}
-          scale={item.scale}
-        />
-      ))}
-
-      {/* Placement system */}
-      {placeActive && (
-        <DecorPlacementSystem active={editMode && placeActive} terrain={terrainSystem.mesh} onPlaceItem={handlePlaceItem}>
-          <DecorItem type={placeItem} model={decorModels[placeItem].clone()} visible={false} />
-        </DecorPlacementSystem>
-      )}
+      <DecorSystem />
       <Ocean args={[30, 0, 30]} position={[0, -0.002, 0]} rotation={[-Math.PI / 2, 0, 0]} resolution={1} />
       <directionalLight position={[1, 1, 1]} intensity={2} color='red' />
       <directionalLight position={[1, 1, -1]} intensity={2} color='pink' />
