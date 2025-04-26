@@ -1,8 +1,10 @@
+import { useMemo } from "react";
 import * as THREE from "three/webgpu";
 import { useIslandStore } from "../stores/useIslandStore";
 import { useHistoryStore } from "../stores/useHistoryStore";
 import DecorItem from "../components/DecorItem";
 import DecorPlacementSystem from "./DecorPlacementSystem";
+import decorRegistry from "../config/decorRegistry";
 
 export default function DecorSystem() {
   const editMode = useIslandStore(state => state.editMode);
@@ -12,15 +14,8 @@ export default function DecorSystem() {
   const setPlacedItems = useHistoryStore(state => state.setPlacedItems);
   const placedItems = useHistoryStore(state => state.getPlacedItems());
 
-  const debugBoxGeometry = new THREE.BoxGeometry(0.1, 0.1, 0.1);
-  const debugBoxMaterial = new THREE.MeshStandardMaterial({ color: "red" });
-  const debugBoxModel = new THREE.Mesh(debugBoxGeometry, debugBoxMaterial);
-
-  // Map of available decor items
-  const decorModels = {
-    debugBox: debugBoxModel,
-    // Add more decor items here
-  };
+  // build all models once
+  const decorModels = useMemo(() => Object.fromEntries(Object.entries(decorRegistry).map(([type, def]) => [type, def.createModel()])), []);
 
   /**
    * handlePlaceItem
@@ -34,21 +29,16 @@ export default function DecorSystem() {
   const handlePlaceItem = itemData => {
     console.log("Placing item:", itemData);
 
-    const id = Date.now();
-    const position = itemData.position.toArray();
-    const rotation = itemData.rotation.toArray();
-    const scale = itemData.scale.toArray();
-    const type = itemData.type;
-
+    const { type, position, rotation, scale } = itemData;
     setPlacedItems([
       ...placedItems,
       {
-        id,
-        color: "red",
-        position,
-        rotation,
-        scale,
+        id: Date.now(),
         type,
+        position: position.toArray(),
+        rotation: rotation.toArray(),
+        scale: scale.toArray(),
+        color: decorRegistry[type].defaultProps.color,
       },
     ]);
   };
@@ -71,7 +61,12 @@ export default function DecorSystem() {
       {/* Placement system */}
       {placeActive && (
         <DecorPlacementSystem active={editMode && placeActive} terrain={terrainSystem.mesh} onPlaceItem={handlePlaceItem}>
-          <DecorItem type={placeItem} model={decorModels[placeItem].clone()} visible={false} />
+          <DecorItem
+            color={decorRegistry[placeItem].defaultProps.color}
+            type={placeItem}
+            model={decorModels[placeItem].clone()}
+            visible={false}
+          />
         </DecorPlacementSystem>
       )}
     </>
