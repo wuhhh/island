@@ -1,7 +1,6 @@
 import * as THREE from "three/webgpu";
-import { useEffect, useState } from "react";
 import { useIslandStore } from "../stores/useIslandStore";
-import { useHistoryStore, useHistoryHydration } from "../stores/useHistoryStore";
+import { useHistoryStore } from "../stores/useHistoryStore";
 import DecorItem from "../components/DecorItem";
 import DecorPlacementSystem from "./DecorPlacementSystem";
 
@@ -12,9 +11,6 @@ export default function DecorSystem() {
   const terrainSystem = useIslandStore(state => state.terrainSystem);
   const setPlacedItems = useHistoryStore(state => state.setPlacedItems);
   const placedItems = useHistoryStore(state => state.getPlacedItems());
-  const [canPlace, setCanPlace] = useState(false);
-
-  const historyStoreHydrated = useHistoryHydration();
 
   const debugBoxGeometry = new THREE.BoxGeometry(0.1, 0.1, 0.1);
   const debugBoxMaterial = new THREE.MeshStandardMaterial({ color: "red" });
@@ -56,12 +52,6 @@ export default function DecorSystem() {
       },
     ]);
   };
-
-  useEffect(() => {
-    if (!historyStoreHydrated) return;
-    console.log("Placed items:", placedItems);
-    setCanPlace(true);
-  }, [historyStoreHydrated]);
 
   return (
     <>
