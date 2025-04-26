@@ -22,6 +22,7 @@ export const useIslandStore = createBoundStore(
       brushSize: 0.5,
       brushStrength: 0.5,
     },
+    selectedItems: [],
     terrainSystem: null,
     terrainZExtrema: [0, 0],
     wireframe: false,
@@ -71,6 +72,10 @@ export const useIslandStore = createBoundStore(
             ...state.persisted,
             cameraTarget,
           },
+        })),
+      setSelectedItems: selectedItems =>
+        set(state => ({
+          selectedItems,
         })),
       /**
        * setTerrainSystem
