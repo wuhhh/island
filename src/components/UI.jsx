@@ -196,7 +196,6 @@ function SliderTool({ tool, openSlider, setOpenSlider, sculpt, setSculptProp }) 
 export default function IslandEditorUI() {
   const editMode = useIslandStore(state => state.editMode);
   const setEditMode = useIslandStore(state => state.actions.setEditMode);
-  const place = useIslandStore(state => state.place);
   const sculpt = useIslandStore(state => state.sculpt);
   const setPlaceProp = useIslandStore(state => state.actions.setPlaceProp);
   const setSculptProp = useIslandStore(state => state.actions.setSculptProp);
