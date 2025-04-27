@@ -18,6 +18,7 @@ import KeyBindingItem from "./KeyBindingItem";
 import Kbd from "./Kbd";
 import { useIslandStore } from "../stores/useIslandStore";
 import { useHistoryStore } from "../stores/useHistoryStore";
+import { useResetIsland } from "../stores/useResetIsland";
 
 const TOOL_OPTIONS = [
   { id: "move", icon: Hand, label: "Move", shortcut: ["v"], type: "toggle" },
@@ -123,18 +124,22 @@ function ToggleTool({ tool, activeTool, setActiveTool, setPlaceProp, setSculptPr
 }
 
 function ActionTool({ tool, setShowHelpModal }) {
-  const terrainSystem = useIslandStore(state => state.terrainSystem);
-  const setTerrainGeomAttrsPosArr = useHistoryStore(state => state.setTerrainGeomAttrsPosArr);
   const { undo, redo } = useHistoryStore.temporal.getState();
+  const resetTerrain = useResetIsland();
+
   const handleClick = () => {
-    if (tool.id === "undo") return undo();
-    if (tool.id === "redo") return redo();
-    if (tool.id === "reset") {
-      terrainSystem.resetTerrain();
-      setTerrainGeomAttrsPosArr(terrainSystem.positions);
+    switch (tool.id) {
+      case "undo":
+        return undo();
+      case "redo":
+        return redo();
+      case "reset":
+        return resetTerrain();
+      case "help":
+        return setShowHelpModal(true);
     }
-    if (tool.id === "help") return setShowHelpModal(true);
   };
+
   return (
     <div className='relative group'>
       <ToolbarButton label={tool.label} onClick={handleClick} active={false}>

@@ -57,6 +57,27 @@ export const useHistoryStore = createBoundStore(
       // Convert back to Array if it's not already
       return Array.isArray(state.placedItems) ? state.placedItems : [];
     },
+
+    /**
+     * deletePlacedItems
+     * @param {array} item - An array of IDs to delete
+     * @returns {void}
+     * @description Deletes placed items from the store based on their IDs.
+     */
+    deletePlacedItems: ids => {
+      const placedItems = get().getPlacedItems();
+      const newPlacedItems = placedItems.filter(item => !ids.includes(item.id));
+      set({ placedItems: newPlacedItems });
+    },
+
+    /**
+     * clearPlacedItems
+     * @returns {void}
+     * @description Clears all placed items from the store.
+     */
+    clearPlacedItems: () => {
+      set({ placedItems: [] });
+    },
   }),
   {
     name: "wuhhh/island:parent-storage",

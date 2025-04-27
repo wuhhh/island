@@ -1,6 +1,7 @@
 import { useEffect, useRef } from "react";
 import { useIslandStore } from "../stores/useIslandStore";
 import { useHistoryStore } from "../stores/useHistoryStore";
+import { useResetIsland } from "../stores/useResetIsland";
 
 /**
  * Global keyboard manager hook to handle keyboard shortcuts across the UI.
@@ -10,14 +11,11 @@ export function useKeyboardManager() {
   const setActiveTool = useIslandStore(state => state.actions.setActiveTool);
   const editMode = useIslandStore(state => state.editMode);
   const setEditMode = useIslandStore(state => state.actions.setEditMode);
-  const place = useIslandStore(state => state.place);
-  const setPlaceProp = useIslandStore(state => state.actions.setPlaceProp);
   const sculpt = useIslandStore(state => state.sculpt);
   const setSculptProp = useIslandStore(state => state.actions.setSculptProp);
-  const setTerrainGeomAttrsPosArr = useHistoryStore(state => state.setTerrainGeomAttrsPosArr);
-  const terrainSystem = useIslandStore(state => state.terrainSystem);
   const wireframe = useIslandStore(state => state.wireframe);
   const setWireframe = useIslandStore(state => state.actions.setWireframe);
+  const resetTerrain = useResetIsland();
   const undo = useHistoryStore.temporal.getState().undo;
   const redo = useHistoryStore.temporal.getState().redo;
 
@@ -82,8 +80,7 @@ export function useKeyboardManager() {
           }
           break;
         case "R":
-          terrainSystem.resetTerrain();
-          setTerrainGeomAttrsPosArr(terrainSystem.positions);
+          resetTerrain();
           break;
         case "a":
         case "A":
