@@ -240,10 +240,10 @@ function DecorSelectTool({ tool, activeTool, setActiveTool, decorSelect, setPlac
       {decorSelect && (
         <div className='absolute left-full top-1/2 transform -translate-y-1/2 ml-[20px] w-48 p-2 bg-slate-50 shadow-sm text-sm rounded-sm'>
           <div className='flex items-center gap-x-2'>
-            <button onClick={() => handleClickItem("debugSphere")} className='cursor-pointer bg-red-300 rounded-full size-12'>
+            <button onClick={() => handleClickItem("tree")} className='cursor-pointer bg-red-300 rounded-full size-12'>
               Sph
             </button>
-            <button onClick={() => handleClickItem("debugBox")} className='cursor-pointer bg-red-300 rounded-full size-12'>
+            <button onClick={() => handleClickItem("house")} className='cursor-pointer bg-red-300 rounded-full size-12'>
               Box
             </button>
           </div>
