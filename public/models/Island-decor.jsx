@@ -12,7 +12,8 @@ export function Model(props) {
     <group {...props} dispose={null}>
       <mesh geometry={nodes.tree.geometry} material={materials.foliage} position={[0, 0.02, 0]} />
       <mesh geometry={nodes.house.geometry} material={materials.stone}>
-        <mesh geometry={nodes.Cube001.geometry} material={materials.tile} scale={0.869} />
+        <mesh geometry={nodes.houseRoof.geometry} material={materials.tile} scale={0.869} />
+        <mesh geometry={nodes.houseWindows.geometry} material={materials.emissive} />
       </mesh>
     </group>
   )
