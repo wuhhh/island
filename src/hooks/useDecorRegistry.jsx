@@ -9,7 +9,7 @@ function useShared(factory) {
 }
 
 export function useDecorRegistry() {
-  const { nodes, materials } = useGLTF("/models/island-decor.glb");
+  const { nodes } = useGLTF("/models/island-decor.glb");
 
   /* ---------- Primitive helpers ---------- */
   const DebugBox = forwardRef(({ color = "red", args = [0.1, 0.1, 0.1], ...rest }, ref) => {
@@ -78,43 +78,26 @@ export function useDecorRegistry() {
     () => ({
       debugBox: {
         defaultProps: { color: "red", args: [0.1, 0.1, 0.1] },
-        createModel: () => {
+        /* createModel: () => {
           const geom = new THREE.BoxGeometry(0.1, 0.1, 0.1);
           const mat = new THREE.MeshStandardMaterial({ color: "red" });
           return new THREE.Mesh(geom, mat);
-        },
+        }, */
         Component: DebugBox,
       },
 
       debugSphere: {
         defaultProps: { color: "blue", args: [0.05, 32, 32] },
-        createModel: () => {
-          const geom = new THREE.SphereGeometry(0.05, 32, 32);
-          const mat = new THREE.MeshStandardMaterial({ color: "blue" });
-          return new THREE.Mesh(geom, mat);
-        },
         Component: DebugSphere,
       },
 
       tree: {
         defaultProps: { color: "brown", scale: [1, 1, 1] },
-        createModel: () => {
-          const mesh = nodes.tree.clone();
-          mesh.material = new THREE.MeshStandardMaterial({ color: "brown" });
-          mesh.scale.set(1, 1, 1);
-          return mesh;
-        },
         Component: Tree,
       },
 
       house: {
         defaultProps: { color: "blue", scale: [1, 1, 1] },
-        createModel: () => {
-          const mesh = nodes.house.clone();
-          mesh.material = new THREE.MeshStandardMaterial({ color: "blue" });
-          mesh.scale.set(1, 1, 1);
-          return mesh;
-        },
         Component: House,
       },
     }),
