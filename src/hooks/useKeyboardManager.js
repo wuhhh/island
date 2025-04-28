@@ -11,6 +11,8 @@ export function useKeyboardManager() {
   const setActiveTool = useIslandStore(state => state.actions.setActiveTool);
   const editMode = useIslandStore(state => state.editMode);
   const setEditMode = useIslandStore(state => state.actions.setEditMode);
+  const place = useIslandStore(state => state.place);
+  const setPlaceProp = useIslandStore(state => state.actions.setPlaceProp);
   const sculpt = useIslandStore(state => state.sculpt);
   const setSculptProp = useIslandStore(state => state.actions.setSculptProp);
   const wireframe = useIslandStore(state => state.wireframe);
@@ -19,12 +21,15 @@ export function useKeyboardManager() {
   const undo = useHistoryStore.temporal.getState().undo;
   const redo = useHistoryStore.temporal.getState().redo;
 
-  const preControlMode = useRef(null);
+  const preControlMode = useRef({});
 
   useEffect(() => {
     const handleKeyDown = e => {
       if (e.key === "Control" && editMode) {
-        preControlMode.current = activeTool;
+        preControlMode.current = {
+          activeTool,
+          place,
+        };
         setActiveTool("move");
       }
       switch (e.key) {
@@ -94,6 +99,14 @@ export function useKeyboardManager() {
             setActiveTool("sculpt-");
           }
           break;
+        case "p":
+        case "P":
+          if (editMode) {
+            setActiveTool("decor-select");
+            setPlaceProp("decorSelect", true);
+          }
+
+          break;
         default:
           break;
       }
@@ -101,8 +114,11 @@ export function useKeyboardManager() {
 
     const handleKeyUp = e => {
       if (e.key === "Control" && editMode) {
-        setActiveTool(preControlMode.current);
-        preControlMode.current = null;
+        // Revert to previous tool and place state
+        setActiveTool(preControlMode.current?.activeTool);
+        setPlaceProp("active", preControlMode.current?.place.active);
+        setPlaceProp("item", preControlMode?.current.place.item);
+        preControlMode.current = {};
       }
       if (e.key === "Alt" && editMode && sculpt.active) {
         setActiveTool(activeTool === "sculpt+" ? "sculpt-" : "sculpt+");
@@ -117,5 +133,5 @@ export function useKeyboardManager() {
       window.removeEventListener("keydown", handleKeyDown);
       window.removeEventListener("keyup", handleKeyUp);
     };
-  }, [editMode, wireframe, sculpt, setEditMode, setWireframe, setSculptProp, undo, redo]);
+  }, [preControlMode.current, editMode, wireframe, sculpt, setEditMode, setWireframe, setSculptProp, undo, redo]);
 }

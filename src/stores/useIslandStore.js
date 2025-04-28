@@ -12,6 +12,7 @@ export const useIslandStore = createBoundStore(
     pointerDown: false,
     place: {
       active: false,
+      decorSelect: false,
       item: null,
       position: [0, 0, 0],
       rotation: [0, 0, 0],

@@ -10,8 +10,8 @@ import {
   Pencil,
   Redo,
   RefreshCw,
-  TreePine,
   Undo,
+  WandSparkles,
   X,
 } from "lucide-react";
 import KeyBindingItem from "./KeyBindingItem";
@@ -26,7 +26,7 @@ const TOOL_OPTIONS = [
   { id: "sculpt-", icon: Eraser, label: "Lower terrain", shortcut: ["s"], type: "toggle" },
   { id: "size", icon: CircleDotDashed, label: "Brush Size", shortcut: ["[", "]"], type: "slider" },
   { id: "strength", icon: CircleFadingPlus, label: "Brush Strength", shortcut: ["-", "+"], type: "slider" },
-  { id: "place", icon: TreePine, label: "Place Tree", shortcut: ["p"], type: "toggle" },
+  { id: "decor-select", icon: WandSparkles, label: "Place Items", shortcut: ["p"], type: "decor-select" },
   { id: "undo", icon: Undo, label: "Undo", shortcut: ["u"], type: "action" },
   { id: "redo", icon: Redo, label: "Redo", shortcut: ["y"], type: "action" },
   { id: "reset", icon: RefreshCw, label: "Reset", shortcut: ["Shift", "r"], type: "action" },
@@ -104,10 +104,8 @@ function ToggleTool({ tool, activeTool, setActiveTool, setPlaceProp, setSculptPr
         setPlaceProp("active", false);
         setSculptProp("active", true);
         break;
-      case "place":
+      case "decor-select":
         setSculptProp("active", false);
-        setPlaceProp("item", "debugBox");
-        setPlaceProp("active", true);
         break;
     }
   };
@@ -198,9 +196,67 @@ function SliderTool({ tool, openSlider, setOpenSlider, sculpt, setSculptProp }) 
   );
 }
 
+function DecorSelectTool({ tool, activeTool, setActiveTool, decorSelect, setPlaceProp, setSculptProp }) {
+  const ref = useRef(null);
+
+  // Click away
+  useEffect(() => {
+    const handleClickOutside = e => {
+      if (decorSelect && ref.current && !ref.current.contains(e.target)) {
+        setPlaceProp("decorSelect", false);
+      }
+    };
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, [decorSelect]);
+
+  // Toggle
+  const handleClickMain = () => setPlaceProp("decorSelect", !decorSelect);
+
+  // Set item
+  const handleClickItem = item => {
+    setActiveTool("decor-select");
+    setSculptProp("active", false);
+    setPlaceProp("item", item);
+    setPlaceProp("decorSelect", false);
+    setPlaceProp("active", true);
+  };
+
+  return (
+    <div ref={ref} className='relative group'>
+      <ToolbarButton
+        label={tool.label}
+        onClick={handleClickMain}
+        active={activeTool === "decor-select" || decorSelect}
+        subtle={decorSelect}
+      >
+        <tool.icon strokeWidth={1} />
+      </ToolbarButton>
+      {!decorSelect && (
+        <ToolTip>
+          <KeyBindingItem keyCombination={tool.shortcut} action={tool.label} tag='span' flip />
+        </ToolTip>
+      )}
+      {decorSelect && (
+        <div className='absolute left-full top-1/2 transform -translate-y-1/2 ml-[20px] w-48 p-2 bg-slate-50 shadow-sm text-sm rounded-sm'>
+          <div className='flex items-center gap-x-2'>
+            <button onClick={() => handleClickItem("debugSphere")} className='cursor-pointer bg-red-300 rounded-full size-12'>
+              Sph
+            </button>
+            <button onClick={() => handleClickItem("debugBox")} className='cursor-pointer bg-red-300 rounded-full size-12'>
+              Box
+            </button>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
 export default function IslandEditorUI() {
   const editMode = useIslandStore(state => state.editMode);
   const setEditMode = useIslandStore(state => state.actions.setEditMode);
+  const place = useIslandStore(state => state.place);
   const sculpt = useIslandStore(state => state.sculpt);
   const setPlaceProp = useIslandStore(state => state.actions.setPlaceProp);
   const setSculptProp = useIslandStore(state => state.actions.setSculptProp);
@@ -219,14 +275,16 @@ export default function IslandEditorUI() {
 
     if (tool === "sculpt+" || tool === "sculpt-") {
       setSculptProp("active", true);
+      setPlaceProp("decorSelect", false);
       setPlaceProp("active", false);
-    }
-    if (tool === "place") {
-      setPlaceProp("active", true);
-      setSculptProp("active", false);
     }
     if (tool === "move") {
       setPlaceProp("active", false);
+      setPlaceProp("item", null);
+      setPlaceProp("decorSelect", false);
+      setSculptProp("active", false);
+    }
+    if (tool === "decor-select") {
       setSculptProp("active", false);
     }
   }, [activeTool]);
@@ -259,6 +317,18 @@ export default function IslandEditorUI() {
                   openSlider={openSlider}
                   setOpenSlider={setOpenSlider}
                   sculpt={sculpt}
+                  setSculptProp={setSculptProp}
+                />
+              );
+            case "decor-select":
+              return (
+                <DecorSelectTool
+                  key={tool.id}
+                  tool={tool}
+                  activeTool={activeTool}
+                  setActiveTool={setActiveTool}
+                  decorSelect={place.decorSelect}
+                  setPlaceProp={setPlaceProp}
                   setSculptProp={setSculptProp}
                 />
               );
