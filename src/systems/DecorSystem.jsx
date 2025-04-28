@@ -7,6 +7,7 @@ import DecorPlacementSystem from "./DecorPlacementSystem";
 export default function DecorSystem() {
   const decorRegistry = useDecorRegistry();
   const editMode = useIslandStore(state => state.editMode);
+  const activeTool = useIslandStore(state => state.activeTool);
   const placeActive = useIslandStore(state => state.place.active);
   const placeItem = useIslandStore(state => state.place.item);
   const selectedItems = useIslandStore(state => state.selectedItems);
@@ -21,21 +22,21 @@ export default function DecorSystem() {
    * @param {Object} itemData - The data of the item to be placed
    * itemData.id - The ID of the item
    * itemData.position - The position of the item
-   * itemData.rotation - The rotation of the item
+   * itemData.quaternion - The orientation quaternion of the item
    * itemData.scale - The scale of the item
    * itemData.color - The color of the item
    * itemData.type - The type of the item
    */
   const handlePlaceItem = itemData => {
-    const { type, position, rotation, scale, color = decorRegistry[type].defaultProps.color } = itemData;
+    const { type, position, quaternion, scale, color = decorRegistry[type].defaultProps.color } = itemData;
 
     setPlacedItems([
       ...placedItems,
       {
         id: Date.now(),
-        position: position.toArray(),
-        rotation: rotation.toArray(),
-        scale: scale.toArray(),
+        position,
+        quaternion,
+        scale,
         color,
         type,
       },
@@ -72,15 +73,13 @@ export default function DecorSystem() {
           return (
             <Item
               key={item.id}
-              // type={item.type}
               color={item.color}
-              position={item.position}
-              rotation={item.rotation}
-              scale={item.scale}
+              position={item.position?.toArray ? item.position.toArray() : item.position}
+              quaternion={item.quaternion?.toArray ? item.quaternion.toArray() : item.quaternion}
+              scale={item.scale?.toArray ? item.scale.toArray() : item.scale}
               onClick={e => {
-                // console.log("clicked", item);
+                if (activeTool !== "move") return;
 
-                if (!editMode || placeActive) return;
                 e.stopPropagation();
                 const isSelected = selectedItems.includes(item.id);
                 const newSelected = isSelected ? selectedItems.filter(id => id !== item.id) : [...selectedItems, item.id];
