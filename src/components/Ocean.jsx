@@ -71,7 +71,7 @@ export default function Ocean({
       const floorNormal = t.texture(normalMap, floorUV).xy.mul(2).sub(1).mul(normalScale);
       reflectionNode.uvNode = reflectionNode.uvNode.add(floorNormal);
     } else {
-      let baseUV = t.uv().mul(200);
+      let baseUV = t.uv().mul(100);
       const time = t.time.mul(0.24);
 
       // Use multiple wave frequencies with different directions
@@ -114,7 +114,7 @@ export default function Ocean({
       // materialColor = waterBaseColor.mix(reflectionNode, reflectionStrength);
     }
 
-    const finalReflection = t.mul(reflectionNode, 0.33);
+    const finalReflection = t.mul(reflectionNode, 0.15);
     // const waterFx = t.step(0.8, t.distance(t.mod(t.mul(t.uv(), 200), 1), t.vec2(0.5, 0.5)));
     // Define constants
     const sinSawTime = t.mul(t.time, 0.02);
