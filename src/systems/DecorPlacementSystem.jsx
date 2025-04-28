@@ -23,6 +23,13 @@ export default function DecorPlacementSystem({ active, terrain, onPlaceItem, chi
   const handleClick = e => {
     if (!active || !hoverPoint) return;
 
+    console.log("Placing item:", {
+      position: hoverPoint.clone(),
+      rotation: itemRef.current.rotation.clone(),
+      type: itemRef.current.userData.type,
+      scale: itemRef.current.scale.clone(),
+    });
+
     e.stopPropagation();
     onPlaceItem({
       position: hoverPoint.clone(),

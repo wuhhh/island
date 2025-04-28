@@ -1,11 +1,11 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect } from "react";
 import { useIslandStore, useIslandHydration } from "../stores/useIslandStore";
 import { useHistoryStore } from "../stores/useHistoryStore";
-import DecorItem from "../components/DecorItem";
+import { useDecorRegistry } from "../hooks/useDecorRegistry.jsx";
 import DecorPlacementSystem from "./DecorPlacementSystem";
-import decorRegistry from "../config/decorRegistry";
 
 export default function DecorSystem() {
+  const decorRegistry = useDecorRegistry();
   const editMode = useIslandStore(state => state.editMode);
   const placeActive = useIslandStore(state => state.place.active);
   const placeItem = useIslandStore(state => state.place.item);
@@ -14,11 +14,7 @@ export default function DecorSystem() {
   const terrainSystem = useIslandStore(state => state.terrainSystem);
   const setPlacedItems = useHistoryStore(state => state.setPlacedItems);
   const placedItems = useHistoryStore(state => state.getPlacedItems());
-
   const islandStoreHydrated = useIslandHydration();
-
-  // build all models once
-  const decorModels = useMemo(() => Object.fromEntries(Object.entries(decorRegistry).map(([type, def]) => [type, def.createModel()])), []);
 
   /**
    * handlePlaceItem
@@ -31,9 +27,8 @@ export default function DecorSystem() {
    * itemData.type - The type of the item
    */
   const handlePlaceItem = itemData => {
-    console.log("Placing item:", itemData);
+    const { type, position, rotation, scale, color = decorRegistry[type].defaultProps.color } = itemData;
 
-    const { type, position, rotation, scale } = itemData;
     setPlacedItems([
       ...placedItems,
       {
@@ -41,10 +36,12 @@ export default function DecorSystem() {
         position: position.toArray(),
         rotation: rotation.toArray(),
         scale: scale.toArray(),
-        color: decorRegistry[type].defaultProps.color,
+        color,
         type,
       },
     ]);
+
+    console.log(placedItems);
   };
 
   // Backspace key down deletes selected item
@@ -67,39 +64,42 @@ export default function DecorSystem() {
   return (
     <>
       {/* Placed items */}
-      {placedItems.map(item => (
-        <DecorItem
-          key={item.id}
-          id={item.id}
-          type={item.type}
-          model={decorModels[item.type].clone()}
-          color={item.color}
-          position={item.position}
-          rotation={item.rotation}
-          scale={item.scale}
-          onClick={e => {
-            if (!editMode || placeActive) return;
-            e.stopPropagation();
+      {islandStoreHydrated &&
+        placedItems.map(item => {
+          const Item = decorRegistry[item.type].Component;
+          const isSelected = selectedItems.includes(item.id);
 
-            if (selectedItems.includes(item.id)) {
-              setSelectedItems(selectedItems.filter(id => id !== item.id));
-            } else {
-              setSelectedItems([...selectedItems, item.id]);
-            }
-          }}
-          selected={Array.isArray(selectedItems) && selectedItems.includes(item.id)}
-        />
-      ))}
+          return (
+            <Item
+              key={item.id}
+              // type={item.type}
+              color={item.color}
+              position={item.position}
+              rotation={item.rotation}
+              scale={item.scale}
+              onClick={e => {
+                // console.log("clicked", item);
+
+                if (!editMode || placeActive) return;
+                e.stopPropagation();
+                const isSelected = selectedItems.includes(item.id);
+                const newSelected = isSelected ? selectedItems.filter(id => id !== item.id) : [...selectedItems, item.id];
+                setSelectedItems(newSelected);
+              }}
+              selected={isSelected}
+              highlightColor='#ffff00'
+            />
+          );
+        })}
 
       {/* Placement system */}
       {placeActive && (
         <DecorPlacementSystem active={editMode && placeActive} terrain={terrainSystem.mesh} onPlaceItem={handlePlaceItem}>
-          <DecorItem
-            color={decorRegistry[placeItem].defaultProps.color}
-            type={placeItem}
-            model={decorModels[placeItem].clone()}
-            visible={false}
-          />
+          {(() => {
+            const Preview = decorRegistry[placeItem].Component;
+            const { color, scale } = decorRegistry[placeItem].defaultProps;
+            return <Preview visible={false} color={color} scale={scale} userData={{ type: placeItem }} />;
+          })()}
         </DecorPlacementSystem>
       )}
     </>

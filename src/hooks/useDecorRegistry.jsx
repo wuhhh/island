@@ -1,0 +1,125 @@
+import React, { forwardRef, useLayoutEffect, useMemo, useRef } from "react";
+import { Clone, useGLTF } from "@react-three/drei";
+import mergeRefs from "../utils/mergeRefs";
+import * as THREE from "three/webgpu";
+
+/** Lazily create a single shared value (geometry/material) */
+function useShared(factory) {
+  return useMemo(factory, []);
+}
+
+export function useDecorRegistry() {
+  const { nodes, materials } = useGLTF("/models/island-decor.glb");
+
+  /* ---------- Primitive helpers ---------- */
+  const DebugBox = forwardRef(({ color = "red", args = [0.1, 0.1, 0.1], ...rest }, ref) => {
+    const geo = useShared(() => new THREE.BoxGeometry(...args));
+    const mat = useShared(() => new THREE.MeshStandardMaterial({ color }));
+    return <mesh ref={ref} geometry={geo} material={mat} {...rest} />;
+  });
+
+  const DebugSphere = forwardRef(({ color = "blue", args = [0.05, 32, 32], ...rest }, ref) => {
+    const geo = useShared(() => new THREE.SphereGeometry(...args));
+    const mat = useShared(() => new THREE.MeshStandardMaterial({ color }));
+    return <mesh ref={ref} geometry={geo} material={mat} {...rest} />;
+  });
+
+  /* ---------- GLB-derived helpers ---------- */
+  const Tree = forwardRef(({ color = "brown", scale = [1, 1, 1], selected = false, highlightColor = 0xffff00, ...rest }, ref) => (
+    <Clone
+      ref={ref}
+      object={nodes.tree}
+      scale={scale}
+      selected={selected}
+      highlightColor={highlightColor}
+      {...rest}
+      inject={
+        <meshStandardMaterial
+          color={color}
+          emissive={selected ? highlightColor : 0x000000}
+          emissiveIntensity={selected ? 0.2 : 0}
+          toneMapped={false}
+        />
+      }
+    />
+  ));
+
+  const House = forwardRef(({ scale = [1, 1, 1], selected = false, highlightColor = 0xffff00, ...rest }, ref) => {
+    const local = useRef(); // we need to touch the clone later
+
+    /* ───── tweak materials after the clone is on the scene graph ───── */
+    useLayoutEffect(() => {
+      const root = local.current;
+      if (!root) return;
+
+      root.traverse(obj => {
+        if (obj.isMesh) {
+          // give each mesh its *own* material so highlights don't bleed
+          obj.material = obj.material.clone();
+          obj.material.emissive.set(selected ? highlightColor : 0x000000);
+          obj.material.emissiveIntensity = selected ? 0.25 : 0;
+        }
+      });
+    }, [selected, highlightColor]);
+
+    return (
+      <Clone
+        /* this ref points at the new root Group created by <Clone> */
+        ref={mergeRefs([ref, local])}
+        object={nodes.house} // ← ONE call clones the whole sub-tree
+        scale={scale}
+        {...rest}
+      />
+    );
+  });
+
+  /* ---------- Build and memoise the registry ---------- */
+  return useMemo(
+    () => ({
+      debugBox: {
+        defaultProps: { color: "red", args: [0.1, 0.1, 0.1] },
+        createModel: () => {
+          const geom = new THREE.BoxGeometry(0.1, 0.1, 0.1);
+          const mat = new THREE.MeshStandardMaterial({ color: "red" });
+          return new THREE.Mesh(geom, mat);
+        },
+        Component: DebugBox,
+      },
+
+      debugSphere: {
+        defaultProps: { color: "blue", args: [0.05, 32, 32] },
+        createModel: () => {
+          const geom = new THREE.SphereGeometry(0.05, 32, 32);
+          const mat = new THREE.MeshStandardMaterial({ color: "blue" });
+          return new THREE.Mesh(geom, mat);
+        },
+        Component: DebugSphere,
+      },
+
+      tree: {
+        defaultProps: { color: "brown", scale: [1, 1, 1] },
+        createModel: () => {
+          const mesh = nodes.tree.clone();
+          mesh.material = new THREE.MeshStandardMaterial({ color: "brown" });
+          mesh.scale.set(1, 1, 1);
+          return mesh;
+        },
+        Component: Tree,
+      },
+
+      house: {
+        defaultProps: { color: "blue", scale: [1, 1, 1] },
+        createModel: () => {
+          const mesh = nodes.house.clone();
+          mesh.material = new THREE.MeshStandardMaterial({ color: "blue" });
+          mesh.scale.set(1, 1, 1);
+          return mesh;
+        },
+        Component: House,
+      },
+    }),
+    [nodes]
+  );
+}
+
+useGLTF.preload("/models/island-decor.glb");
