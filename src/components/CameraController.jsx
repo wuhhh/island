@@ -1,5 +1,4 @@
-import React, { useEffect, useRef, useState, useCallback } from "react";
-import { useControls, button } from "leva";
+import React, { useEffect, useRef, useState, useCallback, useMemo } from "react";
 import debounce from "debounce";
 import CustomCameraControls from "./CustomCameraControls";
 import { CAMERA_POSITION, CAMERA_TARGET, useIslandStore, useIslandHydration } from "../stores/useIslandStore";
@@ -28,6 +27,9 @@ const CameraController = () => {
   const setCameraTarget = useIslandStore(state => state.actions.setCameraTarget);
   const islandStoreHydrated = useIslandHydration();
 
+  /**
+   * Handle camera controls change
+   */
   const handleCameraControlsChange = useCallback(
     event => {
       if (!event.target.enabled) return;
@@ -46,33 +48,49 @@ const CameraController = () => {
     [setCameraPosition, setCameraTarget, cameraPosition, cameraTarget]
   );
 
+  // memoize the debounced handler so it isn’t rebuilt on every render
+  const debouncedChange = useMemo(() => debounce(handleCameraControlsChange, 100), [handleCameraControlsChange]);
+
+  /**
+   * Cleanup the debounced function on unmount
+   */
+  useEffect(() => {
+    return () => {
+      debouncedChange.clear();
+    };
+  }, [debouncedChange]);
+
   const handleControlsReady = useCallback(() => {
     setCameraReady(true);
   }, []);
 
+  /**
+   * Initial mount sync
+   * Only when controls are ready + store is hydrated
+   */
   useEffect(() => {
-    if (cameraControls.current && islandStoreHydrated && cameraPosition && cameraTarget) {
-      // handle both array and object formats
-      const [x, y, z] = Array.isArray(cameraPosition) ? cameraPosition : [cameraPosition.x, cameraPosition.y, cameraPosition.z];
-      const [tx, ty, tz] = Array.isArray(cameraTarget) ? cameraTarget : [cameraTarget.x, cameraTarget.y, cameraTarget.z];
-      cameraControls.current.setPosition(x, y, z);
-      cameraControls.current.setTarget(tx, ty, tz);
-    }
-  }, [islandStoreHydrated, cameraReady, cameraPosition, cameraTarget]);
+    if (!cameraReady || !islandStoreHydrated) return;
+    console.log("CameraController mounted → Setting camera position and target");
 
-  useControls("Camera", {
-    reset: button(
-      () => {
-        if (cameraControls.current) {
-          cameraControls.current.setPosition(...CAMERA_POSITION);
-          cameraControls.current.setTarget(...CAMERA_TARGET);
-        }
-      },
-      {
-        label: "Reset Camera",
-      }
-    ),
-  });
+    // handle both array and object formats
+    const [x, y, z] = Array.isArray(cameraPosition) ? cameraPosition : [cameraPosition.x, cameraPosition.y, cameraPosition.z];
+    const [tx, ty, tz] = Array.isArray(cameraTarget) ? cameraTarget : [cameraTarget.x, cameraTarget.y, cameraTarget.z];
+
+    cameraControls.current.setPosition(x, y, z);
+    cameraControls.current.setTarget(tx, ty, tz);
+  }, [islandStoreHydrated, cameraReady]);
+
+  /**
+   * Handle camera reset
+   */
+  useEffect(() => {
+    if (!cameraReady) return;
+
+    if (positionsAreEqual(cameraPosition, CAMERA_POSITION) && positionsAreEqual(cameraTarget, CAMERA_TARGET)) {
+      cameraControls.current.setPosition(...CAMERA_POSITION);
+      cameraControls.current.setTarget(...CAMERA_TARGET);
+    }
+  }, [cameraReady, cameraPosition]);
 
   return (
     <CustomCameraControls
@@ -80,7 +98,7 @@ const CameraController = () => {
       enabled={!(editMode && (sculpt.active || place.active))}
       makeDefault
       makeDefaultRotation={true}
-      onChange={debounce(handleCameraControlsChange, 100)}
+      onChange={debouncedChange}
       onReady={handleControlsReady}
     />
   );

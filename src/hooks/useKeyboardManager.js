@@ -85,7 +85,9 @@ export function useKeyboardManager() {
           }
           break;
         case "R":
-          resetTerrain();
+          if (editMode) {
+            resetTerrain();
+          }
           break;
         case "a":
         case "A":
