@@ -71,7 +71,7 @@ export default function Ocean({
       const floorNormal = t.texture(normalMap, floorUV).xy.mul(2).sub(1).mul(normalScale);
       reflectionNode.uvNode = reflectionNode.uvNode.add(floorNormal);
     } else {
-      let baseUV = t.uv().mul(100);
+      let baseUV = t.uv().mul(20);
       const time = t.time.mul(0.24);
 
       // Use multiple wave frequencies with different directions

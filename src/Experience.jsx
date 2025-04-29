@@ -29,7 +29,7 @@ const Scene = () => {
       />
       <Terrain renderOrder={1} position={[0, 0, 0]} />
       <DecorSystem />
-      <Ocean args={[30, 0, 30]} position={[0, -0.002, 0]} rotation={[-Math.PI / 2, 0, 0]} resolution={1} />
+      <Ocean args={[6, 0, 6]} position={[0, -0.002, 0]} rotation={[-Math.PI / 2, 0, 0]} resolution={1} />
       <directionalLight position={[1, 1, 1]} intensity={2} color='red' />
       <directionalLight position={[1, 1, -1]} intensity={2} color='pink' />
       <directionalLight position={[-1, 1, -1]} intensity={2} color='orange' />
