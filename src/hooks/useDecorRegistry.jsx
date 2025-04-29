@@ -73,6 +73,26 @@ export function useDecorRegistry() {
     );
   });
 
+  /* ---------- Icon helper returns img---------- */
+  const Icon = forwardRef(({ label, src, ...rest }, ref) => {
+    return (
+      <span className='flex flex-col gap-y-1' {...rest}>
+        <span className='relative rounded-full size-16 overflow-hidden'>
+          <img
+            ref={ref}
+            src={src}
+            alt={label}
+            className='w-full h-full object-cover transition-transform duration-500 group-hover/icon:scale-110'
+          />
+          <span class='absolute inset-0 rounded-full border-amber-500 border-4 opacity-0 transition-opacity duration-100 group-hover/icon:opacity-100'></span>
+        </span>
+        <span className='text-xs font-medium text-emerald-800 group-hover/icon:text-emerald-600 transition-colors duration-200'>
+          {label}
+        </span>
+      </span>
+    );
+  });
+
   /* ---------- Build and memoise the registry ---------- */
   return useMemo(
     () => ({
@@ -99,6 +119,8 @@ export function useDecorRegistry() {
       house: {
         defaultProps: { color: "blue", scale: [1, 1, 1] },
         Component: House,
+        Icon: Icon,
+        defaultIconProps: { label: "House", src: "/icons/icon--decor-house1.jpg" },
       },
     }),
     [nodes]

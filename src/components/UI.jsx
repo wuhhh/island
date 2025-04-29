@@ -19,6 +19,7 @@ import Kbd from "./Kbd";
 import { useIslandStore } from "../stores/useIslandStore";
 import { useHistoryStore } from "../stores/useHistoryStore";
 import { useResetIsland } from "../stores/useResetIsland";
+import { useDecorRegistry } from "../hooks/useDecorRegistry.jsx";
 
 const TOOL_OPTIONS = [
   { id: "move", icon: Hand, label: "Move", shortcut: ["v"], type: "toggle" },
@@ -197,6 +198,7 @@ function SliderTool({ tool, openSlider, setOpenSlider, sculpt, setSculptProp }) 
 }
 
 function DecorSelectTool({ tool, activeTool, setActiveTool, decorSelect, setPlaceProp, setSculptProp }) {
+  const decorRegistry = useDecorRegistry();
   const ref = useRef(null);
 
   // Click away
@@ -238,14 +240,17 @@ function DecorSelectTool({ tool, activeTool, setActiveTool, decorSelect, setPlac
         </ToolTip>
       )}
       {decorSelect && (
-        <div className='absolute left-full top-1/2 transform -translate-y-1/2 ml-[20px] w-48 p-2 bg-slate-50 shadow-sm text-sm rounded-sm'>
+        <div className='absolute left-full top-1/2 transform -translate-y-1/2 ml-[20px] w-48 p-2 bg-slate-50 shadow-sm text-sm rounded-2xl'>
           <div className='flex items-center gap-x-2'>
-            <button onClick={() => handleClickItem("tree")} className='cursor-pointer bg-red-300 rounded-full size-12'>
-              Sph
-            </button>
-            <button onClick={() => handleClickItem("house")} className='cursor-pointer bg-red-300 rounded-full size-12'>
-              Box
-            </button>
+            {/* Render only registry entries that include an Icon */}
+            {Object.entries(decorRegistry)
+              .filter(([_, { Icon }]) => Icon)
+              .map(([key, { Icon, defaultIconProps }]) => (
+                <button key={key} onClick={() => handleClickItem(key)} className='cursor-pointer group/icon'>
+                  <Icon {...defaultIconProps} />
+                </button>
+              ))}
+            {/* Example buttons for tree and house */}
           </div>
         </div>
       )}
