@@ -84,7 +84,7 @@ export function useDecorRegistry() {
             alt={label}
             className='w-full h-full object-cover transition-transform duration-500 group-hover/icon:scale-110'
           />
-          <span class='absolute inset-0 rounded-full border-amber-500 border-4 opacity-0 transition-opacity duration-100 group-hover/icon:opacity-100'></span>
+          <span className='absolute inset-0 rounded-full border-amber-500 border-4 opacity-0 transition-opacity duration-100 group-hover/icon:opacity-100'></span>
         </span>
         <span className='text-xs font-medium text-emerald-800 group-hover/icon:text-emerald-600 transition-colors duration-200'>
           {label}
