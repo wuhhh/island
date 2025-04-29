@@ -4,9 +4,15 @@ import debounce from "debounce";
 import CustomCameraControls from "./CustomCameraControls";
 import { CAMERA_POSITION, CAMERA_TARGET, useIslandStore, useIslandHydration } from "../stores/useIslandStore";
 
-// Helper to compare positions/targets without lodash
+// Helper to compare positions/targets (arrays or objects) without lodash
 const positionsAreEqual = (a, b) => {
-  return a && b && a.x === b.x && a.y === b.y && a.z === b.z;
+  if (Array.isArray(a) && Array.isArray(b)) {
+    return a[0] === b[0] && a[1] === b[1] && a[2] === b[2];
+  }
+  if (a && b && a.x !== undefined && b.x !== undefined) {
+    return a.x === b.x && a.y === b.y && a.z === b.z;
+  }
+  return false;
 };
 
 const CameraController = () => {
@@ -24,19 +30,20 @@ const CameraController = () => {
 
   const handleCameraControlsChange = useCallback(
     event => {
-      const newPos = event.target.getPosition();
-      const newTarget = event.target.getTarget();
-
-      if (event.target.enabled) {
-        if (!positionsAreEqual(newPos, cameraPosition)) {
-          setCameraPosition(newPos);
-        }
-        if (!positionsAreEqual(newTarget, cameraTarget)) {
-          setCameraTarget(newTarget);
-        }
+      if (!event.target.enabled) return;
+      const vecPos = event.target.getPosition();
+      const vecTarget = event.target.getTarget();
+      // normalize to array for consistent storage
+      const newPosArr = [vecPos.x, vecPos.y, vecPos.z];
+      const newTargetArr = [vecTarget.x, vecTarget.y, vecTarget.z];
+      if (!positionsAreEqual(newPosArr, cameraPosition)) {
+        setCameraPosition(newPosArr);
+      }
+      if (!positionsAreEqual(newTargetArr, cameraTarget)) {
+        setCameraTarget(newTargetArr);
       }
     },
-    [setCameraPosition, setCameraTarget]
+    [setCameraPosition, setCameraTarget, cameraPosition, cameraTarget]
   );
 
   const handleControlsReady = useCallback(() => {
@@ -44,13 +51,14 @@ const CameraController = () => {
   }, []);
 
   useEffect(() => {
-    if (cameraControls.current && islandStoreHydrated) {
-      if (cameraPosition && cameraTarget) {
-        cameraControls.current.setPosition(cameraPosition.x, cameraPosition.y, cameraPosition.z);
-        cameraControls.current.setTarget(cameraTarget.x, cameraTarget.y, cameraTarget.z);
-      }
+    if (cameraControls.current && islandStoreHydrated && cameraPosition && cameraTarget) {
+      // handle both array and object formats
+      const [x, y, z] = Array.isArray(cameraPosition) ? cameraPosition : [cameraPosition.x, cameraPosition.y, cameraPosition.z];
+      const [tx, ty, tz] = Array.isArray(cameraTarget) ? cameraTarget : [cameraTarget.x, cameraTarget.y, cameraTarget.z];
+      cameraControls.current.setPosition(x, y, z);
+      cameraControls.current.setTarget(tx, ty, tz);
     }
-  }, [islandStoreHydrated, cameraReady]);
+  }, [islandStoreHydrated, cameraReady, cameraPosition, cameraTarget]);
 
   useControls("Camera", {
     reset: button(

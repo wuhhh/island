@@ -29,8 +29,8 @@ export const useIslandStore = createBoundStore(
     wireframe: false,
 
     persisted: {
-      cameraPosition: null,
-      cameraTarget: null,
+      cameraPosition: CAMERA_POSITION,
+      cameraTarget: CAMERA_TARGET,
     },
 
     actions: {
@@ -72,6 +72,14 @@ export const useIslandStore = createBoundStore(
           persisted: {
             ...state.persisted,
             cameraTarget,
+          },
+        })),
+      // Reset camera to default constants
+      resetCamera: () =>
+        set(state => ({
+          persisted: {
+            cameraPosition: CAMERA_POSITION,
+            cameraTarget: CAMERA_TARGET,
           },
         })),
       setSelectedItems: selectedItems =>

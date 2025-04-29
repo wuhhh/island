@@ -4,6 +4,7 @@ import { useHistoryStore } from "./useHistoryStore";
 
 export function useResetIsland() {
   const terrainSystem = useIslandStore(state => state.terrainSystem);
+  const resetCamera = useIslandStore(state => state.actions.resetCamera);
   const setTerrainGeomAttrsPosArr = useHistoryStore(state => state.setTerrainGeomAttrsPosArr);
   const clearPlacedItems = useHistoryStore(state => state.clearPlacedItems);
 
@@ -14,5 +15,6 @@ export function useResetIsland() {
     }
 
     clearPlacedItems();
-  }, [terrainSystem, setTerrainGeomAttrsPosArr]);
+    resetCamera();
+  }, [terrainSystem, setTerrainGeomAttrsPosArr, clearPlacedItems, resetCamera]);
 }
