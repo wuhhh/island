@@ -93,9 +93,16 @@ export default function DecorSystem() {
 
       {/* Placement system */}
       {placeActive && (
-        <DecorPlacementSystem active={editMode && placeActive} terrain={terrainSystem.mesh} onPlaceItem={handlePlaceItem}>
+        <DecorPlacementSystem
+          active={editMode && placeActive}
+          terrain={terrainSystem.mesh}
+          yCompensation={decorRegistry[placeItem].defaultProps?.yCompensation || 0}
+          onPlaceItem={handlePlaceItem}
+        >
           {(() => {
+            // Get the component
             const Preview = decorRegistry[placeItem].Component;
+            // Get the default props
             const { color, scale } = decorRegistry[placeItem].defaultProps;
             return <Preview visible={false} color={color} scale={scale} userData={{ type: placeItem }} />;
           })()}

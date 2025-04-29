@@ -117,7 +117,7 @@ export function useDecorRegistry() {
       },
 
       house: {
-        defaultProps: { color: "blue", scale: [1, 1, 1] },
+        defaultProps: { color: "blue", scale: [1, 1, 1], yCompensation: -0.02 },
         Component: House,
         Icon: Icon,
         defaultIconProps: { label: "House", src: "/icons/icon--decor-house1.jpg" },

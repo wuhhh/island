@@ -3,7 +3,7 @@ import { useFrame } from "@react-three/fiber";
 import React, { useState, useRef } from "react";
 import * as THREE from "three";
 
-export default function DecorPlacementSystem({ active, terrain, onPlaceItem, children }) {
+export default function DecorPlacementSystem({ active, terrain, yCompensation = 0, onPlaceItem, children }) {
   const [hoverPoint, setHoverPoint] = useState(null);
   const [hoverNormal, setHoverNormal] = useState(null);
   const itemRef = useRef();
@@ -16,6 +16,8 @@ export default function DecorPlacementSystem({ active, terrain, onPlaceItem, chi
 
     if (hits.length > 0) {
       const { point, face } = hits[0];
+      point.add(new THREE.Vector3(0, yCompensation, 0)); // apply Y compensation
+
       // compute world-space normal
       const localNormal = face.normal.clone();
       const normalMatrix = new THREE.Matrix3().getNormalMatrix(terrain.matrixWorld);
@@ -71,7 +73,7 @@ export default function DecorPlacementSystem({ active, terrain, onPlaceItem, chi
         hoverPoint &&
         React.cloneElement(children, {
           ref: itemRef,
-          position: hoverPoint.toArray(),
+          position: hoverPoint,
           quaternion: previewQuat?.toArray(),
           visible: true,
         })}
