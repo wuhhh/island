@@ -1,10 +1,12 @@
-import React, { forwardRef, useLayoutEffect, useMemo, useRef } from "react";
 import { Clone, useGLTF } from "@react-three/drei";
-import mergeRefs from "../utils/mergeRefs";
+import React, { forwardRef, useLayoutEffect, useMemo, useRef } from "react";
 import * as THREE from "three/webgpu";
+
+import mergeRefs from "../utils/mergeRefs";
 
 /** Lazily create a single shared value (geometry/material) */
 function useShared(factory) {
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   return useMemo(factory, []);
 }
 
@@ -84,7 +86,7 @@ export function useDecorRegistry() {
             alt={label}
             className='w-full h-full object-cover transition-transform duration-500 group-hover/icon:scale-110'
           />
-          <span className='absolute inset-0 rounded-full border-amber-500 border-4 opacity-0 transition-opacity duration-100 group-hover/icon:opacity-100'></span>
+          <span className='absolute inset-0 rounded-full border-amber-500 border-4 opacity-0 transition-opacity duration-100 group-hover/icon:opacity-100' />
         </span>
         <span className='text-xs font-medium text-emerald-800 group-hover/icon:text-emerald-600 transition-colors duration-200'>
           {label}

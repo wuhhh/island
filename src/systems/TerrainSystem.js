@@ -1,4 +1,5 @@
-import { MathUtils } from "three/webgpu";
+import { MathUtils } from "three";
+
 import { findZExtrema } from "../utils/terrainUtils";
 
 const MAX_RADIUS = 0.15;
@@ -27,7 +28,7 @@ export class TerrainSystem {
     const { grid, size } = this.spatialIndex;
 
     const radius = MathUtils.mapLinear(brushSize, 0, 1, MIN_RADIUS, MAX_RADIUS);
-    let strength = MathUtils.mapLinear(brushStrength, 0, 1, MIN_STRENGTH, MAX_STRENGTH);
+    const strength = MathUtils.mapLinear(brushStrength, 0, 1, MIN_STRENGTH, MAX_STRENGTH);
 
     // Calculate which grid cells the brush overlaps
     const brushRadiusInGrid = Math.ceil(radius * size);

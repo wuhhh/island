@@ -1,4 +1,5 @@
 import React from "react";
+
 import Kbd from "./Kbd";
 
 const KeyBindingItem = ({ keyCombination, action, tag = "li", separator = " ", flip }) => {

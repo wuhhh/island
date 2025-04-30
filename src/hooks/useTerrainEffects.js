@@ -1,5 +1,6 @@
 import { useEffect, useMemo } from "react";
 import * as THREE from "three/webgpu";
+
 import { findZExtrema, calculateEdgeWeights, createSpatialIndex } from "../utils/terrainUtils";
 
 /**
@@ -19,7 +20,7 @@ export function useTerrainInitialization({ planeRef, historyStoreHydrated, getTe
       geometry.computeVertexNormals();
 
       // Calculate and store extrema
-      let zExtrema = findZExtrema(terrainData);
+      const zExtrema = findZExtrema(terrainData);
       setTerrainZExtrema(zExtrema);
     } else {
       console.warn("No terrain data available to set.");

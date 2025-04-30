@@ -1,7 +1,9 @@
 import { useEffect } from "react";
-import { useIslandStore, useIslandHydration } from "../stores/useIslandStore";
-import { useHistoryStore } from "../stores/useHistoryStore";
+
 import { useDecorRegistry } from "../hooks/useDecorRegistry.jsx";
+import { useHistoryStore } from "../stores/useHistoryStore";
+import { useIslandStore, useIslandHydration } from "../stores/useIslandStore";
+
 import DecorPlacementSystem from "./DecorPlacementSystem";
 
 export default function DecorSystem() {

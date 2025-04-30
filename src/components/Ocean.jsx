@@ -1,7 +1,7 @@
-import React, { useRef, useState, useEffect } from "react";
 import { useThree } from "@react-three/fiber";
-import * as THREE from "three/webgpu";
+import React, { useRef, useState, useEffect } from "react";
 import * as t from "three/tsl";
+import * as THREE from "three/webgpu";
 
 export default function Ocean({
   resolution = 0.5,
@@ -71,7 +71,7 @@ export default function Ocean({
       const floorNormal = t.texture(normalMap, floorUV).xy.mul(2).sub(1).mul(normalScale);
       reflectionNode.uvNode = reflectionNode.uvNode.add(floorNormal);
     } else {
-      let baseUV = t.uv().mul(20);
+      const baseUV = t.uv().mul(20);
       const time = t.time.mul(0.24);
 
       // Use multiple wave frequencies with different directions
@@ -124,7 +124,7 @@ export default function Ocean({
     const outsideRadius = t.add(1.38, t.mul(saw, 0.3));
     const wobbleAmount = 0.05;
     const wobbleSpeed = 0.1;
-    let centerPoint = t.vec3(0, 0, 0);
+    const centerPoint = t.vec3(0, 0, 0);
 
     // Get the time for animation
     const time = t.mul(t.time, 0.02);

@@ -1,6 +1,6 @@
+import { useEffect, useState } from "react";
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
-import { useEffect, useState } from "react";
 
 /**
  * Creates a persisted store with hydration tracking

@@ -1,7 +1,8 @@
 // DecorItem.jsx
-import * as THREE from "three/webgpu";
-import { forwardRef, useImperativeHandle, useState, useRef, useEffect } from "react";
 import { useFrame } from "@react-three/fiber";
+import { forwardRef, useImperativeHandle, useState, useRef, useEffect } from "react";
+import * as THREE from "three/webgpu";
+
 import { useIslandStore } from "../stores/useIslandStore";
 
 const DecorItem = forwardRef(({ id, type, model, color, position, rotation = [0, 0, 0], scale = 1, selected, ...props }, ref) => {

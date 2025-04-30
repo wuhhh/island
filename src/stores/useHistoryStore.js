@@ -1,4 +1,5 @@
 import { temporal } from "zundo";
+
 import { createBoundStore, useHydration } from "./useBoundStore";
 
 // Create history store with temporal middleware for undo/redo functionality

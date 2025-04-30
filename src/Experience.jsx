@@ -1,14 +1,15 @@
-import * as THREE from "three/webgpu";
 import { Canvas, extend } from "@react-three/fiber";
+import { Leva } from "leva";
+import * as THREE from "three/webgpu";
+
 import CameraController from "./components/CameraController";
-import DecorSystem from "./systems/DecorSystem";
 import Grid from "./components/Grid";
 import Ocean from "./components/Ocean";
 import Terrain from "./components/Terrain";
 import UI from "./components/UI";
-import { CAMERA_POSITION, CAMERA_TARGET, useIslandStore } from "./stores/useIslandStore";
-import { Leva } from "leva";
 import { useKeyboardManager } from "./hooks/useKeyboardManager";
+import { CAMERA_POSITION, CAMERA_TARGET, useIslandStore } from "./stores/useIslandStore";
+import DecorSystem from "./systems/DecorSystem";
 
 extend(THREE);
 

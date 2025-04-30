@@ -1,9 +1,10 @@
 import { Plane } from "@react-three/drei";
-import { useIslandStore, useIslandHydration } from "../stores/useIslandStore";
-import { useHistoryStore, useHistoryHydration } from "../stores/useHistoryStore";
 import { useEffect, useRef } from "react";
-import * as THREE from "three/webgpu";
 import * as t from "three/tsl";
+import * as THREE from "three/webgpu";
+
+import { useHistoryStore, useHistoryHydration } from "../stores/useHistoryStore";
+import { useIslandStore, useIslandHydration } from "../stores/useIslandStore";
 
 export default function ShoreLine({ ...props }) {
   const planeRef = useRef(null);
@@ -85,15 +86,15 @@ export default function ShoreLine({ ...props }) {
       heightTexture.needsUpdate = true;
 
       // Hard shoreline
-      let shore = t.step(0.02, t.smoothstep(0.01, 0.09, t.texture(heightTexture).r));
+      const shore = t.step(0.02, t.smoothstep(0.01, 0.09, t.texture(heightTexture).r));
 
       // Inverted hard
-      let shoreInvert = t.oneMinus(shore);
+      const shoreInvert = t.oneMinus(shore);
 
       // Soft shoreline
-      let softShore = t.step(0.95, t.oneMinus(t.texture(heightTexture).b));
+      const softShore = t.step(0.95, t.oneMinus(t.texture(heightTexture).b));
 
-      let output = shore;
+      const output = shore;
 
       materialRef.current.fragmentNode = t.vec4(t.color("burlywood"), output);
 

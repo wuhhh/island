@@ -1,6 +1,7 @@
 import { useEffect, useRef } from "react";
-import { useIslandStore } from "../stores/useIslandStore";
+
 import { useHistoryStore } from "../stores/useHistoryStore";
+import { useIslandStore } from "../stores/useIslandStore";
 import { useResetIsland } from "../stores/useResetIsland";
 
 /**

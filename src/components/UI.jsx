@@ -1,4 +1,3 @@
-import React, { useEffect, useState, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   Brush,
@@ -14,12 +13,15 @@ import {
   WandSparkles,
   X,
 } from "lucide-react";
-import KeyBindingItem from "./KeyBindingItem";
-import Kbd from "./Kbd";
-import { useIslandStore } from "../stores/useIslandStore";
-import { useHistoryStore } from "../stores/useHistoryStore";
-import { useResetIsland } from "../stores/useResetIsland";
+import React, { useEffect, useState, useRef } from "react";
+
 import { useDecorRegistry } from "../hooks/useDecorRegistry.jsx";
+import { useHistoryStore } from "../stores/useHistoryStore";
+import { useIslandStore } from "../stores/useIslandStore";
+import { useResetIsland } from "../stores/useResetIsland";
+
+import Kbd from "./Kbd";
+import KeyBindingItem from "./KeyBindingItem";
 
 const TOOL_OPTIONS = [
   { id: "move", icon: Hand, label: "Move", shortcut: ["v"], type: "toggle" },
