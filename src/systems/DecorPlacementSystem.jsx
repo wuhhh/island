@@ -43,12 +43,6 @@ export default function DecorPlacementSystem({ active, terrain, yCompensation = 
     } else {
       quaternion = itemRef.current.quaternion.clone();
     }
-    console.log("Placing item:", {
-      position: hoverPoint.toArray(),
-      quaternion: quaternion.toArray(),
-      type: itemRef.current.userData.type,
-      scale: itemRef.current.scale.toArray(),
-    });
 
     e.stopPropagation();
     onPlaceItem({

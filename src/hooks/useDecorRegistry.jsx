@@ -125,7 +125,7 @@ export function useDecorRegistry() {
         defaultIconProps: { label: "House", src: "/icons/icon--decor-house1.jpg" },
       },
     }),
-    [nodes]
+    [DebugBox, DebugSphere, House, Icon, Tree]
   );
 }
 

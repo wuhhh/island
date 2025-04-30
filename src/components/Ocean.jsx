@@ -46,7 +46,7 @@ export default function Ocean({
   useEffect(() => {
     if (!reflectionNode || !meshRef.current) return;
 
-    let materialColor; // colorNode
+    // let materialColor; // colorNode
 
     // Create material nodes
     const floorUV = t.uv().mul(colorMapRepeat);
@@ -107,7 +107,7 @@ export default function Ocean({
     // const reflectionStrength = fresnelTerm.mul(0.2).add(0.2);
 
     if (colorMap) {
-      materialColor = t.texture(colorMap, floorUV);
+      // materialColor = t.texture(colorMap, floorUV);
       // Blend with reflection based on fresnel
       // materialColor = materialColor.mix(reflectionNode, reflectionStrength);
     } else {
@@ -117,47 +117,47 @@ export default function Ocean({
     const finalReflection = t.mul(reflectionNode, 0.15);
     // const waterFx = t.step(0.8, t.distance(t.mod(t.mul(t.uv(), 200), 1), t.vec2(0.5, 0.5)));
     // Define constants
-    const sinSawTime = t.mul(t.time, 0.02);
-    const saw = t.oneMinus(t.fract(t.mod(sinSawTime, 100)));
+    // const sinSawTime = t.mul(t.time, 0.02);
+    // const saw = t.oneMinus(t.fract(t.mod(sinSawTime, 100)));
     // const sinSaw = t.select(t.lessThan(t.sin(sinSawTime), 0.0), t.oneMinus(t.abs(t.sin(sinSawTime))), t.sin(sinSawTime)).toVar();
-    const insideRadius = t.add(1.37, t.mul(saw, 0.3));
-    const outsideRadius = t.add(1.38, t.mul(saw, 0.3));
-    const wobbleAmount = 0.05;
-    const wobbleSpeed = 0.1;
-    const centerPoint = t.vec3(0, 0, 0);
+    // const insideRadius = t.add(1.37, t.mul(saw, 0.3));
+    // const outsideRadius = t.add(1.38, t.mul(saw, 0.3));
+    // const wobbleAmount = 0.05;
+    // const wobbleSpeed = 0.1;
+    // const centerPoint = t.vec3(0, 0, 0);
 
     // Get the time for animation
-    const time = t.mul(t.time, 0.02);
+    // const time = t.mul(t.time, 0.02);
 
     // Calculate the angle from the center to the current position
-    const positionXZ = t.vec2(t.positionWorld.x, t.positionWorld.z);
-    const angle = t.atan(positionXZ.y, positionXZ.x);
+    // const positionXZ = t.vec2(t.positionWorld.x, t.positionWorld.z);
+    // const angle = t.atan(positionXZ.y, positionXZ.x);
 
     // Base wobble using sine:
-    const baseWobble = t.mul(t.sin(t.add(t.mul(angle, 2.0), t.mul(time, wobbleSpeed))), wobbleAmount);
+    // const baseWobble = t.mul(t.sin(t.add(t.mul(angle, 2.0), t.mul(time, wobbleSpeed))), wobbleAmount);
 
     // Optional: Add extra complexity with another sine wave:
-    const additionalWobble = t.mul(t.sin(t.add(t.mul(angle, 12.0), t.mul(time, t.mul(wobbleSpeed, 1.5)))), 0.02);
+    // const additionalWobble = t.mul(t.sin(t.add(t.mul(angle, 12.0), t.mul(time, t.mul(wobbleSpeed, 1.5)))), 0.02);
 
     // Sample noise for added variance (assuming noise returns a TSL-compatible value):
-    const noiseScale = 1.5;
-    const noiseValue = t.mx_noise_float(t.add(t.mul(t.positionWorld.xz, noiseScale), time));
-    const noiseBasedWobble = t.mul(noiseValue, 0.2);
+    // const noiseScale = 1.5;
+    // const noiseValue = t.mx_noise_float(t.add(t.mul(t.positionWorld.xz, noiseScale), time));
+    // const noiseBasedWobble = t.mul(noiseValue, 0.2);
 
     // Combine all wobble modifications:
-    const combinedWobble = t.add(t.add(baseWobble, additionalWobble), noiseBasedWobble);
+    // const combinedWobble = t.add(t.add(baseWobble, additionalWobble), noiseBasedWobble);
 
     // Apply wobble to inside and outside radii:
-    const wobblyInsideRadius = t.add(insideRadius, combinedWobble);
-    const wobblyOutsideRadius = t.add(outsideRadius, combinedWobble);
+    // const wobblyInsideRadius = t.add(insideRadius, combinedWobble);
+    // const wobblyOutsideRadius = t.add(outsideRadius, combinedWobble);
 
     // Compute the distance from the center:
-    const distanceFromCenter = t.distance(t.positionWorld, centerPoint);
+    // const distanceFromCenter = t.distance(t.positionWorld, centerPoint);
 
     // Create the ring effect:
-    const waterFxInsideRing = t.step(wobblyInsideRadius, distanceFromCenter);
-    const waterFxOutsideRing = t.step(wobblyOutsideRadius, distanceFromCenter);
-    const waterFx = t.sub(waterFxInsideRing, waterFxOutsideRing);
+    // const waterFxInsideRing = t.step(wobblyInsideRadius, distanceFromCenter);
+    // const waterFxOutsideRing = t.step(wobblyOutsideRadius, distanceFromCenter);
+    // const waterFx = t.sub(waterFxInsideRing, waterFxOutsideRing);
 
     // material.colorNode = reflectionNode.add(t.vec4(waterFx));
     // material.colorNode = t.add(finalReflection, t.vec4(waterFx));

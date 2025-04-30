@@ -16,12 +16,12 @@ import {
 import React, { useEffect, useState, useRef } from "react";
 
 import { useDecorRegistry } from "../hooks/useDecorRegistry.jsx";
-import { useHistoryStore } from "../stores/useHistoryStore";
-import { useIslandStore } from "../stores/useIslandStore";
-import { useResetIsland } from "../stores/useResetIsland";
+import { useHistoryStore } from "../stores/useHistoryStore.js";
+import { useIslandStore } from "../stores/useIslandStore.js";
+import { useResetIsland } from "../stores/useResetIsland.js";
 
-import Kbd from "./Kbd";
-import KeyBindingItem from "./KeyBindingItem";
+import Kbd from "./Kbd.jsx";
+import KeyBindingItem from "./KeyBindingItem.jsx";
 
 const TOOL_OPTIONS = [
   { id: "move", icon: Hand, label: "Move", shortcut: ["v"], type: "toggle" },
@@ -212,7 +212,7 @@ function DecorSelectTool({ tool, activeTool, setActiveTool, decorSelect, setPlac
     };
     document.addEventListener("mousedown", handleClickOutside);
     return () => document.removeEventListener("mousedown", handleClickOutside);
-  }, [decorSelect]);
+  }, [decorSelect, setPlaceProp, setActiveTool]);
 
   // Toggle
   const handleClickMain = () => setPlaceProp("decorSelect", !decorSelect);
@@ -294,7 +294,7 @@ export default function IslandEditorUI() {
     if (tool === "decor-select") {
       setSculptProp("active", false);
     }
-  }, [activeTool]);
+  }, [activeTool, setActiveTool, setPlaceProp, setSculptProp]);
 
   return (
     <motion.div className='cursor-default fixed top-4 left-4 z-40 flex flex-col items-center space-y-2 bg-white p-2 rounded-4xl shadow-md h-auto'>

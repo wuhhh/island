@@ -76,14 +76,14 @@ export const useIslandStore = createBoundStore(
         })),
       // Reset camera to default constants
       resetCamera: () =>
-        set(state => ({
+        set(() => ({
           persisted: {
             cameraPosition: CAMERA_POSITION,
             cameraTarget: CAMERA_TARGET,
           },
         })),
       setSelectedItems: selectedItems =>
-        set(state => ({
+        set(() => ({
           selectedItems,
         })),
       /**
@@ -91,7 +91,7 @@ export const useIslandStore = createBoundStore(
        * @param {TerrainSystem} terrainSystem
        */
       setTerrainSystem: terrainSystem =>
-        set(state => ({
+        set(() => ({
           terrainSystem,
         })),
       /**

@@ -44,7 +44,7 @@ export default function DecorSystem() {
       },
     ]);
 
-    console.log(placedItems);
+    // console.log(placedItems);
   };
 
   // Backspace key down deletes selected item
@@ -62,7 +62,7 @@ export default function DecorSystem() {
     return () => {
       window.removeEventListener("keydown", handleKeyDown);
     };
-  }, [selectedItems, placedItems, islandStoreHydrated]);
+  }, [selectedItems, placedItems, islandStoreHydrated, setPlacedItems, setSelectedItems]);
 
   return (
     <>

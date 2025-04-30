@@ -1,5 +1,3 @@
-import * as THREE from "three/webgpu";
-
 /**
  * Finds the minimum and maximum Z values in a vertex array.
  * @param {Float32Array} vertexArray - The vertex array from the geometry

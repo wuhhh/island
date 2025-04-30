@@ -136,5 +136,19 @@ export function useKeyboardManager() {
       window.removeEventListener("keydown", handleKeyDown);
       window.removeEventListener("keyup", handleKeyUp);
     };
-  }, [preControlMode.current, editMode, wireframe, sculpt, setEditMode, setWireframe, setSculptProp, undo, redo]);
+  }, [
+    editMode,
+    wireframe,
+    sculpt,
+    setEditMode,
+    setWireframe,
+    setSculptProp,
+    undo,
+    redo,
+    activeTool,
+    place,
+    setActiveTool,
+    resetTerrain,
+    setPlaceProp,
+  ]);
 }

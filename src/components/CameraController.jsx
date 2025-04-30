@@ -5,7 +5,6 @@ import { CAMERA_POSITION, CAMERA_TARGET, useIslandStore, useIslandHydration } fr
 
 import CustomCameraControls from "./CustomCameraControls";
 
-
 // Helper to compare positions/targets (arrays or objects) without lodash
 const positionsAreEqual = (a, b) => {
   if (Array.isArray(a) && Array.isArray(b)) {
@@ -73,7 +72,6 @@ const CameraController = () => {
    */
   useEffect(() => {
     if (!cameraReady || !islandStoreHydrated) return;
-    console.log("CameraController mounted → Setting camera position and target");
 
     // handle both array and object formats
     const [x, y, z] = Array.isArray(cameraPosition) ? cameraPosition : [cameraPosition.x, cameraPosition.y, cameraPosition.z];
@@ -81,7 +79,7 @@ const CameraController = () => {
 
     cameraControls.current.setPosition(x, y, z);
     cameraControls.current.setTarget(tx, ty, tz);
-  }, [islandStoreHydrated, cameraReady]);
+  }, [islandStoreHydrated, cameraReady, cameraPosition, cameraTarget]);
 
   /**
    * Handle camera reset
@@ -93,7 +91,7 @@ const CameraController = () => {
       cameraControls.current.setPosition(...CAMERA_POSITION);
       cameraControls.current.setTarget(...CAMERA_TARGET);
     }
-  }, [cameraReady, cameraPosition]);
+  }, [cameraReady, cameraPosition, cameraTarget]);
 
   return (
     <CustomCameraControls

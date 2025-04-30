@@ -54,12 +54,12 @@ export default function Terrain({ ...props }) {
     if (!planeRef.current || !spatialIndex) return;
     // terrainSystem.current = new TerrainSystem(planeRef.current.geometry, spatialIndex);
     setTerrainSystem(new TerrainSystem(planeRef.current, spatialIndex));
-  }, [planeRef.current, spatialIndex]);
+  }, [setTerrainSystem, spatialIndex]);
 
   /**
    * Set up the material for the terrain
    */
-  const oceanLand = t.Fn(({ position, colour }) => {
+  const oceanLand = t.Fn(({ colour }) => {
     const gradient = t.oneMinus(t.dot(t.normalGeometry, t.vec3(0, 0, 1))); // 0.0 flat, 1.0 steep
     const waterLevel = 0.02;
     const height = t.positionGeometry.z;
@@ -74,7 +74,7 @@ export default function Terrain({ ...props }) {
       value: "#246913",
       onChange: v => {
         if (materialRef.current) {
-          materialRef.current.colorNode = oceanLand({ position: t.positionGeometry, colour: v });
+          materialRef.current.colorNode = oceanLand({ colour: v });
           materialRef.current.needsUpdate = true;
         }
       },
@@ -90,7 +90,7 @@ export default function Terrain({ ...props }) {
 
     materialRef.current = material;
     material.colorNode = oceanLand({ position: t.positionGeometry, colour: terrainMaterialConfig.color });
-  }, [wireframe, islandStoreHydrated, terrainMaterialConfig.color]);
+  }, [wireframe, islandStoreHydrated, terrainMaterialConfig.color, oceanLand]);
 
   /**
    * Update terrain on undo/redo
@@ -111,7 +111,7 @@ export default function Terrain({ ...props }) {
       planeRef.current.geometry.attributes.position.needsUpdate = true;
       planeRef.current.geometry.computeVertexNormals();
     }
-  }, [useHistoryStoreUndo, useHistoryStoreRedo, terrainGeomAttrsPosArr]);
+  }, [useHistoryStoreUndo, useHistoryStoreRedo, terrainGeomAttrsPosArr, getTerrainData]);
 
   /**
    * Handle pointer up - store state in history
@@ -128,7 +128,7 @@ export default function Terrain({ ...props }) {
       const extrema = findZExtrema(currentTerrain);
       setTerrainZExtrema(extrema);
     }
-  }, [pointerDown]);
+  }, [brushing, pointerDown, setTerrainGeomAttrsPosArr, setTerrainZExtrema]);
 
   /**
    * Apply brush on pointer move

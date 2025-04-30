@@ -13,25 +13,20 @@ export default function ShoreLine({ ...props }) {
   const terrainZExtrema = useIslandStore(state => state.terrainZExtrema);
   const getTerrainData = useHistoryStore(state => state.getTerrainData);
   const terrainGeomAttrsPosArr = useHistoryStore(state => state.terrainGeomAttrsPosArr);
-  const { undo: useHistoryStoreUndo, redo: useHistoryStoreRedo, clear: useHistoryStoreClear } = useHistoryStore.temporal.getState();
-
   const islandStoreHydrated = useIslandHydration();
   const historyStoreHydrated = useHistoryHydration();
 
   useEffect(() => {
     if (islandStoreHydrated && historyStoreHydrated && materialRef.current) {
       const terrainData = getTerrainData();
-      const zMin = terrainZExtrema[0];
+      // const zMin = terrainZExtrema[0];
       const zMax = terrainZExtrema[1];
-      const zRange = zMax - zMin;
-      const zScale = 1 / zRange; // Scale factor for height data
 
       // Assuming terrain is a grid of vertices
       const width = 128; // Texture width
       const height = 128; // Texture height
 
-      // Create height data texture - Change to RGBA format (4 channels)
-      const heightData = new Float32Array(width * height * 4); // 4 channels for RGBA
+      const heightData = new Float32Array(width * height);
 
       // Calculate vertex counts along each dimension
       const verticesX = Math.sqrt(terrainData.length / 3);
@@ -57,28 +52,22 @@ export default function ShoreLine({ ...props }) {
           const heightValue = terrainData[index + 2];
 
           const r = heightValue > 0 ? heightValue / zMax : 0;
-          const g = heightValue <= 0 ? heightValue / zMin : 0;
-          const b = r + g * 0.5 - 0.001;
+          // const g = heightValue <= 0 ? heightValue / zMin : 0;
+          // const b = r + g * 0.5 - 0.001;
           // const b = (heightValue - zMin) * zScale;
-          const a = 1.0; // Add alpha channel with full opacity
+          // const a = 1.0; // Add alpha channel with full opacity
 
           // Store in the texture data (correct orientation) with flip y
           const flipY = height - 1 - y;
-          const texIndex = (flipY * width + x) * 4; // 4 components per pixel
+          const texIndex = flipY * width + x; // 4 components per pixel
           heightData[texIndex] = r;
-          heightData[texIndex + 1] = g;
-          heightData[texIndex + 2] = b;
-          heightData[texIndex + 3] = a; // Add alpha
+          // heightData[texIndex + 1] = g;
+          // heightData[texIndex + 2] = b;
+          // heightData[texIndex + 3] = a; // Add alpha
         }
       }
 
-      const heightTexture = new THREE.DataTexture(
-        heightData,
-        width,
-        height,
-        THREE.RGBAFormat, // Changed from RGBFormat to RGBAFormat
-        THREE.FloatType
-      );
+      const heightTexture = new THREE.DataTexture(heightData, width, height, THREE.RedFormat, THREE.FloatType);
       heightTexture.wrapS = THREE.RepeatWrapping;
       heightTexture.wrapT = THREE.RepeatWrapping;
       heightTexture.minFilter = THREE.LinearFilter;
@@ -89,10 +78,10 @@ export default function ShoreLine({ ...props }) {
       const shore = t.step(0.02, t.smoothstep(0.01, 0.09, t.texture(heightTexture).r));
 
       // Inverted hard
-      const shoreInvert = t.oneMinus(shore);
+      // const shoreInvert = t.oneMinus(shore);
 
       // Soft shoreline
-      const softShore = t.step(0.95, t.oneMinus(t.texture(heightTexture).b));
+      // const softShore = t.step(0.95, t.oneMinus(t.texture(heightTexture).b));
 
       const output = shore;
 
@@ -100,7 +89,7 @@ export default function ShoreLine({ ...props }) {
 
       materialRef.current.needsUpdate = true;
     }
-  }, [islandStoreHydrated, historyStoreHydrated, terrainZExtrema, terrainGeomAttrsPosArr]);
+  }, [islandStoreHydrated, historyStoreHydrated, terrainZExtrema, terrainGeomAttrsPosArr, getTerrainData]);
 
   return (
     <Plane ref={planeRef} args={[2, 2]} {...props}>

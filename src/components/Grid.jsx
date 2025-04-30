@@ -54,7 +54,7 @@ export default function Grid({ gridSize = 20, lineWidth = 1, gridAlpha = 0.2, li
     materialRef.current.colorNode = finalColor;
     materialRef.current.transparent = true;
     materialRef.current.needsUpdate = true;
-  }, []);
+  }, [gridAlpha, gridSize, lineColor, lineWidth]);
 
   return (
     <Plane {...props}>

@@ -4,9 +4,10 @@ import * as THREE from "three/webgpu";
 
 import CameraController from "./components/CameraController";
 import Grid from "./components/Grid";
+import IslandEditorUI from "./components/IslandEditorUI";
 import Ocean from "./components/Ocean";
+// import ShoreLine from "./components/ShoreLine";
 import Terrain from "./components/Terrain";
-import UI from "./components/UI";
 import { useKeyboardManager } from "./hooks/useKeyboardManager";
 import { CAMERA_POSITION, CAMERA_TARGET, useIslandStore } from "./stores/useIslandStore";
 import DecorSystem from "./systems/DecorSystem";
@@ -31,6 +32,7 @@ const Scene = () => {
       <Terrain renderOrder={1} position={[0, 0, 0]} />
       <DecorSystem />
       <Ocean args={[6, 0, 6]} position={[0, -0.002, 0]} rotation={[-Math.PI / 2, 0, 0]} resolution={1} />
+      {/* <ShoreLine rotation={[-Math.PI / 2, 0, 0]} /> */}
       <directionalLight position={[1, 1, 1]} intensity={2} color='red' />
       <directionalLight position={[1, 1, -1]} intensity={2} color='pink' />
       <directionalLight position={[-1, 1, -1]} intensity={2} color='orange' />
@@ -60,7 +62,7 @@ const Experience = () => {
       >
         <Scene />
       </Canvas>
-      <UI />
+      <IslandEditorUI />
       <Leva hidden />
     </>
   );
