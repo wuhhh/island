@@ -243,8 +243,8 @@ function DecorSelectTool({ tool, activeTool, setActiveTool, decorSelect, setPlac
         </ToolTip>
       )}
       {decorSelect && (
-        <div className='absolute left-full top-1/2 transform -translate-y-1/2 ml-[20px] w-48 p-2 bg-slate-50 shadow-sm text-sm rounded-2xl'>
-          <div className='flex items-center gap-x-2'>
+        <div className='absolute left-full top-1/2 transform -translate-y-1/2 ml-[20px] w-[296px] p-2 bg-slate-50 shadow-sm text-sm rounded-2xl'>
+          <div className='flex flex-wrap items-center gap-x-2 gap-y-4'>
             {/* Render only registry entries that include an Icon */}
             {Object.entries(decorRegistry)
               .filter(([_, { Icon }]) => Icon)
@@ -312,13 +312,9 @@ export default function IslandEditorUI() {
   // Load default island
   const handleLoadDefaultIsland = () => {
     const defaultIslandPath = "/snapshots/default.json"; // Replace with your actual path
-    loadSnapshotFromPath(defaultIslandPath)
-      .then(() => {
-        console.log("Default island loaded successfully.");
-      })
-      .catch(error => {
-        console.error("Error loading default island:", error);
-      });
+    loadSnapshotFromPath(defaultIslandPath).catch(error => {
+      new Error("Error loading default island:", error);
+    });
   };
 
   return (
