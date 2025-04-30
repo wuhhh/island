@@ -81,6 +81,27 @@ export function useDecorRegistry() {
   });
 
   /**
+   * Tent
+   */
+  const Tent = forwardRef(({ scale = [1, 1, 1], selected = false, highlightColor = 0xffff00, ...rest }, ref) => {
+    const local = useRef();
+    useLayoutEffect(() => {
+      const root = local.current;
+      if (!root) return;
+
+      root.traverse(obj => {
+        if (obj.isMesh) {
+          obj.material = obj.material.clone();
+          obj.material.emissive.set(selected ? highlightColor : 0x000000);
+          obj.material.emissiveIntensity = selected ? 0.25 : 0;
+        }
+      });
+    }, [selected, highlightColor]);
+
+    return <Clone ref={mergeRefs([ref, local])} object={nodes.tent} scale={scale} {...rest} />;
+  });
+
+  /**
    * Tree
    */
   const Tree = forwardRef(({ scale = [1, 1, 1], selected = false, highlightColor = 0xffff00, ...rest }, ref) => {
@@ -219,6 +240,14 @@ export function useDecorRegistry() {
         defaultIconProps: { label: "House", src: "/icons/icon--decor-house1.jpg" },
       },
 
+      tent: {
+        defaultProps: { scale: [1, 1, 1] },
+        placementProps: { yCompensation: -0.01, scaleVariance: 0.2 },
+        Component: Tent,
+        Icon: Icon,
+        defaultIconProps: { label: "Tent", src: "/icons/icon--decor-tent.jpg" },
+      },
+
       tree: {
         defaultProps: { scale: [1, 1, 1] },
         placementProps: { yCompensation: -0.02, scaleVariance: 0.5 },
@@ -235,7 +264,7 @@ export function useDecorRegistry() {
         defaultIconProps: { label: "Turbine", src: "/icons/icon--decor-wind-turbine.jpg" },
       },
     }),
-    [DebugBox, DebugSphere, Dock, House, Icon, Tree, WindTurbine]
+    [DebugBox, DebugSphere, Dock, House, Icon, Tent, Tree, WindTurbine]
   );
 }
 
