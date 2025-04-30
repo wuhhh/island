@@ -52,7 +52,6 @@ export default function Terrain({ ...props }) {
   // Initialize terrain system when geometry is ready
   useEffect(() => {
     if (!planeRef.current || !spatialIndex) return;
-    // terrainSystem.current = new TerrainSystem(planeRef.current.geometry, spatialIndex);
     setTerrainSystem(new TerrainSystem(planeRef.current, spatialIndex));
   }, [setTerrainSystem, spatialIndex]);
 

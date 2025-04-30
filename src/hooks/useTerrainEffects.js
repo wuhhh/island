@@ -42,5 +42,6 @@ export function useSpatialIndex(planeRef) {
   return useMemo(() => {
     if (!planeRef.current) return null;
     return createSpatialIndex(planeRef.current.geometry);
-  }, [planeRef]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [planeRef.current?.geometry]);
 }
