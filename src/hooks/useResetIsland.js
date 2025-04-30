@@ -1,7 +1,7 @@
 import { useCallback } from "react";
 
-import { useHistoryStore } from "./useHistoryStore";
-import { useIslandStore } from "./useIslandStore";
+import { useHistoryStore } from "../stores/useHistoryStore";
+import { useIslandStore } from "../stores/useIslandStore";
 
 export function useResetIsland() {
   const terrainSystem = useIslandStore(state => state.terrainSystem);

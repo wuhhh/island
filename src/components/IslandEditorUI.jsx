@@ -16,9 +16,9 @@ import {
 import React, { useEffect, useState, useRef } from "react";
 
 import { useDecorRegistry } from "../hooks/useDecorRegistry.jsx";
+import { useResetIsland } from "../hooks/useResetIsland.js";
 import { useHistoryStore } from "../stores/useHistoryStore.js";
 import { useIslandStore } from "../stores/useIslandStore.js";
-import { useResetIsland } from "../stores/useResetIsland.js";
 
 import Kbd from "./Kbd.jsx";
 import KeyBindingItem from "./KeyBindingItem.jsx";

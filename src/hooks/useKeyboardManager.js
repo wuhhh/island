@@ -1,8 +1,8 @@
 import { useEffect, useRef } from "react";
 
+import { useResetIsland } from "../hooks/useResetIsland";
 import { useHistoryStore } from "../stores/useHistoryStore";
 import { useIslandStore } from "../stores/useIslandStore";
-import { useResetIsland } from "../stores/useResetIsland";
 
 /**
  * Global keyboard manager hook to handle keyboard shortcuts across the UI.
