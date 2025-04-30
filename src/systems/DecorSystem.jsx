@@ -74,6 +74,8 @@ export default function DecorSystem() {
 
           return (
             <Item
+              castShadow
+              receiveShadow
               key={item.id}
               color={item.color}
               position={item.position?.toArray ? item.position.toArray() : item.position}
@@ -98,7 +100,7 @@ export default function DecorSystem() {
         <DecorPlacementSystem
           active={editMode && placeActive}
           terrain={terrainSystem.mesh}
-          yCompensation={decorRegistry[placeItem].defaultProps?.yCompensation || 0}
+          placementProps={decorRegistry[placeItem].placementProps}
           onPlaceItem={handlePlaceItem}
         >
           {(() => {

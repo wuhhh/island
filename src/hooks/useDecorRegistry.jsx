@@ -1,4 +1,5 @@
 import { Clone, useGLTF } from "@react-three/drei";
+import { useFrame } from "@react-three/fiber";
 import React, { forwardRef, useLayoutEffect, useMemo, useRef } from "react";
 import * as THREE from "three/webgpu";
 
@@ -26,26 +27,30 @@ export function useDecorRegistry() {
     return <mesh ref={ref} geometry={geo} material={mat} {...rest} />;
   });
 
-  /* ---------- GLB-derived helpers ---------- */
-  const Tree = forwardRef(({ color = "brown", scale = [1, 1, 1], selected = false, highlightColor = 0xffff00, ...rest }, ref) => (
-    <Clone
-      ref={ref}
-      object={nodes.tree}
-      scale={scale}
-      selected={selected}
-      highlightColor={highlightColor}
-      {...rest}
-      inject={
-        <meshStandardMaterial
-          color={color}
-          emissive={selected ? highlightColor : 0x000000}
-          emissiveIntensity={selected ? 0.2 : 0}
-          toneMapped={false}
-        />
-      }
-    />
-  ));
+  /**
+   * Dock
+   */
+  const Dock = forwardRef(({ scale = [1, 1, 1], selected = false, highlightColor = 0xffff00, ...rest }, ref) => {
+    const local = useRef();
+    useLayoutEffect(() => {
+      const root = local.current;
+      if (!root) return;
 
+      root.traverse(obj => {
+        if (obj.isMesh) {
+          obj.material = obj.material.clone();
+          obj.material.emissive.set(selected ? highlightColor : 0x000000);
+          obj.material.emissiveIntensity = selected ? 0.25 : 0;
+        }
+      });
+    }, [selected, highlightColor]);
+
+    return <Clone ref={mergeRefs([ref, local])} object={nodes.dock} scale={scale} {...rest} />;
+  });
+
+  /**
+   * House
+   */
   const House = forwardRef(({ scale = [1, 1, 1], selected = false, highlightColor = 0xffff00, ...rest }, ref) => {
     const local = useRef(); // we need to touch the clone later
 
@@ -74,6 +79,91 @@ export function useDecorRegistry() {
       />
     );
   });
+
+  /**
+   * Tree
+   */
+  const Tree = forwardRef(({ scale = [1, 1, 1], selected = false, highlightColor = 0xffff00, ...rest }, ref) => {
+    const local = useRef();
+    useLayoutEffect(() => {
+      const root = local.current;
+      if (!root) return;
+
+      root.traverse(obj => {
+        if (obj.isMesh) {
+          obj.material = obj.material.clone();
+          obj.material.emissive.set(selected ? highlightColor : 0x000000);
+          obj.material.emissiveIntensity = selected ? 0.25 : 0;
+        }
+      });
+    }, [selected, highlightColor]);
+
+    return <Clone ref={mergeRefs([ref, local])} object={nodes.tree} scale={scale} {...rest} />;
+  });
+
+  /**
+   * Wind Turbine
+   */
+  const WindTurbine = forwardRef(
+    (
+      {
+        scale = [1, 1, 1],
+        selected = false,
+        highlightColor = 0xffff00,
+        spinSpeed = 0.7, // rad per second (feel free to tweak)
+        ...rest
+      },
+      ref
+    ) => {
+      const rootRef = useRef(); // root of the cloned hierarchy
+      const bladesRef = useRef(); // the part we want to spin
+
+      /** Grab the blades mesh once, after the clone mounts */
+      useLayoutEffect(() => {
+        const root = rootRef.current;
+        if (!root) return;
+
+        // look for the child named “windTurbineBlades”
+        bladesRef.current = root.getObjectByName("windTurbineBlades");
+
+        // give every mesh its own material + highlight state
+        root.traverse(obj => {
+          if (obj.isMesh) {
+            obj.material = obj.material.clone();
+          }
+        });
+      }, []);
+
+      /** Toggle emissive highlight when selection changes */
+      useLayoutEffect(() => {
+        const root = rootRef.current;
+        if (!root) return;
+
+        root.traverse(obj => {
+          if (obj.isMesh) {
+            obj.material.emissive.set(selected ? highlightColor : 0x000000);
+            obj.material.emissiveIntensity = selected ? 0.25 : 0;
+          }
+        });
+      }, [selected, highlightColor]);
+
+      /** Spin the blades a little every frame */
+      useFrame((_, delta) => {
+        if (bladesRef.current) {
+          bladesRef.current.rotation.z += delta * spinSpeed;
+        }
+      });
+
+      return (
+        <Clone
+          ref={mergeRefs([ref, rootRef])} // expose both forwarded & local refs
+          object={nodes.windTurbine} // deep-clone the whole turbine
+          scale={scale}
+          {...rest}
+        />
+      );
+    }
+  );
 
   /* ---------- Icon helper returns img---------- */
   const Icon = forwardRef(({ label, src, ...rest }, ref) => {
@@ -113,19 +203,39 @@ export function useDecorRegistry() {
         Component: DebugSphere,
       },
 
-      tree: {
-        defaultProps: { color: "brown", scale: [1, 1, 1] },
-        Component: Tree,
+      dock: {
+        defaultProps: { scale: [1, 1, 1] },
+        placementProps: { yCompensation: -0.01, yMax: 0.02 },
+        Component: Dock,
+        Icon: Icon,
+        defaultIconProps: { label: "Dock", src: "/icons/icon--decor-dock.jpg" },
       },
 
       house: {
-        defaultProps: { color: "blue", scale: [1, 1, 1], yCompensation: -0.02 },
+        defaultProps: { scale: [1, 1, 1] },
+        placementProps: { yCompensation: -0.02, scaleVariance: 0.5 },
         Component: House,
         Icon: Icon,
         defaultIconProps: { label: "House", src: "/icons/icon--decor-house1.jpg" },
       },
+
+      tree: {
+        defaultProps: { scale: [1, 1, 1] },
+        placementProps: { yCompensation: -0.02, scaleVariance: 0.5 },
+        Component: Tree,
+        Icon: Icon,
+        defaultIconProps: { label: "Tree", src: "/icons/icon--decor-tree1.jpg" },
+      },
+
+      windTurbine: {
+        defaultProps: { scale: [1, 1, 1] },
+        placementProps: { yCompensation: -0.01 },
+        Component: WindTurbine,
+        Icon: Icon,
+        defaultIconProps: { label: "Turbine", src: "/icons/icon--decor-wind-turbine.jpg" },
+      },
     }),
-    [DebugBox, DebugSphere, House, Icon, Tree]
+    [DebugBox, DebugSphere, Dock, House, Icon, Tree, WindTurbine]
   );
 }
 

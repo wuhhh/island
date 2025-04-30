@@ -3,7 +3,7 @@ import { useFrame } from "@react-three/fiber";
 import React, { useState, useRef } from "react";
 import * as THREE from "three";
 
-export default function DecorPlacementSystem({ active, terrain, yCompensation = 0, onPlaceItem, children }) {
+export default function DecorPlacementSystem({ active, terrain, placementProps = {}, onPlaceItem, children }) {
   const [hoverPoint, setHoverPoint] = useState(null);
   const [hoverNormal, setHoverNormal] = useState(null);
   const itemRef = useRef();
@@ -16,7 +16,12 @@ export default function DecorPlacementSystem({ active, terrain, yCompensation = 
 
     if (hits.length > 0) {
       const { point, face } = hits[0];
-      point.add(new THREE.Vector3(0, yCompensation, 0)); // apply Y compensation
+
+      if (placementProps.yCompensation) {
+        // apply Y compensation
+        const yCompensation = placementProps.yCompensation;
+        point.y += yCompensation;
+      }
 
       // compute world-space normal
       const localNormal = face.normal.clone();
@@ -45,6 +50,18 @@ export default function DecorPlacementSystem({ active, terrain, yCompensation = 
     }
 
     e.stopPropagation();
+
+    // apply scale variance as a random factor equally on all axes
+    if (placementProps.scaleVariance) {
+      const scaleFactor = 1 + (Math.random() - 0.5) * placementProps.scaleVariance;
+      itemRef.current.scale.set(scaleFactor, scaleFactor, scaleFactor);
+    }
+
+    // Check all placement rules pass
+    if (placementProps.yMax && hoverPoint.y > placementProps.yMax) {
+      return;
+    }
+
     onPlaceItem({
       position: hoverPoint.toArray(),
       quaternion: quaternion.toArray(),
