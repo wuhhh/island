@@ -1,6 +1,5 @@
 import { Plane } from "@react-three/drei";
 import { useFrame } from "@react-three/fiber";
-import { useControls } from "leva";
 import { useEffect, useRef, useState } from "react";
 import * as t from "three/tsl";
 import * as THREE from "three/webgpu";
@@ -68,19 +67,6 @@ export default function Terrain({ ...props }) {
     return t.vec4(level1Mix, t.step(waterLevel, level1));
   });
 
-  const terrainMaterialConfig = useControls("Terrain Material", {
-    color: {
-      value: "#246913",
-      onChange: v => {
-        if (materialRef.current) {
-          materialRef.current.colorNode = oceanLand({ colour: v });
-          materialRef.current.needsUpdate = true;
-        }
-      },
-      transient: false,
-    },
-  });
-
   useEffect(() => {
     const material = new THREE.MeshStandardNodeMaterial({
       transparent: true,
@@ -88,8 +74,8 @@ export default function Terrain({ ...props }) {
     });
 
     materialRef.current = material;
-    material.colorNode = oceanLand({ position: t.positionGeometry, colour: terrainMaterialConfig.color });
-  }, [wireframe, islandStoreHydrated, terrainMaterialConfig.color, oceanLand]);
+    material.colorNode = oceanLand({ position: t.positionGeometry, colour: "#246913" });
+  }, [wireframe, islandStoreHydrated, oceanLand]);
 
   /**
    * Update terrain on undo/redo
@@ -146,7 +132,6 @@ export default function Terrain({ ...props }) {
           brushStrength: sculpt.brushStrength,
         };
         terrainSystem.applyBrush(uv.x, uv.y, brushSettings);
-        // console.log("Applying brush at", uv.x, uv.y, brushSettings);
       }
     }
   });
@@ -162,7 +147,7 @@ export default function Terrain({ ...props }) {
   }, [editMode, sculpt.active]);
 
   return (
-    <Plane ref={planeRef} args={[2, 2, TERRAIN_RESOLUTION, TERRAIN_RESOLUTION]} rotation={[-Math.PI * 0.5, 0, 0]} {...props}>
+    <Plane ref={planeRef} args={[2, 2, TERRAIN_RESOLUTION, TERRAIN_RESOLUTION]} rotation={[-Math.PI * 0.5, 0, 0]} {...props} receiveShadow>
       {materialRef.current && <primitive object={materialRef.current} />}
     </Plane>
   );
