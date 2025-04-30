@@ -19,6 +19,7 @@ import { useDecorRegistry } from "../hooks/useDecorRegistry.jsx";
 import { useResetIsland } from "../hooks/useResetIsland.js";
 import { useHistoryStore } from "../stores/useHistoryStore.js";
 import { useIslandStore } from "../stores/useIslandStore.js";
+import { createSnapshot, loadSnapshotFromPath } from "../utils/islandSnapshot.js";
 
 import Kbd from "./Kbd.jsx";
 import KeyBindingItem from "./KeyBindingItem.jsx";
@@ -296,99 +297,129 @@ export default function IslandEditorUI() {
     }
   }, [activeTool, setActiveTool, setPlaceProp, setSculptProp]);
 
+  // Create snapshot
+  const handleCreateSnapshot = () => {
+    const snapshot = createSnapshot();
+    const blob = new Blob([snapshot], { type: "application/json" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = "island_snapshot.json";
+    a.click();
+    URL.revokeObjectURL(url);
+  };
+
+  // Load default island
+  const handleLoadDefaultIsland = () => {
+    const defaultIslandPath = "/snapshots/default.json"; // Replace with your actual path
+    loadSnapshotFromPath(defaultIslandPath)
+      .then(() => {
+        console.log("Default island loaded successfully.");
+      })
+      .catch(error => {
+        console.error("Error loading default island:", error);
+      });
+  };
+
   return (
-    <motion.div className='cursor-default fixed top-4 left-4 z-40 flex flex-col items-center space-y-2 bg-white p-2 rounded-4xl shadow-md h-auto'>
-      <ToolbarToggle editMode={editMode} toggleEditMode={toggleEditMode} />
+    <section>
+      <motion.div className='cursor-default fixed top-4 left-4 z-40 flex flex-col items-center space-y-2 bg-white p-2 rounded-4xl shadow-md h-auto'>
+        <ToolbarToggle editMode={editMode} toggleEditMode={toggleEditMode} />
 
-      {editMode &&
-        TOOL_OPTIONS.map(tool => {
-          switch (tool.type) {
-            case "toggle":
-              return (
-                <ToggleTool
-                  key={tool.id}
-                  tool={tool}
-                  activeTool={activeTool}
-                  setActiveTool={setActiveTool}
-                  setPlaceProp={setPlaceProp}
-                  setSculptProp={setSculptProp}
-                />
-              );
-            case "action":
-              return <ActionTool key={tool.id} tool={tool} setShowHelpModal={setShowHelpModal} />;
-            case "slider":
-              return (
-                <SliderTool
-                  key={tool.id}
-                  tool={tool}
-                  openSlider={openSlider}
-                  setOpenSlider={setOpenSlider}
-                  sculpt={sculpt}
-                  setSculptProp={setSculptProp}
-                />
-              );
-            case "decor-select":
-              return (
-                <DecorSelectTool
-                  key={tool.id}
-                  tool={tool}
-                  activeTool={activeTool}
-                  setActiveTool={setActiveTool}
-                  decorSelect={place.decorSelect}
-                  setPlaceProp={setPlaceProp}
-                  setSculptProp={setSculptProp}
-                />
-              );
-            default:
-              return null;
-          }
-        })}
+        {editMode &&
+          TOOL_OPTIONS.map(tool => {
+            switch (tool.type) {
+              case "toggle":
+                return (
+                  <ToggleTool
+                    key={tool.id}
+                    tool={tool}
+                    activeTool={activeTool}
+                    setActiveTool={setActiveTool}
+                    setPlaceProp={setPlaceProp}
+                    setSculptProp={setSculptProp}
+                  />
+                );
+              case "action":
+                return <ActionTool key={tool.id} tool={tool} setShowHelpModal={setShowHelpModal} />;
+              case "slider":
+                return (
+                  <SliderTool
+                    key={tool.id}
+                    tool={tool}
+                    openSlider={openSlider}
+                    setOpenSlider={setOpenSlider}
+                    sculpt={sculpt}
+                    setSculptProp={setSculptProp}
+                  />
+                );
+              case "decor-select":
+                return (
+                  <DecorSelectTool
+                    key={tool.id}
+                    tool={tool}
+                    activeTool={activeTool}
+                    setActiveTool={setActiveTool}
+                    decorSelect={place.decorSelect}
+                    setPlaceProp={setPlaceProp}
+                    setSculptProp={setSculptProp}
+                  />
+                );
+              default:
+                return null;
+            }
+          })}
 
-      {showHelpModal && (
-        <div role='dialog' aria-modal='true' className='fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-50'>
-          <div className='bg-white rounded-lg max-w-2xl w-full p-6'>
-            <h2 className='text-xl font-semibold mb-4'>Tips & Shortcuts</h2>
-            <div className='mb-4'>
-              <h3 className='font-medium mb-4'>Keyboard Shortcuts:</h3>
-              <ul className='list-outside list-none ml-0 space-y-1'>
-                <li>
-                  <KeyBindingItem keyCombination={["e"]} action='Toggle edit mode' />
-                </li>
-                <li>
-                  <KeyBindingItem keyCombination={["v"]} action='Move tool (Camera control)' />
-                </li>
-                <li className='flex items-center gap-x-3'>
-                  <KeyBindingItem keyCombination={["a", "s"]} action='Raise / Lower terrain mode' separator=' ' />
-                </li>
-                <li className='pt-2 pb-3 text-sm'>
-                  <strong className='text-blue-600'>Tip!</strong> In either terrain mode, hold <Kbd>Alt</Kbd> to quickly switch between
-                  modes.
-                  <br />
-                  Hold <Kbd>Ctrl</Kbd> to access the move tool and adjust the camera.
-                </li>
-                <li>
-                  <KeyBindingItem keyCombination={["[", "]"]} action='Make brush size smaller / bigger' separator=' ' />
-                </li>
-                <li>
-                  <KeyBindingItem keyCombination={["-", "+"]} action='Make brush strength smaller / bigger' separator=' ' />
-                </li>
-                <li>
-                  <KeyBindingItem keyCombination={["u", "y"]} action='Undo / Redo' />
-                </li>
-                <li>
-                  <KeyBindingItem keyCombination={["Shift + R"]} action='Reset' />
-                </li>
-              </ul>
+        {showHelpModal && (
+          <div role='dialog' aria-modal='true' className='fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-50'>
+            <div className='bg-white rounded-lg max-w-2xl w-full p-6'>
+              <h2 className='text-xl font-semibold mb-4'>Tips & Shortcuts</h2>
+              <div className='mb-4'>
+                <h3 className='font-medium mb-4'>Keyboard Shortcuts:</h3>
+                <ul className='list-outside list-none ml-0 space-y-1'>
+                  <li>
+                    <KeyBindingItem keyCombination={["e"]} action='Toggle edit mode' />
+                  </li>
+                  <li>
+                    <KeyBindingItem keyCombination={["v"]} action='Move tool (Camera control)' />
+                  </li>
+                  <li className='flex items-center gap-x-3'>
+                    <KeyBindingItem keyCombination={["a", "s"]} action='Raise / Lower terrain mode' separator=' ' />
+                  </li>
+                  <li className='pt-2 pb-3 text-sm'>
+                    <strong className='text-blue-600'>Tip!</strong> In either terrain mode, hold <Kbd>Alt</Kbd> to quickly switch between
+                    modes.
+                    <br />
+                    Hold <Kbd>Ctrl</Kbd> to access the move tool and adjust the camera.
+                  </li>
+                  <li>
+                    <KeyBindingItem keyCombination={["[", "]"]} action='Make brush size smaller / bigger' separator=' ' />
+                  </li>
+                  <li>
+                    <KeyBindingItem keyCombination={["-", "+"]} action='Make brush strength smaller / bigger' separator=' ' />
+                  </li>
+                  <li>
+                    <KeyBindingItem keyCombination={["u", "y"]} action='Undo / Redo' />
+                  </li>
+                  <li>
+                    <KeyBindingItem keyCombination={["Shift + R"]} action='Reset' />
+                  </li>
+                </ul>
+              </div>
+              <button
+                onClick={() => setShowHelpModal(false)}
+                className='cursor-pointer mt-2 px-4 py-2 bg-blue-600 text-white rounded focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-blue-400'
+              >
+                Close
+              </button>
             </div>
-            <button
-              onClick={() => setShowHelpModal(false)}
-              className='cursor-pointer mt-2 px-4 py-2 bg-blue-600 text-white rounded focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-blue-400'
-            >
-              Close
-            </button>
           </div>
-        </div>
-      )}
-    </motion.div>
+        )}
+      </motion.div>
+      <div className='absolute top-4 right-4 flex flex-col'>
+        <button onClick={() => handleCreateSnapshot()}>Create Snapshot</button>
+        <button onClick={() => handleLoadDefaultIsland()}>Load Default Island</button>
+      </div>
+    </section>
   );
 }
