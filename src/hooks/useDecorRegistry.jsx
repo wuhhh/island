@@ -234,7 +234,7 @@ export function useDecorRegistry() {
 
       house: {
         defaultProps: { scale: [1, 1, 1] },
-        placementProps: { yCompensation: -0.02, scaleVariance: 0.5 },
+        placementProps: { yCompensation: -0.02, scaleVariance: 0.05 },
         Component: House,
         Icon: Icon,
         defaultIconProps: { label: "House", src: "/icons/icon--decor-house1.jpg" },
