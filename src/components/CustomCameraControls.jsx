@@ -28,6 +28,11 @@ const CustomCameraControls = forwardRef(
       controlsRef.current.polarRotateSpeed = rotateSpeed;
       controlsRef.current.truckSpeed = panSpeed;
 
+      // Camera limits
+      controlsRef.current.maxPolarAngle = Math.PI / 2.1; // Prevent going below horizon
+      controlsRef.current.minDistance = 1;
+      controlsRef.current.maxDistance = 5;
+
       // Default action mapping (modified later by event listeners)
       const defaultLeftButton = makeDefaultRotation ? 1 : 2; // 1=pan, 2=rotate
       const shiftLeftButton = makeDefaultRotation ? 2 : 1; // Opposite of default
