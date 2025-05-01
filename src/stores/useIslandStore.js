@@ -31,6 +31,7 @@ export const useIslandStore = createBoundStore(
     persisted: {
       cameraPosition: CAMERA_POSITION,
       cameraTarget: CAMERA_TARGET,
+      hasDismissedIntro: false,
       snapshotId: null,
     },
 
@@ -73,6 +74,13 @@ export const useIslandStore = createBoundStore(
           persisted: {
             ...state.persisted,
             cameraTarget,
+          },
+        })),
+      setHasDismissedIntro: hasDismissedIntro =>
+        set(state => ({
+          persisted: {
+            ...state.persisted,
+            hasDismissedIntro,
           },
         })),
       setSnapshotId: snapshotId =>

@@ -19,7 +19,7 @@ import { useDecorRegistry } from "../hooks/useDecorRegistry.jsx";
 import { useResetIsland } from "../hooks/useResetIsland.js";
 import { useHistoryStore } from "../stores/useHistoryStore.js";
 import { useIslandStore } from "../stores/useIslandStore.js";
-import { createSnapshot, loadSnapshotFromPath } from "../utils/islandSnapshot.js";
+import { loadSnapshotFromPath } from "../utils/islandSnapshot.js";
 
 import Kbd from "./Kbd.jsx";
 import KeyBindingItem from "./KeyBindingItem.jsx";
@@ -271,12 +271,34 @@ export default function UserInterface() {
   const setSculptProp = useIslandStore(state => state.actions.setSculptProp);
   const activeTool = useIslandStore(state => state.activeTool);
   const setActiveTool = useIslandStore(state => state.actions.setActiveTool);
-  const snapshotId = useIslandStore(state => state.persisted.snapshotId);
+  const resetTerrain = useResetIsland();
+  // const snapshotId = useIslandStore(state => state.persisted.snapshotId);
   const [openSlider, setOpenSlider] = useState(null);
   const [showHelpModal, setShowHelpModal] = useState(false);
   const [showCreditsModal, setShowCreditsModal] = useState(false);
+  const [showIntroNotification, setShowIntroNotification] = useState(false);
+  const hasDismissedIntro = useIslandStore(state => state.persisted.hasDismissedIntro);
+  const setHasDismissedIntro = useIslandStore(state => state.actions.setHasDismissedIntro);
 
   const toggleEditMode = () => setEditMode(!editMode);
+
+  useEffect(() => {
+    if (!hasDismissedIntro) {
+      const timer = setTimeout(() => setShowIntroNotification(true), 1000);
+      return () => clearTimeout(timer);
+    }
+  }, [hasDismissedIntro]);
+
+  const handleDismissIntro = () => {
+    setShowIntroNotification(false);
+    setHasDismissedIntro(true);
+  };
+
+  const handleCreateNewIsland = () => {
+    setEditMode(true);
+    setShowIntroNotification(false);
+    resetTerrain();
+  };
 
   // Manage mutually exclusive state for sculpt and place tools
   useEffect(() => {
@@ -301,24 +323,24 @@ export default function UserInterface() {
   }, [activeTool, setActiveTool, setPlaceProp, setSculptProp]);
 
   // Create snapshot
-  const handleCreateSnapshot = () => {
-    const snapshot = createSnapshot();
-    const blob = new Blob([snapshot], { type: "application/json" });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement("a");
-    a.href = url;
-    a.download = "island_snapshot.json";
-    a.click();
-    URL.revokeObjectURL(url);
-  };
+  // const handleCreateSnapshot = () => {
+  //   const snapshot = createSnapshot();
+  //   const blob = new Blob([snapshot], { type: "application/json" });
+  //   const url = URL.createObjectURL(blob);
+  //   const a = document.createElement("a");
+  //   a.href = url;
+  //   a.download = "island_snapshot.json";
+  //   a.click();
+  //   URL.revokeObjectURL(url);
+  // };
 
   // Load default island
-  const handleLoadDefaultIsland = () => {
-    const defaultIslandPath = "/island/snapshots/default.json"; // Replace with your actual path
-    loadSnapshotFromPath(defaultIslandPath).catch(error => {
-      new Error("Error loading default island:", error);
-    });
-  };
+  // const handleLoadDefaultIsland = () => {
+  //   const defaultIslandPath = "/island/snapshots/default.json"; // Replace with your actual path
+  //   loadSnapshotFromPath(defaultIslandPath).catch(error => {
+  //     new Error("Error loading default island:", error);
+  //   });
+  // };
 
   return (
     <section>
@@ -415,7 +437,38 @@ export default function UserInterface() {
           </div>
         )}
       </motion.div>
+      {showIntroNotification && (
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          exit={{ opacity: 0, y: 20 }}
+          className='fixed bottom-4 left-1/2 transform -translate-x-1/2 bg-white shadow-md rounded-lg p-8 w-11/12 max-w-xl z-50'
+        >
+          <div className='text-left space-y-2 mb-3'>
+            <p className='font-medium text-base'>🏝️ Model Island - Sculpt and decorate your own paradise 🏝️</p>
+          </div>
+          <p className='text-sm text-gray-700 mb-3'>
+            Click the pencil button in the top left to try editing this one! If you're feeling brave you can create a new island from
+            scratch by clicking the button below!
+          </p>
+          <div className='flex justify-between items-center'>
+            <button
+              onClick={handleCreateNewIsland}
+              className='px-4 py-2 bg-blue-600 text-white rounded focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-blue-400'
+            >
+              Create New Island
+            </button>
+            <button onClick={handleDismissIntro} className='text-sm text-gray-500 underline focus:outline-none'>
+              Dismiss
+            </button>
+          </div>
+        </motion.div>
+      )}
+
+      {/* Logo */}
       <LogoMark />
+
+      {/* Credits button */}
       <div className='absolute bottom-[26px] right-12 w-[26px] h-[26px] flex items-center'>
         <button
           onClick={() => setShowCreditsModal(true)}
@@ -424,21 +477,18 @@ export default function UserInterface() {
           Credits
         </button>
       </div>
-      <div className='absolute bottom-4 left-1/2 -translate-x-1/2 flex items-center gap-x-3'>
-        {/* <button className='button' onClick={() => handleCreateSnapshot()}>
-          Make Your Own!
-        </button> */}
-        {/* <button className='button' onClick={() => handleCreateSnapshot()}>
-          Save Snapshot
-        </button> */}
-        {/* <button
-          style={{ display: snapshotId !== "default" ? "block" : "none" }}
-          className='button'
-          onClick={() => handleLoadDefaultIsland()}
+
+      {/* Reset to default island button */}
+      <div className='absolute bottom-[26px] left-1/2 -translate-x-1/2 flex items-center justify-center text-center'>
+        <button
+          onClick={() => loadSnapshotFromPath("/island/snapshots/default.json")}
+          className='cursor-pointer text-xs underline decoration-dotted text-white appearance-none shadow-none rounded-none'
         >
-          Load Default Island
-        </button> */}
+          Revert to Starter Island
+        </button>
       </div>
+
+      {/* Credits modal */}
       {showCreditsModal && (
         <div
           role='dialog'
