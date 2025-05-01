@@ -55,7 +55,7 @@ const Experience = () => {
 
   useEffect(() => {
     if (!snapshotId) {
-      const defaultIslandPath = "/snapshots/default.json"; // Replace with your actual path
+      const defaultIslandPath = "/island/snapshots/default.json"; // Replace with your actual path
       loadSnapshotFromPath(defaultIslandPath).catch(error => {
         new Error("Error loading default island:", error);
       });

@@ -12,7 +12,7 @@ function useShared(factory) {
 }
 
 export function useDecorRegistry() {
-  const { nodes } = useGLTF("/models/island-decor.glb");
+  const { nodes } = useGLTF("/island/models/island-decor.glb");
 
   /* ---------- Primitive helpers ---------- */
   const DebugBox = forwardRef(({ color = "red", args = [0.1, 0.1, 0.1], ...rest }, ref) => {
@@ -229,7 +229,7 @@ export function useDecorRegistry() {
         placementProps: { yCompensation: -0.01, yMax: 0.02 },
         Component: Dock,
         Icon: Icon,
-        defaultIconProps: { label: "Dock", src: "/icons/icon--decor-dock.jpg" },
+        defaultIconProps: { label: "Dock", src: "/island/icons/icon--decor-dock.jpg" },
       },
 
       house: {
@@ -237,7 +237,7 @@ export function useDecorRegistry() {
         placementProps: { yCompensation: -0.02, scaleVariance: 0.05 },
         Component: House,
         Icon: Icon,
-        defaultIconProps: { label: "House", src: "/icons/icon--decor-house1.jpg" },
+        defaultIconProps: { label: "House", src: "/island/icons/icon--decor-house1.jpg" },
       },
 
       tent: {
@@ -245,7 +245,7 @@ export function useDecorRegistry() {
         placementProps: { yCompensation: -0.01, scaleVariance: 0.2 },
         Component: Tent,
         Icon: Icon,
-        defaultIconProps: { label: "Tent", src: "/icons/icon--decor-tent.jpg" },
+        defaultIconProps: { label: "Tent", src: "/island/icons/icon--decor-tent.jpg" },
       },
 
       tree: {
@@ -253,7 +253,7 @@ export function useDecorRegistry() {
         placementProps: { yCompensation: -0.02, scaleVariance: 0.5 },
         Component: Tree,
         Icon: Icon,
-        defaultIconProps: { label: "Tree", src: "/icons/icon--decor-tree1.jpg" },
+        defaultIconProps: { label: "Tree", src: "/island/icons/icon--decor-tree1.jpg" },
       },
 
       windTurbine: {
@@ -261,11 +261,11 @@ export function useDecorRegistry() {
         placementProps: { yCompensation: -0.01 },
         Component: WindTurbine,
         Icon: Icon,
-        defaultIconProps: { label: "Turbine", src: "/icons/icon--decor-wind-turbine.jpg" },
+        defaultIconProps: { label: "Turbine", src: "/island/icons/icon--decor-wind-turbine.jpg" },
       },
     }),
     [DebugBox, DebugSphere, Dock, House, Icon, Tent, Tree, WindTurbine]
   );
 }
 
-useGLTF.preload("/models/island-decor.glb");
+useGLTF.preload("/island/models/island-decor.glb");
