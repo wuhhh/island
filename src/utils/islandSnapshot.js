@@ -17,6 +17,7 @@ export function createSnapshot() {
 
   const snapshot = {
     island: {
+      id: "default",
       cameraPosition: islandState.persisted.cameraPosition, // Array
       cameraTarget: islandState.persisted.cameraTarget, // Array
     },
@@ -36,16 +37,9 @@ export function createSnapshot() {
 export function loadSnapshot(data) {
   const { island, history } = typeof data === "string" ? JSON.parse(data) : data;
 
-  // restore island store
   const setCameraPosition = useIslandStore.getState().actions.setCameraPosition;
   const setCameraTarget = useIslandStore.getState().actions.setCameraTarget;
-
-  if (island.cameraPosition) {
-    setCameraPosition(island.cameraPosition);
-  }
-  if (island.cameraTarget) {
-    setCameraTarget(island.cameraTarget);
-  }
+  const setSnapshotId = useIslandStore.getState().actions.setSnapshotId;
 
   // If terrain data is an object with numeric keys, convert it to an array
   let terrainData = history.terrainGeomAttrsPosArr;
@@ -53,10 +47,23 @@ export function loadSnapshot(data) {
     terrainData = Object.values(terrainData);
   }
 
-  // restore terrain data
+  // Set terrain data
   useHistoryStore.getState().setTerrainGeomAttrsPosArr(terrainData);
 
-  // Similarly, ensure placedItems is an array
+  // Set camera position and target
+  if (island.cameraPosition) {
+    setCameraPosition(island.cameraPosition);
+  }
+  if (island.cameraTarget) {
+    setCameraTarget(island.cameraTarget);
+  }
+
+  // Set snapshot ID
+  if (island.id) {
+    setSnapshotId(island.id);
+  }
+
+  // Ensure placedItems is an array
   let placedItems = history.placedItems;
   if (placedItems && !Array.isArray(placedItems)) {
     placedItems = Object.values(placedItems);
@@ -68,7 +75,7 @@ export function loadSnapshot(data) {
 /**
  * Load a snapshot from a path
  * @param {string} path  The path to the snapshot file.
- * @returns {Promise}  A promise that resolves when the snapshot is loaded.
+ * @returns {Promise<void>} void
  */
 export async function loadSnapshotFromPath(path) {
   const response = await fetch(path);
