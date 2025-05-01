@@ -1,4 +1,6 @@
+import { Loader } from "@react-three/drei";
 import { Canvas, extend } from "@react-three/fiber";
+import { Suspense, useEffect } from "react";
 import * as THREE from "three/webgpu";
 
 import CameraController from "./components/CameraController";
@@ -9,6 +11,7 @@ import Terrain from "./components/Terrain";
 import { useKeyboardManager } from "./hooks/useKeyboardManager";
 import { CAMERA_POSITION, CAMERA_TARGET, useIslandStore } from "./stores/useIslandStore";
 import DecorSystem from "./systems/DecorSystem";
+import { loadSnapshotFromPath } from "./utils/islandSnapshot.js";
 
 extend(THREE);
 
@@ -17,25 +20,27 @@ const Scene = () => {
 
   return (
     <>
-      <Grid
-        visible={editMode}
-        args={[2, 2]}
-        position={[0, 0.001, 0]}
-        rotation={[-Math.PI / 2, 0, 0]}
-        gridSize={20}
-        lineWidth={2}
-        gridAlpha={0.1}
-        lineColor='cyan'
-      />
-      <Terrain renderOrder={1} position={[0, 0, 0]} />
-      <DecorSystem />
-      <Ocean args={[6, 0, 6]} position={[0, -0.002, 0]} rotation={[-Math.PI / 2, 0, 0]} resolution={1} />
-      <directionalLight position={[5, 2, 1]} intensity={2} color='red' />
-      <directionalLight position={[1, 2, -1]} intensity={2} color='pink' />
-      <directionalLight position={[-1, 2, -1]} intensity={2} color='orange' />
-      <directionalLight position={[-0.1, 2, 1]} intensity={2} color='yellow' shadow-mapSize={1024} shadow-bias={0.001} castShadow />
-      <ambientLight intensity={1.2} />
-      <CameraController />
+      <Suspense fallback={null}>
+        <Grid
+          visible={editMode}
+          args={[2, 2]}
+          position={[0, 0.001, 0]}
+          rotation={[-Math.PI / 2, 0, 0]}
+          gridSize={20}
+          lineWidth={2}
+          gridAlpha={0.1}
+          lineColor='cyan'
+        />
+        <Terrain renderOrder={1} position={[0, 0, 0]} />
+        <DecorSystem />
+        <Ocean args={[6, 0, 6]} position={[0, -0.002, 0]} rotation={[-Math.PI / 2, 0, 0]} resolution={1} />
+        <directionalLight position={[5, 2, 1]} intensity={2} color='red' />
+        <directionalLight position={[1, 2, -1]} intensity={2} color='pink' />
+        <directionalLight position={[-1, 2, -1]} intensity={2} color='orange' />
+        <directionalLight position={[-0.1, 2, 1]} intensity={2} color='yellow' shadow-mapSize={1024} shadow-bias={0.001} castShadow />
+        <ambientLight intensity={1.2} />
+        <CameraController />
+      </Suspense>
     </>
   );
 };
@@ -43,7 +48,17 @@ const Scene = () => {
 const Experience = () => {
   useKeyboardManager();
 
+  const snapshotId = useIslandStore(state => state.persisted.snapshotId);
   const { setPointerDown } = useIslandStore(state => state.actions);
+
+  useEffect(() => {
+    if (!snapshotId) {
+      const defaultIslandPath = "/snapshots/default.json"; // Replace with your actual path
+      loadSnapshotFromPath(defaultIslandPath).catch(error => {
+        new Error("Error loading default island:", error);
+      });
+    }
+  }, [snapshotId]);
 
   return (
     <>
@@ -62,6 +77,7 @@ const Experience = () => {
         <Scene />
       </Canvas>
       <IslandEditorUI />
+      <Loader />
     </>
   );
 };
