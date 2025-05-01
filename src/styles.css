@@ -1,5 +1,13 @@
 @import "tailwindcss";
 
+@theme {
+  --color-ocean: #00b0be;
+  --color-oceanDark: #008c9e;
+  --color-oceanDarker: #007a8a;
+  --color-oceanDarkest: #006b7a;
+  --color-oceanLight: #00d4e1;
+}
+
 * {
   box-sizing: border-box;
 }
@@ -11,7 +19,7 @@ body,
   height: 100%;
   margin: 0;
   padding: 0;
-  background-color: #00b0be;
+  background-color: theme("colors.ocean");
   -webkit-touch-callout: none;
   -webkit-user-select: none;
   -khtml-user-select: none;
@@ -32,4 +40,26 @@ body {
   font-family: helvetica neue, helvetica, arial, sans-serif;
   color: black;
   -webkit-font-smoothing: antialiased;
+}
+
+.logomark {
+  @apply absolute bottom-[26px] left-[26px] w-[26px] h-[26px];
+}
+
+.prose {
+  a {
+    color: theme("colors.oceanDarkest");
+  }
+
+  a:hover {
+    color: theme("colors.ocean");
+  }
+}
+
+.button {
+  @apply bg-gradient-to-t from-oceanDarker/20 to-oceanLight/50 text-white font-medium text-base rounded-full px-4 py-2 border border-white transition-all duration-300 ease-in-out;
+
+  &:hover {
+    @apply bg-oceanDark text-white border-white;
+  }
 }

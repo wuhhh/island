@@ -5,9 +5,9 @@ import * as THREE from "three/webgpu";
 
 import CameraController from "./components/CameraController";
 import Grid from "./components/Grid";
-import IslandEditorUI from "./components/IslandEditorUI";
 import Ocean from "./components/Ocean";
 import Terrain from "./components/Terrain";
+import UserInterface from "./components/UserInterface.jsx";
 import { useKeyboardManager } from "./hooks/useKeyboardManager";
 import { CAMERA_POSITION, CAMERA_TARGET, useIslandStore } from "./stores/useIslandStore";
 import DecorSystem from "./systems/DecorSystem";
@@ -78,7 +78,7 @@ const Experience = () => {
       >
         <Scene />
       </Canvas>
-      <IslandEditorUI />
+      <UserInterface />
       <Loader />
     </>
   );

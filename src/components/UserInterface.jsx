@@ -23,6 +23,7 @@ import { createSnapshot, loadSnapshotFromPath } from "../utils/islandSnapshot.js
 
 import Kbd from "./Kbd.jsx";
 import KeyBindingItem from "./KeyBindingItem.jsx";
+import LogoMark from "./LogoMark.jsx";
 
 const TOOL_OPTIONS = [
   { id: "move", icon: Hand, label: "Move", shortcut: ["v"], type: "toggle" },
@@ -261,7 +262,7 @@ function DecorSelectTool({ tool, activeTool, setActiveTool, decorSelect, setPlac
   );
 }
 
-export default function IslandEditorUI() {
+export default function UserInterface() {
   const editMode = useIslandStore(state => state.editMode);
   const setEditMode = useIslandStore(state => state.actions.setEditMode);
   const place = useIslandStore(state => state.place);
@@ -270,8 +271,10 @@ export default function IslandEditorUI() {
   const setSculptProp = useIslandStore(state => state.actions.setSculptProp);
   const activeTool = useIslandStore(state => state.activeTool);
   const setActiveTool = useIslandStore(state => state.actions.setActiveTool);
+  const snapshotId = useIslandStore(state => state.persisted.snapshotId);
   const [openSlider, setOpenSlider] = useState(null);
   const [showHelpModal, setShowHelpModal] = useState(false);
+  const [showCreditsModal, setShowCreditsModal] = useState(false);
 
   const toggleEditMode = () => setEditMode(!editMode);
 
@@ -367,8 +370,8 @@ export default function IslandEditorUI() {
           })}
 
         {showHelpModal && (
-          <div role='dialog' aria-modal='true' className='fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-50'>
-            <div className='bg-white rounded-lg max-w-2xl w-full p-6'>
+          <div role='dialog' aria-modal='true' className='fixed inset-0 bg-ocean/50 backdrop-blur-md flex justify-center items-center z-50'>
+            <div className='bg-white rounded-lg shadow max-w-2xl w-full p-6'>
               <h2 className='text-xl font-semibold mb-4'>Tips & Shortcuts</h2>
               <div className='mb-4'>
                 <h3 className='font-medium mb-4'>Keyboard Shortcuts:</h3>
@@ -412,10 +415,92 @@ export default function IslandEditorUI() {
           </div>
         )}
       </motion.div>
-      <div className='absolute top-4 right-4 flex flex-col'>
-        <button onClick={() => handleCreateSnapshot()}>Create Snapshot</button>
-        <button onClick={() => handleLoadDefaultIsland()}>Load Default Island</button>
+      <LogoMark />
+      <div className='absolute bottom-[26px] right-12 w-[26px] h-[26px] flex items-center'>
+        <button
+          onClick={() => setShowCreditsModal(true)}
+          className='cursor-pointer text-xs underline decoration-dotted text-white appearance-none shadow-none rounded-none'
+        >
+          Credits
+        </button>
       </div>
+      <div className='absolute bottom-4 left-1/2 -translate-x-1/2 flex items-center gap-x-3'>
+        {/* <button className='button' onClick={() => handleCreateSnapshot()}>
+          Make Your Own!
+        </button> */}
+        {/* <button className='button' onClick={() => handleCreateSnapshot()}>
+          Save Snapshot
+        </button> */}
+        {/* <button
+          style={{ display: snapshotId !== "default" ? "block" : "none" }}
+          className='button'
+          onClick={() => handleLoadDefaultIsland()}
+        >
+          Load Default Island
+        </button> */}
+      </div>
+      {showCreditsModal && (
+        <div
+          role='dialog'
+          aria-modal='true'
+          className='fixed inset-0 bg-ocean/50 backdrop-blur-md flex justify-center items-center z-50 prose'
+        >
+          <div className='bg-white rounded-lg shadow max-w-2xl w-full p-6'>
+            <h2 className='text-xl font-semibold mb-4'>Credits</h2>
+            <div className='mb-4'>
+              <h3 className='font-medium mb-4'>Hi there!</h3>
+              <p>
+                Model Island was made by{" "}
+                <a href='https://huwroberts.net' target='_blank'>
+                  Huw Roberts
+                </a>
+                .
+              </p>
+            </div>
+            <div className='mb-4'>
+              <h3 className='font-medium mb-4'>Models:</h3>
+              <p>
+                <ul className='list-disc list-inside'>
+                  <li>
+                    <a href='https://poly.pizza/m/XMvD3AilGv' target='_blank' rel='noopener noreferrer'>
+                      Tree Fall - Kenney
+                    </a>
+                    <li>
+                      <a href='https://poly.pizza/m/bN9Oz3niNm' target='_blank' rel='noopener noreferrer'>
+                        Dock Long - Quaternius
+                      </a>
+                    </li>
+                    <li>
+                      <a href='https://poly.pizza/m/6I2DF2AZDgB' target='_blank' rel='noopener noreferrer'>
+                        Wind Turbine - Poly by Google
+                      </a>
+                    </li>
+                    <li>
+                      <a href='https://poly.pizza/m/LrTs3hVGXv' target='_blank' rel='noopener noreferrer'>
+                        Tent - Kenney
+                      </a>
+                    </li>
+                  </li>
+                </ul>
+              </p>
+            </div>
+            <div className='mb-4'>
+              <h3 className='font-medium mb-4'>Icons:</h3>
+              <p>
+                <a href='https://lucide.dev/' target='_blank'>
+                  Lucide Icons
+                </a>
+              </p>
+            </div>
+            <button
+              onClick={() => setShowCreditsModal(false)}
+              className='cursor-pointer mt-2 px-4 py-2 bg-blue-600 text-white rounded focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-blue-400'
+            >
+              Close
+            </button>
+          </div>
+        </div>
+      )}
     </section>
   );
 }
