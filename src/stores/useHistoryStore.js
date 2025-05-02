@@ -1,4 +1,5 @@
 import isDeepEqual from "fast-deep-equal";
+import throttle from "just-throttle";
 import { temporal } from "zundo";
 
 import { createBoundStore, useHydration } from "./useBoundStore";
@@ -106,6 +107,10 @@ export const useHistoryStore = createBoundStore(
           const eq = isDeepEqual(past, current);
           return eq;
         },
+        handleSet: handleSet =>
+          throttle(state => {
+            handleSet(state);
+          }, 50),
         partialize: state => {
           const { placedItems, terrainGeomAttrsPosArr } = state;
           return { placedItems, terrainGeomAttrsPosArr };
