@@ -293,7 +293,7 @@ export function useDecorRegistry() {
         defaultIconProps: { label: "Turbine", src: "/island/icons/icon--decor-wind-turbine.jpg" },
       },
     }),
-    [DebugBox, DebugSphere, Dock, House, Icon, Tent, Tree, WindTurbine]
+    [DebugBox, DebugSphere, Dock, House, Icon, Lighthouse, Tent, Tree, WindTurbine]
   );
 }
 
