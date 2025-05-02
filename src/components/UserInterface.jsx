@@ -297,6 +297,7 @@ export default function UserInterface() {
   const handleCreateNewIsland = () => {
     setEditMode(true);
     setShowIntroNotification(false);
+    setHasDismissedIntro(true);
     resetTerrain();
   };
 
