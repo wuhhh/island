@@ -81,6 +81,27 @@ export function useDecorRegistry() {
   });
 
   /**
+   * Lighthouse
+   */
+  const Lighthouse = forwardRef(({ scale = [1, 1, 1], selected = false, highlightColor = 0xffff00, ...rest }, ref) => {
+    const local = useRef();
+    useLayoutEffect(() => {
+      const root = local.current;
+      if (!root) return;
+
+      root.traverse(obj => {
+        if (obj.isMesh) {
+          obj.material = obj.material.clone();
+          obj.material.emissive.set(selected ? highlightColor : 0x000000);
+          obj.material.emissiveIntensity = selected ? 0.25 : 0;
+        }
+      });
+    }, [selected, highlightColor]);
+
+    return <Clone ref={mergeRefs([ref, local])} object={nodes.lighthouse} scale={scale} {...rest} />;
+  });
+
+  /**
    * Tent
    */
   const Tent = forwardRef(({ scale = [1, 1, 1], selected = false, highlightColor = 0xffff00, ...rest }, ref) => {
@@ -238,6 +259,14 @@ export function useDecorRegistry() {
         Component: House,
         Icon: Icon,
         defaultIconProps: { label: "House", src: "/island/icons/icon--decor-house1.jpg" },
+      },
+
+      lighthouse: {
+        defaultProps: { scale: [1, 1, 1] },
+        placementProps: { yCompensation: -0.03, scaleVariance: 0 },
+        Component: Lighthouse,
+        Icon: Icon,
+        defaultIconProps: { label: "Lighthouse", src: "/island/icons/icon--decor-lighthouse.jpg" },
       },
 
       tent: {
