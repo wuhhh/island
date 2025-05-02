@@ -453,16 +453,10 @@ export default function UserInterface() {
             scratch by clicking the button below!
           </p>
           <div className='flex justify-between items-center'>
-            <button
-              onClick={handleCreateNewIsland}
-              className='px-4 py-2 bg-blue-600 text-white rounded focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-blue-400 hover:bg-blue-700 transition-colors duration-200'
-            >
+            <button onClick={handleCreateNewIsland} className='btn'>
               Create New Island
             </button>
-            <button
-              onClick={handleDismissIntro}
-              className='text-sm text-gray-500 underline focus:outline-none hover:text-gray-700 hover:no-underline'
-            >
+            <button onClick={handleDismissIntro} className='btn-dotted !text-sm text-slate-600'>
               Dismiss
             </button>
           </div>
@@ -474,20 +468,14 @@ export default function UserInterface() {
 
       {/* Credits button */}
       <div className='absolute bottom-[26px] right-12 w-[26px] h-[26px] flex items-center'>
-        <button
-          onClick={() => setShowCreditsModal(true)}
-          className='cursor-pointer text-xs underline decoration-dotted text-white appearance-none shadow-none rounded-none hover:no-underline'
-        >
+        <button onClick={() => setShowCreditsModal(true)} className='btn-dotted text-white'>
           Credits
         </button>
       </div>
 
       {/* Reset to default island button */}
       <div className='absolute bottom-[26px] left-1/2 -translate-x-1/2 flex items-center justify-center text-center'>
-        <button
-          onClick={() => loadSnapshotFromPath("/island/snapshots/default.json")}
-          className='cursor-pointer text-xs underline decoration-dotted text-white appearance-none shadow-none rounded-none hover:no-underline'
-        >
+        <button onClick={() => loadSnapshotFromPath("/island/snapshots/default.json")} className='btn-dotted text-white'>
           Revert to Starter Island
         </button>
       </div>

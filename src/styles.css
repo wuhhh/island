@@ -60,10 +60,10 @@ button {
   @apply cursor-pointer;
 }
 
-.button {
-  @apply bg-gradient-to-t from-oceanDarker/20 to-oceanLight/50 text-white font-medium text-base rounded-full px-4 py-2 border border-white transition-all duration-300 ease-in-out;
+.btn {
+  @apply px-4 py-2 bg-blue-600 text-white rounded focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-blue-400 hover:bg-blue-700 transition-colors duration-200;
+}
 
-  &:hover {
-    @apply bg-oceanDark text-white border-white;
-  }
+.btn-dotted {
+  @apply text-xs underline decoration-dotted appearance-none shadow-none rounded-none hover:no-underline;
 }
