@@ -3,6 +3,7 @@ import {
   Brush,
   CircleDotDashed,
   CircleFadingPlus,
+  Download,
   Eraser,
   Hand,
   HelpCircle,
@@ -19,7 +20,7 @@ import { useDecorRegistry } from "../hooks/useDecorRegistry.jsx";
 import { useResetIsland } from "../hooks/useResetIsland.js";
 import { useHistoryStore } from "../stores/useHistoryStore.js";
 import { useIslandStore } from "../stores/useIslandStore.js";
-import { loadSnapshotFromPath } from "../utils/islandSnapshot.js";
+import { createSnapshot, loadSnapshotFromPath } from "../utils/islandSnapshot.js";
 
 import Kbd from "./Kbd.jsx";
 import KeyBindingItem from "./KeyBindingItem.jsx";
@@ -34,6 +35,7 @@ const TOOL_OPTIONS = [
   { id: "decor-select", icon: WandSparkles, label: "Place Items", shortcut: ["p"], type: "decor-select" },
   { id: "undo", icon: Undo, label: "Undo", shortcut: ["u"], type: "action" },
   { id: "redo", icon: Redo, label: "Redo", shortcut: ["y"], type: "action" },
+  { id: "download", icon: Download, label: "Download JSON", shortcut: ["d"], type: "action" },
   { id: "reset", icon: RefreshCw, label: "Reset", shortcut: ["Shift", "r"], type: "action" },
   { id: "help", icon: HelpCircle, label: "Help", shortcut: ["h"], type: "action" },
 ];
@@ -126,12 +128,14 @@ function ToggleTool({ tool, activeTool, setActiveTool, setPlaceProp, setSculptPr
   );
 }
 
-function ActionTool({ tool, setShowHelpModal }) {
+function ActionTool({ tool, setShowHelpModal, handleCreateSnapshot }) {
   const { undo, redo } = useHistoryStore.temporal.getState();
   const resetIsland = useResetIsland();
 
   const handleClick = () => {
     switch (tool.id) {
+      case "download":
+        return handleCreateSnapshot();
       case "undo":
         return undo();
       case "redo":
@@ -324,16 +328,16 @@ export default function UserInterface() {
   }, [activeTool, setActiveTool, setPlaceProp, setSculptProp]);
 
   // Create snapshot
-  // const handleCreateSnapshot = () => {
-  //   const snapshot = createSnapshot();
-  //   const blob = new Blob([snapshot], { type: "application/json" });
-  //   const url = URL.createObjectURL(blob);
-  //   const a = document.createElement("a");
-  //   a.href = url;
-  //   a.download = "island_snapshot.json";
-  //   a.click();
-  //   URL.revokeObjectURL(url);
-  // };
+  const handleCreateSnapshot = () => {
+    const snapshot = createSnapshot();
+    const blob = new Blob([snapshot], { type: "application/json" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = "island_snapshot.json";
+    a.click();
+    URL.revokeObjectURL(url);
+  };
 
   // Load default island
   // const handleLoadDefaultIsland = () => {
@@ -363,7 +367,9 @@ export default function UserInterface() {
                   />
                 );
               case "action":
-                return <ActionTool key={tool.id} tool={tool} setShowHelpModal={setShowHelpModal} />;
+                return (
+                  <ActionTool key={tool.id} tool={tool} setShowHelpModal={setShowHelpModal} handleCreateSnapshot={handleCreateSnapshot} />
+                );
               case "slider":
                 return (
                   <SliderTool
