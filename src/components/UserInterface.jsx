@@ -443,7 +443,7 @@ export default function UserInterface() {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           exit={{ opacity: 0, y: 20 }}
-          className='fixed bottom-4 left-1/2 transform -translate-x-1/2 bg-white shadow-md rounded-lg p-8 w-11/12 max-w-xl z-50'
+          className='fixed bottom-4 left-1/2 transform -translate-x-1/2 bg-white shadow-md rounded-lg p-8 w-11/12 max-w-xl z-50 cursor-default'
         >
           <div className='text-left space-y-2 mb-3'>
             <p className='font-medium text-base'>🏝️ Model Island - Sculpt and decorate your own paradise 🏝️</p>
@@ -455,11 +455,14 @@ export default function UserInterface() {
           <div className='flex justify-between items-center'>
             <button
               onClick={handleCreateNewIsland}
-              className='px-4 py-2 bg-blue-600 text-white rounded focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-blue-400'
+              className='px-4 py-2 bg-blue-600 text-white rounded focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-blue-400 hover:bg-blue-700 transition-colors duration-200'
             >
               Create New Island
             </button>
-            <button onClick={handleDismissIntro} className='text-sm text-gray-500 underline focus:outline-none'>
+            <button
+              onClick={handleDismissIntro}
+              className='text-sm text-gray-500 underline focus:outline-none hover:text-gray-700 hover:no-underline'
+            >
               Dismiss
             </button>
           </div>
@@ -473,7 +476,7 @@ export default function UserInterface() {
       <div className='absolute bottom-[26px] right-12 w-[26px] h-[26px] flex items-center'>
         <button
           onClick={() => setShowCreditsModal(true)}
-          className='cursor-pointer text-xs underline decoration-dotted text-white appearance-none shadow-none rounded-none'
+          className='cursor-pointer text-xs underline decoration-dotted text-white appearance-none shadow-none rounded-none hover:no-underline'
         >
           Credits
         </button>
@@ -483,7 +486,7 @@ export default function UserInterface() {
       <div className='absolute bottom-[26px] left-1/2 -translate-x-1/2 flex items-center justify-center text-center'>
         <button
           onClick={() => loadSnapshotFromPath("/island/snapshots/default.json")}
-          className='cursor-pointer text-xs underline decoration-dotted text-white appearance-none shadow-none rounded-none'
+          className='cursor-pointer text-xs underline decoration-dotted text-white appearance-none shadow-none rounded-none hover:no-underline'
         >
           Revert to Starter Island
         </button>
