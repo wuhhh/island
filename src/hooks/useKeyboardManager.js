@@ -18,7 +18,7 @@ export function useKeyboardManager() {
   const setSculptProp = useIslandStore(state => state.actions.setSculptProp);
   const wireframe = useIslandStore(state => state.wireframe);
   const setWireframe = useIslandStore(state => state.actions.setWireframe);
-  const resetTerrain = useResetIsland();
+  const resetIsland = useResetIsland();
   const undo = useHistoryStore.temporal.getState().undo;
   const redo = useHistoryStore.temporal.getState().redo;
 
@@ -87,7 +87,7 @@ export function useKeyboardManager() {
           break;
         case "R":
           if (editMode) {
-            resetTerrain();
+            resetIsland();
           }
           break;
         case "a":
@@ -148,7 +148,7 @@ export function useKeyboardManager() {
     activeTool,
     place,
     setActiveTool,
-    resetTerrain,
+    resetIsland,
     setPlaceProp,
   ]);
 }

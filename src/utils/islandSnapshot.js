@@ -18,12 +18,12 @@ export function createSnapshot() {
   const snapshot = {
     island: {
       id: "default",
-      cameraPosition: islandState.persisted.cameraPosition, // Array
-      cameraTarget: islandState.persisted.cameraTarget, // Array
+      cameraPosition: islandState.persisted.cameraPosition,
+      cameraTarget: islandState.persisted.cameraTarget,
     },
     history: {
-      terrainGeomAttrsPosArr: terrainDataArray, // Ensure it's a regular Array
-      placedItems: historyState.getPlacedItems(), // Array
+      terrainGeomAttrsPosArr: terrainDataArray,
+      placedItems: historyState.placedItems,
     },
   };
 
@@ -48,7 +48,7 @@ export function loadSnapshot(data) {
   }
 
   // Set terrain data
-  useHistoryStore.getState().setTerrainGeomAttrsPosArr(terrainData);
+  // useHistoryStore.getState().setTerrainGeomAttrsPosArr(terrainData);
 
   // Set camera position and target
   if (island.cameraPosition) {
@@ -69,7 +69,8 @@ export function loadSnapshot(data) {
     placedItems = Object.values(placedItems);
   }
 
-  useHistoryStore.getState().setPlacedItems(placedItems);
+  // useHistoryStore.getState().setPlacedItems(placedItems);
+  useHistoryStore.getState().restoreIsland(placedItems, terrainData);
 }
 
 /**

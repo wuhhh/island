@@ -16,7 +16,7 @@ export default function DecorSystem() {
   const setSelectedItems = useIslandStore(state => state.actions.setSelectedItems);
   const terrainSystem = useIslandStore(state => state.terrainSystem);
   const setPlacedItems = useHistoryStore(state => state.setPlacedItems);
-  const placedItems = useHistoryStore(state => state.getPlacedItems());
+  const placedItems = useHistoryStore(state => state.placedItems);
   const islandStoreHydrated = useIslandHydration();
 
   /**
@@ -67,33 +67,33 @@ export default function DecorSystem() {
   return (
     <>
       {/* Placed items */}
-      {islandStoreHydrated &&
-        placedItems.map(item => {
-          const Item = decorRegistry[item.type].Component;
-          const isSelected = selectedItems.includes(item.id);
 
-          return (
-            <Item
-              castShadow
-              receiveShadow
-              key={item.id}
-              color={item.color}
-              position={item.position?.toArray ? item.position.toArray() : item.position}
-              quaternion={item.quaternion?.toArray ? item.quaternion.toArray() : item.quaternion}
-              scale={item.scale?.toArray ? item.scale.toArray() : item.scale}
-              onClick={e => {
-                if (activeTool !== "move") return;
+      {placedItems.map(item => {
+        const Item = decorRegistry[item.type].Component;
+        const isSelected = selectedItems.includes(item.id);
 
-                e.stopPropagation();
-                const isSelected = selectedItems.includes(item.id);
-                const newSelected = isSelected ? selectedItems.filter(id => id !== item.id) : [...selectedItems, item.id];
-                setSelectedItems(newSelected);
-              }}
-              selected={isSelected}
-              highlightColor='#ffff00'
-            />
-          );
-        })}
+        return (
+          <Item
+            castShadow
+            receiveShadow
+            key={item.id}
+            color={item.color}
+            position={item.position?.toArray ? item.position.toArray() : item.position}
+            quaternion={item.quaternion?.toArray ? item.quaternion.toArray() : item.quaternion}
+            scale={item.scale?.toArray ? item.scale.toArray() : item.scale}
+            onClick={e => {
+              if (activeTool !== "move") return;
+
+              e.stopPropagation();
+              const isSelected = selectedItems.includes(item.id);
+              const newSelected = isSelected ? selectedItems.filter(id => id !== item.id) : [...selectedItems, item.id];
+              setSelectedItems(newSelected);
+            }}
+            selected={isSelected}
+            highlightColor='#ffff00'
+          />
+        );
+      })}
 
       {/* Placement system */}
       {placeActive && (

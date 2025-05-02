@@ -128,7 +128,7 @@ function ToggleTool({ tool, activeTool, setActiveTool, setPlaceProp, setSculptPr
 
 function ActionTool({ tool, setShowHelpModal }) {
   const { undo, redo } = useHistoryStore.temporal.getState();
-  const resetTerrain = useResetIsland();
+  const resetIsland = useResetIsland();
 
   const handleClick = () => {
     switch (tool.id) {
@@ -137,7 +137,7 @@ function ActionTool({ tool, setShowHelpModal }) {
       case "redo":
         return redo();
       case "reset":
-        return resetTerrain();
+        return resetIsland();
       case "help":
         return setShowHelpModal(true);
     }
@@ -271,7 +271,7 @@ export default function UserInterface() {
   const setSculptProp = useIslandStore(state => state.actions.setSculptProp);
   const activeTool = useIslandStore(state => state.activeTool);
   const setActiveTool = useIslandStore(state => state.actions.setActiveTool);
-  const resetTerrain = useResetIsland();
+  const resetIsland = useResetIsland();
   // const snapshotId = useIslandStore(state => state.persisted.snapshotId);
   const [openSlider, setOpenSlider] = useState(null);
   const [showHelpModal, setShowHelpModal] = useState(false);
@@ -298,7 +298,7 @@ export default function UserInterface() {
     setEditMode(true);
     setShowIntroNotification(false);
     setHasDismissedIntro(true);
-    resetTerrain();
+    resetIsland();
   };
 
   // Manage mutually exclusive state for sculpt and place tools

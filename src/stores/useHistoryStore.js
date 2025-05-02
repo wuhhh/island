@@ -1,3 +1,4 @@
+import isDeepEqual from "fast-deep-equal";
 import { temporal } from "zundo";
 
 import { createBoundStore, useHydration } from "./useBoundStore";
@@ -5,11 +6,11 @@ import { createBoundStore, useHydration } from "./useBoundStore";
 // Create history store with temporal middleware for undo/redo functionality
 export const useHistoryStore = createBoundStore(
   (set, get) => ({
-    // Terrain (geometry.attributes.position.array)
-    terrainGeomAttrsPosArr: null,
-
     // Decor placement
     placedItems: [],
+
+    // Terrain (geometry.attributes.position.array)
+    terrainGeomAttrsPosArr: null,
 
     /**
      * setTerrainGeomAttrsPosArr
@@ -49,24 +50,13 @@ export const useHistoryStore = createBoundStore(
     },
 
     /**
-     * getPlacedItems
-     * @returns {Array} The array of placed items
-     * @description Gets the array of placed items from the store.
-     */
-    getPlacedItems: () => {
-      const state = get();
-      // Convert back to Array if it's not already
-      return Array.isArray(state.placedItems) ? state.placedItems : [];
-    },
-
-    /**
      * deletePlacedItems
      * @param {array} item - An array of IDs to delete
      * @returns {void}
      * @description Deletes placed items from the store based on their IDs.
      */
     deletePlacedItems: ids => {
-      const placedItems = get().getPlacedItems();
+      const placedItems = get().placedItems;
       const newPlacedItems = placedItems.filter(item => !ids.includes(item.id));
       set({ placedItems: newPlacedItems });
     },
@@ -79,12 +69,47 @@ export const useHistoryStore = createBoundStore(
     clearPlacedItems: () => {
       set({ placedItems: [] });
     },
+
+    /**
+     * resetIsland
+     * @param {Array} terrainPositions - The terrain positions to reset
+     * @returns {void}
+     * @description Resets the island state with a single write operation.
+     */
+    resetIsland: terrainPositions => {
+      set({
+        terrainGeomAttrsPosArr: terrainPositions,
+        placedItems: [],
+      });
+    },
+
+    /**
+     * restoreIsland
+     * @param {Array} placedItems - The placed items to restore
+     * @param {Array} terrainGeomAttrsPosArr - The terrain positions to restore
+     * @returns {void}
+     * @description Restores the island state with a single write operation.
+     */
+    restoreIsland: (placedItems, terrainGeomAttrsPosArr) => {
+      set({
+        terrainGeomAttrsPosArr,
+        placedItems,
+      });
+    },
   }),
   {
     name: "wuhhh/island:parent-storage",
     middlewares: [temporal],
     middlewareOptions: {
       temporal: {
+        equality: (past, current) => {
+          const eq = isDeepEqual(past, current);
+          return eq;
+        },
+        partialize: state => {
+          const { placedItems, terrainGeomAttrsPosArr } = state;
+          return { placedItems, terrainGeomAttrsPosArr };
+        },
         wrapTemporal:
           storeInitializer =>
           // Note: This is a middleware wrapping another middleware
