@@ -94,6 +94,7 @@ export const useIslandStore = createBoundStore(
       resetCamera: () =>
         set(() => ({
           persisted: {
+            ...useIslandStore.getState().persisted,
             cameraPosition: CAMERA_POSITION,
             cameraTarget: CAMERA_TARGET,
           },
