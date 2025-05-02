@@ -35,7 +35,7 @@ const TOOL_OPTIONS = [
   { id: "decor-select", icon: WandSparkles, label: "Place Items", shortcut: ["p"], type: "decor-select" },
   { id: "undo", icon: Undo, label: "Undo", shortcut: ["u"], type: "action" },
   { id: "redo", icon: Redo, label: "Redo", shortcut: ["y"], type: "action" },
-  { id: "download", icon: Download, label: "Download JSON", shortcut: ["d"], type: "action" },
+  { id: "download", icon: Download, label: "Download JSON", type: "action" },
   { id: "reset", icon: RefreshCw, label: "Reset", shortcut: ["Shift", "r"], type: "action" },
   { id: "help", icon: HelpCircle, label: "Help", shortcut: ["h"], type: "action" },
 ];
