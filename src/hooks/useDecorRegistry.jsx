@@ -255,7 +255,7 @@ export function useDecorRegistry() {
 
       house: {
         defaultProps: { scale: [1, 1, 1] },
-        placementProps: { yCompensation: -0.02, scaleVariance: 0.05 },
+        placementProps: { yCompensation: -0.02, yMin: 0.025, scaleVariance: 0.05 },
         Component: House,
         Icon: Icon,
         defaultIconProps: { label: "House", src: "/island/icons/icon--decor-house1.jpg" },
@@ -263,7 +263,7 @@ export function useDecorRegistry() {
 
       lighthouse: {
         defaultProps: { scale: [1, 1, 1] },
-        placementProps: { yCompensation: -0.03, scaleVariance: 0 },
+        placementProps: { yCompensation: -0.03, yMin: 0.025, scaleVariance: 0 },
         Component: Lighthouse,
         Icon: Icon,
         defaultIconProps: { label: "Lighthouse", src: "/island/icons/icon--decor-lighthouse.jpg" },
@@ -271,7 +271,7 @@ export function useDecorRegistry() {
 
       tent: {
         defaultProps: { scale: [1, 1, 1] },
-        placementProps: { yCompensation: -0.01, scaleVariance: 0.2 },
+        placementProps: { yCompensation: -0.01, yMin: 0.0125, scaleVariance: 0.2 },
         Component: Tent,
         Icon: Icon,
         defaultIconProps: { label: "Tent", src: "/island/icons/icon--decor-tent.jpg" },
@@ -279,7 +279,7 @@ export function useDecorRegistry() {
 
       tree: {
         defaultProps: { scale: [1, 1, 1] },
-        placementProps: { yCompensation: -0.02, scaleVariance: 0.5 },
+        placementProps: { yCompensation: -0.02, yMin: 0.025, scaleVariance: 0.5 },
         Component: Tree,
         Icon: Icon,
         defaultIconProps: { label: "Tree", src: "/island/icons/icon--decor-tree1.jpg" },
@@ -287,7 +287,7 @@ export function useDecorRegistry() {
 
       windTurbine: {
         defaultProps: { scale: [1, 1, 1] },
-        placementProps: { yCompensation: -0.01 },
+        placementProps: { yCompensation: -0.01, yMin: 0.025 },
         Component: WindTurbine,
         Icon: Icon,
         defaultIconProps: { label: "Turbine", src: "/island/icons/icon--decor-wind-turbine.jpg" },
