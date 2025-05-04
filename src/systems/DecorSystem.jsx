@@ -1,4 +1,4 @@
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 
 import { useDecorRegistry } from "../hooks/useDecorRegistry.jsx";
 import { useHistoryStore } from "../stores/useHistoryStore";
@@ -18,6 +18,8 @@ export default function DecorSystem() {
   const setPlacedItems = useHistoryStore(state => state.setPlacedItems);
   const placedItems = useHistoryStore(state => state.placedItems);
   const islandStoreHydrated = useIslandHydration();
+
+  const [hoveredId, setHoveredId] = useState(null);
 
   /**
    * handlePlaceItem
@@ -43,8 +45,6 @@ export default function DecorSystem() {
         type,
       },
     ]);
-
-    // console.log(placedItems);
   };
 
   // Backspace key down deletes selected item
@@ -67,7 +67,6 @@ export default function DecorSystem() {
   return (
     <>
       {/* Placed items */}
-
       {placedItems.map(item => {
         const Item = decorRegistry[item.type].Component;
         const isSelected = selectedItems.includes(item.id);
@@ -82,15 +81,22 @@ export default function DecorSystem() {
             quaternion={item.quaternion?.toArray ? item.quaternion.toArray() : item.quaternion}
             scale={item.scale?.toArray ? item.scale.toArray() : item.scale}
             onClick={e => {
-              if (activeTool !== "move") return;
+              if (activeTool !== "move" || !editMode) return;
 
               e.stopPropagation();
               const isSelected = selectedItems.includes(item.id);
               const newSelected = isSelected ? selectedItems.filter(id => id !== item.id) : [...selectedItems, item.id];
               setSelectedItems(newSelected);
             }}
-            selected={isSelected}
-            highlightColor='#ffff00'
+            onPointerOver={e => {
+              e.stopPropagation(); // <‑‑ cut the loop here
+              setHoveredId(item.id);
+            }}
+            onPointerOut={() => setHoveredId(null)}
+            hovered={editMode && activeTool === "move" && hoveredId === item.id}
+            hoveredColor={0x00ffff}
+            selected={isSelected && editMode}
+            selectedColor='#ffff00'
           />
         );
       })}

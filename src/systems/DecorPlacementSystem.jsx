@@ -16,7 +16,7 @@ export function highlightIndicator(isValid) {
     ? {}
     : {
         selected: true,
-        highlightColor: 0xff0000,
+        selectedColor: 0xff0000,
       };
 }
 

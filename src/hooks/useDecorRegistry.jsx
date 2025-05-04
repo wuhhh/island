@@ -24,7 +24,7 @@ export function useDecorRegistry() {
    * Composed WindTurbine component
    * (uses useFrame to spin the blades)
    */
-  const WindTurbine = forwardRef(({ scale = [1, 1, 1], selected = false, highlightColor = 0xffff00, spinSpeed = -1.5, ...rest }, ref) => {
+  const WindTurbine = forwardRef(({ scale = [1, 1, 1], selected = false, selectedColor = 0xffff00, spinSpeed = -1.5, ...rest }, ref) => {
     const root = useRef();
     const blades = useRef();
 
@@ -45,7 +45,7 @@ export function useDecorRegistry() {
         object={nodes.windTurbine}
         scale={scale}
         selected={selected}
-        highlightColor={highlightColor}
+        selectedColor={selectedColor}
         {...rest}
       />
     );

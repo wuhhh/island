@@ -7,10 +7,12 @@ const DecorItem = forwardRef(
   (
     {
       object, // THREE.Object3D – required
-      scale = [1, 1, 1], // everything else is optional / overridable
-      selected = false,
-      highlightColor = 0xffff00,
       cloneMaterial = true, // let special cases skip this step
+      scale = [1, 1, 1], // everything else is optional / overridable
+      hovered = false,
+      hoveredColor = 0xff33dd,
+      selected = false,
+      selectedColor = 0xffff00,
       ...rest
     },
     ref
@@ -30,11 +32,17 @@ const DecorItem = forwardRef(
       if (!local.current) return;
       local.current.traverse(o => {
         if (o.isMesh) {
-          o.material.emissive.set(selected ? highlightColor : 0x000000);
-          o.material.emissiveIntensity = selected ? 0.25 : 0;
+          if (selected) {
+            o.material.emissive.set(selectedColor);
+          } else if (hovered) {
+            o.material.emissive.set(hoveredColor);
+          } else {
+            o.material.emissive.set(0x000000);
+          }
+          o.material.emissiveIntensity = selected || hovered ? 0.25 : 0;
         }
       });
-    }, [selected, highlightColor]);
+    }, [selectedColor, hovered, selected, hoveredColor]);
 
     return <Clone ref={mergeRefs([ref, local])} object={object} scale={scale} {...rest} />;
   }
