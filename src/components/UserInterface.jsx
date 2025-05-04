@@ -493,14 +493,17 @@ export default function UserInterface() {
           aria-modal='true'
           className='fixed inset-0 bg-ocean/50 backdrop-blur-md flex justify-center items-center z-50 prose'
         >
-          <div className='bg-white rounded-lg shadow max-w-2xl w-full p-6'>
+          <div className='bg-white rounded-lg shadow max-w-xl w-full p-6'>
             <h2 className='text-xl font-semibold mb-4'>Credits</h2>
             <div className='mb-4'>
-              <h3 className='font-medium mb-4'>Hi there!</h3>
               <p>
-                Model Island was made by{" "}
+                Model Island is work in progress by Huw Roberts. You can find more of my creations at{" "}
                 <a href='https://huwroberts.net' target='_blank'>
-                  Huw Roberts
+                  huwroberts.net
+                </a>{" "}
+                or follow me on{" "}
+                <a href='https://bsky.app/profile/huwroberts.net' target='_blank' rel='noopener noreferrer'>
+                  Bluesky
                 </a>
                 .
               </p>
