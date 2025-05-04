@@ -48,6 +48,7 @@ body {
 
 .prose {
   a {
+    font-weight: 500;
     color: theme("colors.oceanDarkest");
   }
 
