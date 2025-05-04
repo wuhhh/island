@@ -94,7 +94,7 @@ export default function DecorSystem() {
             }}
             onPointerOut={() => setHoveredId(null)}
             hovered={editMode && activeTool === "move" && hoveredId === item.id}
-            hoveredColor={0x00ffff}
+            hoveredColor={0xffff00}
             selected={isSelected && editMode}
             selectedColor='#ffff00'
           />
