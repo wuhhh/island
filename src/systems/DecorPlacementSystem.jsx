@@ -121,7 +121,7 @@ export default function DecorPlacementSystem({
     if (!active || !terrain) return;
 
     const hits = raycaster.intersectObject(terrain);
-    if (placementProps.mustIntersect && hits.length === 0) {
+    if (placementProps.mustInterset && hits.length === 0) {
       setHoverPoint(null);
       setHoverNormal(null);
       setIsValid(false);

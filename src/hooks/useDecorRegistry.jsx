@@ -1,6 +1,7 @@
 import { useGLTF } from "@react-three/drei";
 import { useFrame } from "@react-three/fiber";
 import React, { forwardRef, useLayoutEffect, useMemo, useRef } from "react";
+import { MathUtils } from "three/webgpu";
 
 import DecorItem from "../components/DecorItem";
 import mergeRefs from "../utils/mergeRefs";
@@ -47,6 +48,9 @@ const normalizePlacementProps = overrides => ({
   ...overrides,
 });
 
+// Factory for simple DecorItem components
+const makeDecor = node => forwardRef((props, ref) => <DecorItem ref={ref} object={node} {...props} />);
+
 // Specialized WindTurbine factory
 const createWindTurbine = windNode =>
   forwardRef(({ scale = [1, 1, 1], selected = false, selectedColor = 0xffff00, spinSpeed = -1.5, ...rest }, ref) => {
@@ -68,8 +72,52 @@ const createWindTurbine = windNode =>
     );
   });
 
-// Centralized item definitions
+// Specialized Cloud factory
+const createCloud = cloudNode =>
+  forwardRef(({ scale = [1, 1, 1], selected = false, selectedColor = 0xffff00, ...rest }, ref) => {
+    const root = useRef();
+    const cloud = useRef();
+    const factor = 0.0005; // Adjust the speed and amplitude as needed
+    const speed = MathUtils.randFloat(0.2, 0.5);
+
+    useLayoutEffect(() => {
+      if (root.current) {
+        cloud.current = root.current.getObjectByName("cloud");
+      }
+    }, []);
+
+    useFrame(({ clock }, dt) => {
+      if (cloud.current) {
+        const originalY = cloud.current.position.y;
+        const offset = Math.sin(clock.getElapsedTime() * speed) * factor;
+        cloud.current.position.y = originalY + offset;
+        cloud.current.rotation.y += dt * 0.2; // Rotate the cloud
+      }
+    });
+
+    return (
+      <DecorItem
+        ref={mergeRefs([ref, root])}
+        object={cloudNode}
+        scale={scale}
+        selected={selected}
+        selectedColor={selectedColor}
+        {...rest}
+        castShadow={false}
+      />
+    );
+  });
+
+// Centralized item definitions with optional custom factories
 const DECOR_ITEMS = [
+  {
+    key: "cloud",
+    nodeName: "cloud",
+    label: "Cloud",
+    icon: "icon--decor-cloud.jpg",
+    placementProps: { mustIntersect: false, yCompensation: 0.5, yMin: 0.5, scaleVariance: 0.2 },
+    factory: createCloud,
+  },
   {
     key: "dock",
     nodeName: "dock",
@@ -111,6 +159,7 @@ const DECOR_ITEMS = [
     label: "Turbine",
     icon: "icon--decor-wind-turbine.jpg",
     placementProps: { yCompensation: -0.01, yMin: 0.025 },
+    factory: createWindTurbine,
   },
 ];
 
@@ -120,11 +169,9 @@ export function useDecorRegistry() {
   return useMemo(
     () =>
       Object.fromEntries(
-        DECOR_ITEMS.map(({ key, nodeName, label, icon, placementProps }) => {
-          const Component =
-            key === "windTurbine"
-              ? createWindTurbine(nodes.windTurbine)
-              : forwardRef((props, ref) => <DecorItem ref={ref} object={nodes[nodeName]} {...props} />);
+        DECOR_ITEMS.map(({ key, nodeName, label, icon, placementProps, factory }) => {
+          const node = nodes[nodeName];
+          const Component = (factory || makeDecor)(node);
 
           return [
             key,
