@@ -21,8 +21,10 @@ export function highlightIndicator(isValid) {
 }
 
 function validateYRange(point, placementProps) {
-  const { yMin = -Infinity, yMax = Infinity } = placementProps;
-  return point.y >= yMin && point.y <= yMax;
+  const { yMin, yMax } = placementProps;
+  const validMin = yMin != null ? point.y >= yMin : true;
+  const validMax = yMax != null ? point.y <= yMax : true;
+  return validMin && validMax;
 }
 
 /** Helper to swap / restore materials live (handles late‑loaded meshes too) */
@@ -30,6 +32,7 @@ function applyGhostTint(root, invalid, ghostMat) {
   if (!root) return;
   root.traverse(node => {
     if (!node.isMesh) return;
+    if (node.name && node.name.endsWith("Hit")) return;
     if (invalid) {
       if (!node.userData._origMat) node.userData._origMat = node.material;
       node.material = ghostMat;
@@ -98,7 +101,9 @@ export default function DecorPlacementSystem({
     });
   }, [hoverPoint, hoverNormal, isValid, placementProps.scaleVariance, onPlaceItem]);
 
-  /** Global pointer handler */
+  /**
+   * Global pointer handler
+   **/
   useEffect(() => {
     if (!active) return;
     const el = events?.connected ?? gl.domElement;
@@ -116,7 +121,7 @@ export default function DecorPlacementSystem({
     if (!active || !terrain) return;
 
     const hits = raycaster.intersectObject(terrain);
-    if (hits.length === 0) {
+    if (placementProps.mustIntersect && hits.length === 0) {
       setHoverPoint(null);
       setHoverNormal(null);
       setIsValid(false);
