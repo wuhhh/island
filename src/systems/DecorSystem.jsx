@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 
 import { useDecorRegistry } from "../hooks/useDecorRegistry.jsx";
 import { useHistoryStore } from "../stores/useHistoryStore";
@@ -70,6 +70,11 @@ export default function DecorSystem() {
       {placedItems.map(item => {
         const Item = decorRegistry[item.type].Component;
         const isSelected = selectedItems.includes(item.id);
+        const userData = {
+          id: item.id,
+          type: item.type,
+          position: item.position,
+        };
 
         return (
           <Item
@@ -97,6 +102,7 @@ export default function DecorSystem() {
             hoveredColor={0xffff00}
             selected={isSelected && editMode}
             selectedColor='#ffff00'
+            userData={userData}
           />
         );
       })}

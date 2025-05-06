@@ -17,6 +17,7 @@ import {
 import React, { useEffect, useState, useRef } from "react";
 
 import { useDecorRegistry } from "../hooks/useDecorRegistry.jsx";
+import { useKeyboardManager } from "../hooks/useKeyboardManager";
 import { useResetIsland } from "../hooks/useResetIsland.js";
 import { useHistoryStore } from "../stores/useHistoryStore.js";
 import { useIslandStore } from "../stores/useIslandStore.js";
@@ -267,6 +268,8 @@ function DecorSelectTool({ tool, activeTool, setActiveTool, decorSelect, setPlac
 }
 
 export default function UserInterface() {
+  useKeyboardManager();
+
   const editMode = useIslandStore(state => state.editMode);
   const setEditMode = useIslandStore(state => state.actions.setEditMode);
   const place = useIslandStore(state => state.place);
@@ -276,7 +279,6 @@ export default function UserInterface() {
   const activeTool = useIslandStore(state => state.activeTool);
   const setActiveTool = useIslandStore(state => state.actions.setActiveTool);
   const resetIsland = useResetIsland();
-  // const snapshotId = useIslandStore(state => state.persisted.snapshotId);
   const [openSlider, setOpenSlider] = useState(null);
   const [showHelpModal, setShowHelpModal] = useState(false);
   const [showCreditsModal, setShowCreditsModal] = useState(false);

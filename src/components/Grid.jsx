@@ -2,7 +2,10 @@ import { Plane } from "@react-three/drei";
 import { useEffect, useRef } from "react";
 import * as t from "three/tsl";
 
+import { useIslandStore } from "../stores/useIslandStore";
+
 export default function Grid({ gridSize = 20, lineWidth = 1, gridAlpha = 0.2, lineColor = "cyan", ...props }) {
+  const editMode = useIslandStore(state => state.editMode);
   const materialRef = useRef();
 
   useEffect(() => {
@@ -57,7 +60,7 @@ export default function Grid({ gridSize = 20, lineWidth = 1, gridAlpha = 0.2, li
   }, [gridAlpha, gridSize, lineColor, lineWidth]);
 
   return (
-    <Plane {...props}>
+    <Plane visible={editMode} {...props}>
       <meshBasicNodeMaterial ref={materialRef} />
     </Plane>
   );

@@ -51,7 +51,9 @@ const normalizePlacementProps = overrides => ({
 // Factory for simple DecorItem components
 const makeDecor = node => forwardRef((props, ref) => <DecorItem ref={ref} object={node} {...props} />);
 
-// Specialized WindTurbine factory
+/**
+ * Turbine
+ */
 const createWindTurbine = windNode =>
   forwardRef(({ scale = [1, 1, 1], selected = false, selectedColor = 0xffff00, spinSpeed = -1.5, ...rest }, ref) => {
     const root = useRef();
@@ -72,13 +74,17 @@ const createWindTurbine = windNode =>
     );
   });
 
-// Specialized Cloud factory
+/**
+ * Cloud
+ */
 const createCloud = cloudNode =>
-  forwardRef(({ scale = [1, 1, 1], selected = false, selectedColor = 0xffff00, ...rest }, ref) => {
+  forwardRef(({ scale = [1, 1, 1], selected = false, selectedColor = 0xffff00, userData = {}, ...rest }, ref) => {
     const root = useRef();
     const cloud = useRef();
-    const factor = 0.0005; // Adjust the speed and amplitude as needed
-    const speed = MathUtils.randFloat(0.2, 0.5);
+
+    const [factor, originalY, speed] = useMemo(() => {
+      return [0.05, userData.position?.[1] || 0, MathUtils.randFloat(-0.25, 0.25)];
+    }, [userData.position]);
 
     useLayoutEffect(() => {
       if (root.current) {
@@ -88,7 +94,6 @@ const createCloud = cloudNode =>
 
     useFrame(({ clock }, dt) => {
       if (cloud.current) {
-        const originalY = cloud.current.position.y;
         const offset = Math.sin(clock.getElapsedTime() * speed) * factor;
         cloud.current.position.y = originalY + offset;
         cloud.current.rotation.y += dt * 0.2; // Rotate the cloud

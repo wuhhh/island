@@ -8,7 +8,6 @@ import Grid from "./components/Grid";
 import Ocean from "./components/Ocean";
 import Terrain from "./components/Terrain";
 import UserInterface from "./components/UserInterface.jsx";
-import { useKeyboardManager } from "./hooks/useKeyboardManager";
 import { CAMERA_POSITION, CAMERA_TARGET, useIslandStore } from "./stores/useIslandStore";
 import DecorSystem from "./systems/DecorSystem";
 import { loadSnapshotFromPath } from "./utils/islandSnapshot.js";
@@ -16,13 +15,10 @@ import { loadSnapshotFromPath } from "./utils/islandSnapshot.js";
 extend(THREE);
 
 const Scene = () => {
-  const editMode = useIslandStore(state => state.editMode);
-
   return (
     <>
       <Suspense fallback={null}>
         <Grid
-          visible={editMode}
           args={[2, 2]}
           position={[0, 0.001, 0]}
           rotation={[-Math.PI / 2, 0, 0]}
@@ -48,8 +44,6 @@ const Scene = () => {
 };
 
 const Experience = () => {
-  useKeyboardManager();
-
   const snapshotId = useIslandStore(state => state.persisted.snapshotId);
   const { setPointerDown } = useIslandStore(state => state.actions);
 
