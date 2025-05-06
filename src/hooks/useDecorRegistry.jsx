@@ -49,7 +49,7 @@ const normalizePlacementProps = overrides => ({
 });
 
 // Factory for simple DecorItem components
-const makeDecor = node => forwardRef((props, ref) => <DecorItem ref={ref} object={node} {...props} />);
+const makeDecor = (node, userData) => forwardRef((props, ref) => <DecorItem ref={ref} object={node} userData={userData} {...props} />);
 
 /**
  * Turbine
@@ -78,13 +78,24 @@ const createWindTurbine = windNode =>
  * Cloud
  */
 const createCloud = cloudNode =>
-  forwardRef(({ scale = [1, 1, 1], selected = false, selectedColor = 0xffff00, userData = {}, ...rest }, ref) => {
+  forwardRef(({ scale = [1, 1, 1], selected = false, selectedColor = 0xffff00, ...rest }, ref) => {
     const root = useRef();
     const cloud = useRef();
 
-    const [factor, originalY, speed] = useMemo(() => {
-      return [0.05, userData.position?.[1] || 0, MathUtils.randFloat(-0.25, 0.25)];
-    }, [userData.position]);
+    // We'll use this to determine if we're in placement mode vs. a placed item
+    const isPlacedItem = useMemo(() => {
+      // If it has an ID, it's a placed item (IDs are only assigned after placement)
+      return Boolean(rest.userData?.id);
+    }, [rest.userData?.id]);
+
+    // Only used for placed items
+    const originalPosition = useMemo(() => {
+      return rest.userData?.position || rest.position;
+    }, [rest.userData?.position, rest.position]);
+
+    const [factor, speed] = useMemo(() => {
+      return [0.05, MathUtils.randFloat(-0.25, 0.25)];
+    }, []);
 
     useLayoutEffect(() => {
       if (root.current) {
@@ -94,9 +105,14 @@ const createCloud = cloudNode =>
 
     useFrame(({ clock }, dt) => {
       if (cloud.current) {
-        const offset = Math.sin(clock.getElapsedTime() * speed) * factor;
-        cloud.current.position.y = originalY + offset;
-        cloud.current.rotation.y += dt * 0.2; // Rotate the cloud
+        // Only animate if it's a placed item
+        if (isPlacedItem && originalPosition) {
+          const offset = Math.sin(clock.getElapsedTime() * speed) * factor;
+          cloud.current.position.y = originalPosition[1] + offset;
+        }
+
+        // We can still rotate during placement for visual interest
+        cloud.current.rotation.y += dt * 0.2;
       }
     });
 
@@ -120,7 +136,7 @@ const DECOR_ITEMS = [
     nodeName: "cloud",
     label: "Cloud",
     icon: "icon--decor-cloud.jpg",
-    placementProps: { mustIntersect: false, yCompensation: 0.5, yMin: 0.5, scaleVariance: 0.2 },
+    placementProps: { yCompensation: 0.5, yMin: 0.025, scaleVariance: 0.5 },
     factory: createCloud,
   },
   {
