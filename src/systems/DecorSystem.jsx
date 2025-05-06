@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useState } from "react";
 
 import { useDecorRegistry } from "../hooks/useDecorRegistry.jsx";
 import { useHistoryStore } from "../stores/useHistoryStore";
@@ -32,7 +32,7 @@ export default function DecorSystem() {
    * itemData.type - The type of the item
    */
   const handlePlaceItem = itemData => {
-    const { type, position, quaternion, scale, color = decorRegistry[type].defaultProps.color } = itemData;
+    const { type, position, quaternion, scale } = itemData;
 
     setPlacedItems([
       ...placedItems,
@@ -41,7 +41,6 @@ export default function DecorSystem() {
         position,
         quaternion,
         scale,
-        color,
         type,
       },
     ]);
@@ -119,8 +118,8 @@ export default function DecorSystem() {
             // Get the component
             const Preview = decorRegistry[placeItem].Component;
             // Get the default props
-            const { color, scale } = decorRegistry[placeItem].defaultProps;
-            return <Preview visible={false} color={color} scale={scale} userData={{ type: placeItem }} />;
+            const { scale } = decorRegistry[placeItem].defaultProps;
+            return <Preview visible={false} scale={scale} userData={{ type: placeItem }} />;
           })()}
         </DecorPlacementSystem>
       )}
