@@ -68,3 +68,10 @@ button {
 .btn-dotted {
   @apply text-xs underline decoration-dotted appearance-none shadow-none rounded-none hover:no-underline;
 }
+
+.noise-overlay {
+  @apply fixed inset-0 pointer-events-none z-10;
+  background: url("/island/images/bg--noise-texture@2x.png");
+  background-size: 50px 50px;
+  background-attachment: fixed;
+}
