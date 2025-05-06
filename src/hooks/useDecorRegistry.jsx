@@ -28,8 +28,13 @@ const DEFAULT_PLACEMENT_PROPS = {
   mustNotIntersect: false,
   scaleVariance: 0,
   yCompensation: 0,
-  yMin: null,
-  yMax: null,
+  yIntersectMin: null, // Renamed from yMin
+  yIntersectMax: null, // Renamed from yMax
+  // New airborne object properties for flexible height adjustment
+  yFloatBase: null, // Base height for floating objects
+  yFloatMin: null, // Minimum height above terrain for floating objects
+  yFloatMax: null, // Maximum absolute height for floating objects
+  yFloatRatio: null, // How much the object's height should follow terrain (0-1)
 };
 
 /**
@@ -38,8 +43,12 @@ const DEFAULT_PLACEMENT_PROPS = {
  * @property {boolean} [mustNotIntersect=false]
  * @property {number} [scaleVariance=0]
  * @property {number} [yCompensation=0]
- * @property {number|null} [yMin=null]
- * @property {number|null} [yMax=null]
+ * @property {number|null} [yIntersectMin=null] - Minimum Y value for valid intersection with terrain
+ * @property {number|null} [yIntersectMax=null] - Maximum Y value for valid intersection with terrain
+ * @property {number|null} [yFloatBase=null] - Base height for floating objects
+ * @property {number|null} [yFloatMin=null] - Minimum height above terrain for floating objects
+ * @property {number|null} [yFloatMax=null] - Maximum absolute height for floating objects
+ * @property {number|null} [yFloatRatio=null] - How much the object's height should follow terrain (0-1)
  */
 
 // Utility to merge overrides with the default shape
@@ -136,7 +145,14 @@ const DECOR_ITEMS = [
     nodeName: "cloud",
     label: "Cloud",
     icon: "icon--decor-cloud.jpg",
-    placementProps: { yCompensation: 0.5, yMin: 0.025, scaleVariance: 0.5 },
+    placementProps: {
+      mustIntersect: false,
+      scaleVariance: 0.5,
+      yFloatBase: 0.5, // Base height for clouds regardless of terrain
+      yFloatMin: 0.2, // Minimum height above terrain
+      yFloatMax: 0.8, // Maximum absolute height
+      yFloatRatio: 0.3, // Cloud height follows terrain at 30% ratio
+    },
     factory: createCloud,
   },
   {
@@ -144,42 +160,63 @@ const DECOR_ITEMS = [
     nodeName: "dock",
     label: "Dock",
     icon: "icon--decor-dock.jpg",
-    placementProps: { yCompensation: -0.01, yMax: 0.02 },
+    placementProps: {
+      yCompensation: -0.01,
+      yIntersectMax: 0.02,
+    },
   },
   {
     key: "house",
     nodeName: "house",
     label: "House",
     icon: "icon--decor-house1.jpg",
-    placementProps: { yCompensation: -0.02, yMin: 0.025, scaleVariance: 0.05 },
+    placementProps: {
+      yCompensation: -0.02,
+      yIntersectMin: 0.025,
+      scaleVariance: 0.05,
+    },
   },
   {
     key: "lighthouse",
     nodeName: "lighthouse",
     label: "Lighthouse",
     icon: "icon--decor-lighthouse.jpg",
-    placementProps: { yCompensation: -0.03, yMin: 0.025 },
+    placementProps: {
+      yCompensation: -0.03,
+      yIntersectMin: 0.025,
+    },
   },
   {
     key: "tent",
     nodeName: "tent",
     label: "Tent",
     icon: "icon--decor-tent.jpg",
-    placementProps: { yCompensation: -0.01, yMin: 0.0125, scaleVariance: 0.2 },
+    placementProps: {
+      yCompensation: -0.01,
+      yIntersectMin: 0.0125,
+      scaleVariance: 0.2,
+    },
   },
   {
     key: "tree",
     nodeName: "tree",
     label: "Tree",
     icon: "icon--decor-tree1.jpg",
-    placementProps: { yCompensation: -0.02, yMin: 0.025, scaleVariance: 0.5 },
+    placementProps: {
+      yCompensation: -0.02,
+      yIntersectMin: 0.025,
+      scaleVariance: 0.5,
+    },
   },
   {
     key: "windTurbine",
     nodeName: "windTurbine",
     label: "Turbine",
     icon: "icon--decor-wind-turbine.jpg",
-    placementProps: { yCompensation: -0.01, yMin: 0.025 },
+    placementProps: {
+      yCompensation: -0.01,
+      yIntersectMin: 0.025,
+    },
     factory: createWindTurbine,
   },
 ];

@@ -20,10 +20,51 @@ export function highlightIndicator(isValid) {
       };
 }
 
-function validateYRange(point, placementProps) {
-  const { yMin, yMax } = placementProps;
-  const validMin = yMin != null ? point.y >= yMin : true;
-  const validMax = yMax != null ? point.y <= yMax : true;
+/**
+ * Validates and possibly adjusts the placement position based on placement properties
+ * @param {THREE.Vector3} point - The point to validate and adjust
+ * @param {Object} placementProps - The placement properties
+ * @param {Object} terrain - The terrain object (used for height calculations)
+ * @returns {boolean} - Whether the placement is valid
+ */
+function validateYRange(point, placementProps, terrain) {
+  // Handle renamed intersection range validation
+  const { yIntersectMin, yIntersectMax, yFloatMin, yFloatMax, yFloatBase, yFloatRatio } = placementProps;
+
+  // Handle floating objects (clouds, planes, etc.)
+  if (yFloatBase != null || yFloatMin != null || yFloatMax != null) {
+    // Start with the base height if specified
+    let targetY = yFloatBase != null ? yFloatBase : point.y;
+
+    // Apply terrain-relative height adjustment based on the ratio
+    if (yFloatRatio != null && yFloatRatio > 0) {
+      // Calculate terrain-influenced position by blending base height with terrain height
+      // Higher ratio means the object follows terrain height more closely
+      targetY = yFloatBase + (point.y - yFloatBase) * yFloatRatio;
+    }
+
+    // Apply minimum height above terrain if specified
+    if (yFloatMin != null) {
+      const minHeight = point.y + yFloatMin;
+      targetY = Math.max(targetY, minHeight);
+    }
+
+    // Apply maximum absolute height if specified
+    if (yFloatMax != null) {
+      targetY = Math.min(targetY, yFloatMax);
+    }
+
+    // Set the adjusted height
+    point.y = targetY;
+
+    // Floating objects with height rules are always valid after adjustment
+    return true;
+  }
+
+  // For terrain-intersecting objects, apply standard range validation
+  const validMin = yIntersectMin != null ? point.y >= yIntersectMin : true;
+  const validMax = yIntersectMax != null ? point.y <= yIntersectMax : true;
+
   return validMin && validMax;
 }
 
@@ -134,7 +175,8 @@ export default function DecorPlacementSystem({
 
     const worldNormal = face.normal.clone().applyMatrix3(new THREE.Matrix3().getNormalMatrix(terrain.matrixWorld)).normalize();
 
-    const valid = validateYRange(point, placementProps);
+    // Pass terrain to validateYRange for cloud height calculations
+    const valid = validateYRange(point, placementProps, terrain);
 
     setHoverPoint(point);
     setHoverNormal(worldNormal);

@@ -25,7 +25,7 @@ export const useIslandStore = createBoundStore(
     },
     selectedItems: [],
     terrainSystem: null,
-    terrainZExtrema: [0, 0],
+    terrainZExtrema: [0, 0], // Terrain height min and max points
     wireframe: false,
 
     persisted: {
