@@ -6,6 +6,7 @@ import { useIslandStore } from "../stores/useIslandStore";
 
 /**
  * Global keyboard manager hook to handle keyboard shortcuts across the UI.
+ * Uses KeyboardEvent.code for keyboard layout compatibility (QWERTY, AZERTY, etc.)
  */
 export function useKeyboardManager() {
   const activeTool = useIslandStore(state => state.activeTool);
@@ -26,89 +27,82 @@ export function useKeyboardManager() {
 
   useEffect(() => {
     const handleKeyDown = e => {
-      if (e.key === "Control" && editMode) {
+      if ((e.code === "ControlLeft" || e.code === "ControlRight") && editMode) {
         preControlMode.current = {
           activeTool,
           place,
         };
         setActiveTool("move");
       }
-      switch (e.key) {
-        case "e":
+      switch (e.code) {
+        case "KeyE":
           e.preventDefault();
           setEditMode(!editMode);
           break;
-        case "w":
-        case "W":
+        case "KeyW":
           setWireframe(!wireframe);
           break;
-        case "Alt":
+        case "AltLeft":
+        case "AltRight":
           if (editMode && sculpt.active) {
             setActiveTool(activeTool === "sculpt+" ? "sculpt-" : "sculpt+");
           }
           break;
-        case "u":
-        case "U":
+        case "KeyU":
           undo();
           break;
-        case "y":
-        case "Y":
+        case "KeyY":
           redo();
           break;
-        case "[":
+        case "BracketLeft":
           if (sculpt.brushSize != null) {
             const newSize = Math.max(0.01, sculpt.brushSize - 0.1);
             setSculptProp("brushSize", newSize);
           }
           break;
-        case "]":
+        case "BracketRight":
           if (sculpt.brushSize != null) {
             const newSizeUp = Math.min(1, sculpt.brushSize + 0.1);
             setSculptProp("brushSize", newSizeUp);
           }
           break;
-        case "-":
+        case "Minus":
           if (sculpt.brushStrength != null) {
             const newStr = Math.max(0.01, sculpt.brushStrength - 0.1);
             setSculptProp("brushStrength", newStr);
           }
           break;
-        case "=":
+        case "Equal":
           if (sculpt.brushStrength != null) {
             const newStrUp = Math.min(1, sculpt.brushStrength + 0.1);
             setSculptProp("brushStrength", newStrUp);
           }
           break;
-        case "v":
-        case "V":
+        case "KeyV":
           if (editMode) {
             setActiveTool("move");
           }
           break;
-        case "R":
+        case "KeyR":
           if (editMode) {
             resetIsland();
           }
           break;
-        case "a":
-        case "A":
+        case "KeyA":
           if (editMode) {
             setActiveTool("sculpt+");
           }
           break;
-        case "s":
-        case "S":
+        case "KeyS":
           if (editMode) {
             setActiveTool("sculpt-");
           }
           break;
-        case "p":
-        case "P":
+        case "KeyP":
           if (editMode) {
             setActiveTool("decor-select");
             setPlaceProp("decorSelect", true);
           }
-
           break;
         default:
           break;
@@ -116,20 +110,18 @@ export function useKeyboardManager() {
     };
 
     const handleKeyUp = e => {
-      if (e.key === "Control" && editMode) {
-        // Revert to previous tool and place state
+      if ((e.code === "ControlLeft" || e.code === "ControlRight") && editMode) {
         setActiveTool(preControlMode.current?.activeTool);
         setPlaceProp("active", preControlMode.current?.place.active);
         setPlaceProp("item", preControlMode?.current.place.item);
         preControlMode.current = {};
       }
-      if (e.key === "Alt" && editMode && sculpt.active) {
+      if ((e.code === "AltLeft" || e.code === "AltRight") && editMode && sculpt.active) {
         setActiveTool(activeTool === "sculpt+" ? "sculpt-" : "sculpt+");
       }
     };
 
     window.addEventListener("keydown", handleKeyDown);
-    // Momentary toggle: revert mode on Alt key release
     window.addEventListener("keyup", handleKeyUp);
 
     return () => {

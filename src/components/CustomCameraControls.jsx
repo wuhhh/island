@@ -65,13 +65,13 @@ const CustomCameraControls = forwardRef(
       };
 
       const onKeyDown = event => {
-        if (event.key === "Shift" && controlsRef.current) {
+        if ((event.code === "ShiftLeft" || event.code === "ShiftRight") && controlsRef.current) {
           controlsRef.current.mouseButtons.left = shiftLeftButton;
         }
       };
 
       const onKeyUp = event => {
-        if (event.key === "Shift" && controlsRef.current) {
+        if ((event.code === "ShiftLeft" || event.code === "ShiftRight") && controlsRef.current) {
           controlsRef.current.mouseButtons.left = defaultLeftButton;
         }
       };

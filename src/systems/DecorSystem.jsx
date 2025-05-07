@@ -51,7 +51,7 @@ export default function DecorSystem() {
     if (!islandStoreHydrated) return;
 
     const handleKeyDown = e => {
-      if (e.key === "Backspace" && selectedItems.length > 0) {
+      if ((e.code === "Backspace" || e.code === "Delete") && selectedItems.length > 0) {
         setPlacedItems(placedItems.filter(item => !selectedItems.includes(item.id)));
         setSelectedItems([]);
       }
