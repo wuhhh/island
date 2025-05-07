@@ -482,7 +482,7 @@ export default function UserInterface() {
       </div>
 
       {/* Reset to default island button */}
-      <div className='absolute bottom-[26px] left-1/2 -translate-x-1/2 flex items-center justify-center text-center'>
+      <div className='absolute bottom-[26px] h-[26px] left-1/2 -translate-x-1/2 flex items-center justify-center text-center'>
         <button onClick={() => loadSnapshotFromPath("/island/snapshots/default.json")} className='btn-dotted text-white'>
           Revert to Starter Island
         </button>
