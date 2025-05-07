@@ -90,6 +90,7 @@ const createCloud = cloudNode =>
   forwardRef(({ scale = [1, 1, 1], selected = false, selectedColor = 0xffff00, ...rest }, ref) => {
     const root = useRef();
     const cloud = useRef();
+    const loose = useRef();
 
     // We'll use this to determine if we're in placement mode vs. a placed item
     const isPlacedItem = useMemo(() => {
@@ -103,12 +104,13 @@ const createCloud = cloudNode =>
     }, [rest.userData?.position, rest.position]);
 
     const [factor, speed] = useMemo(() => {
-      return [0.05, MathUtils.randFloat(-0.25, 0.25)];
+      return [0.05, MathUtils.randFloat(-0.125, 0.125)];
     }, []);
 
     useLayoutEffect(() => {
       if (root.current) {
         cloud.current = root.current.getObjectByName("cloud");
+        loose.current = root.current.getObjectByName("cloudLoose");
       }
     }, []);
 
@@ -121,7 +123,13 @@ const createCloud = cloudNode =>
         }
 
         // We can still rotate during placement for visual interest
-        cloud.current.rotation.y += dt * 0.2;
+        cloud.current.rotation.y += dt * 0.1;
+      }
+
+      if (loose.current) {
+        const offset = Math.sin(clock.getElapsedTime() * speed * 4) * factor * 0.25;
+        loose.current.position.y = offset;
+        loose.current.rotation.y -= dt * 0.1;
       }
     });
 
