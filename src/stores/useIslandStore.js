@@ -24,6 +24,7 @@ export const useIslandStore = createBoundStore(
       brushStrength: 0.5,
     },
     selectedItems: [],
+    snapshotLoading: false,
     terrainSystem: null,
     terrainZExtrema: [0, 0], // Terrain height min and max points
     wireframe: false,
@@ -89,6 +90,10 @@ export const useIslandStore = createBoundStore(
             ...state.persisted,
             snapshotId,
           },
+        })),
+      setSnapshotLoading: snapshotLoading =>
+        set(() => ({
+          snapshotLoading,
         })),
       // Reset camera to default constants
       resetCamera: () =>
