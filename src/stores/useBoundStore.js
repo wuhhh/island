@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { create } from "zustand";
-import { persist } from "zustand/middleware";
+import { persist, subscribeWithSelector } from "zustand/middleware";
 
 /**
  * Creates a persisted store with hydration tracking
@@ -41,16 +41,18 @@ export const createBoundStore = (storeCreator, options) => {
 
   // Finally apply persist middleware
   const useStore = create()(
-    persist(storeState, {
-      name,
-      partialize,
-      onRehydrateStorage: () => state => {
-        // This correctly waits for state to be available
-        if (state) {
-          state.setHasHydrated(true);
-        }
-      },
-    })
+    subscribeWithSelector(
+      persist(storeState, {
+        name,
+        partialize,
+        onRehydrateStorage: () => state => {
+          // This correctly waits for state to be available
+          if (state) {
+            state.setHasHydrated(true);
+          }
+        },
+      })
+    )
   );
 
   return useStore;
