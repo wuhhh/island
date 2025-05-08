@@ -84,7 +84,7 @@ export function useKeyboardManager() {
           }
           break;
         case "KeyR":
-          if (editMode) {
+          if (editMode && e.shiftKey) {
             resetIsland();
           }
           break;
