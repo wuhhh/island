@@ -89,8 +89,8 @@ const CameraController = () => {
         }
 
         // Handle snapshot loading
-        if (newState.snapshotLoading === false && storeRef.current.snapshotLoading === true) {
-          // Apply camera position and target from store
+        if (newState.snapshotLoading) {
+          // Apply camera position and target from snapshot
           if (cameraReady && cameraControls.current) {
             const pos = newState.cameraPosition;
             const target = newState.cameraTarget;
