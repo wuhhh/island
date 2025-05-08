@@ -32,51 +32,76 @@ export function createSnapshot() {
 
 /**
  * Restores island from a previously created snapshot
- * @param {string|Object} data  Either the raw JSON or an already‐parsed snapshot.
+ * @param {string|Object} data Either the raw JSON or an already‐parsed snapshot.
+ * @returns {Promise<void>} A promise that resolves when the snapshot has been fully loaded
  */
-export function loadSnapshot(data) {
+export async function loadSnapshot(data) {
   const { island, history } = typeof data === "string" ? JSON.parse(data) : data;
 
-  const setCameraPosition = useIslandStore.getState().actions.setCameraPosition;
-  const setCameraTarget = useIslandStore.getState().actions.setCameraTarget;
-  const setSnapshotId = useIslandStore.getState().actions.setSnapshotId;
+  const islandStore = useIslandStore.getState();
+  const { setCameraPosition, setCameraTarget, setSnapshotId, setSnapshotLoading } = islandStore.actions;
 
-  // If terrain data is an object with numeric keys, convert it to an array
-  let terrainData = history.terrainGeomAttrsPosArr;
-  if (terrainData && !Array.isArray(terrainData)) {
-    terrainData = Object.values(terrainData);
+  // Signal snapshot loading start
+  setSnapshotLoading(true);
+
+  try {
+    // Process terrain data
+    let terrainData = history.terrainGeomAttrsPosArr;
+    if (terrainData && !Array.isArray(terrainData)) {
+      terrainData = Object.values(terrainData);
+    }
+
+    // Process placed items
+    let placedItems = history.placedItems;
+    if (placedItems && !Array.isArray(placedItems)) {
+      placedItems = Object.values(placedItems);
+    }
+
+    // Set camera position and target
+    if (island.cameraPosition) {
+      setCameraPosition(island.cameraPosition);
+    }
+    if (island.cameraTarget) {
+      setCameraTarget(island.cameraTarget);
+    }
+
+    // Set snapshot ID
+    if (island.id) {
+      setSnapshotId(island.id);
+    }
+
+    // Restore island data with a promise-based approach
+    await restoreIslandData(placedItems, terrainData);
+  } finally {
+    // Signal snapshot loading complete
+    setSnapshotLoading(false);
   }
+}
 
-  // Set terrain data
-  // useHistoryStore.getState().setTerrainGeomAttrsPosArr(terrainData);
+/**
+ * Helper function to restore island data with proper async handling
+ * @param {Array} placedItems The placed items to restore
+ * @param {Array} terrainData The terrain data to restore
+ * @returns {Promise<void>} A promise that resolves when restoration is complete
+ */
+async function restoreIslandData(placedItems, terrainData) {
+  return new Promise(resolve => {
+    // Call the history store's restore method
+    useHistoryStore.getState().restoreIsland(placedItems, terrainData);
 
-  // Set camera position and target
-  if (island.cameraPosition) {
-    setCameraPosition(island.cameraPosition);
-  }
-  if (island.cameraTarget) {
-    setCameraTarget(island.cameraTarget);
-  }
-
-  // Set snapshot ID
-  if (island.id) {
-    setSnapshotId(island.id);
-  }
-
-  // Ensure placedItems is an array
-  let placedItems = history.placedItems;
-  if (placedItems && !Array.isArray(placedItems)) {
-    placedItems = Object.values(placedItems);
-  }
-
-  // useHistoryStore.getState().setPlacedItems(placedItems);
-  useHistoryStore.getState().restoreIsland(placedItems, terrainData);
+    // Use requestAnimationFrame to ensure the next frame has processed
+    // This gives the Three.js scene time to update
+    requestAnimationFrame(() => {
+      // Use one more animation frame to be extra safe
+      requestAnimationFrame(resolve);
+    });
+  });
 }
 
 /**
  * Load a snapshot from a path
- * @param {string} path  The path to the snapshot file.
- * @returns {Promise<void>} void
+ * @param {string} path The path to the snapshot file.
+ * @returns {Promise<void>} A promise that resolves when the snapshot is loaded
  */
 export async function loadSnapshotFromPath(path) {
   const response = await fetch(path);
@@ -84,5 +109,5 @@ export async function loadSnapshotFromPath(path) {
     throw new Error(`Failed to load snapshot from ${path}: ${response.statusText}`);
   }
   const data = await response.json();
-  loadSnapshot(data);
+  return loadSnapshot(data);
 }
