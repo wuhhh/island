@@ -1,36 +1,41 @@
 import { Plane } from "@react-three/drei";
 import { useFrame } from "@react-three/fiber";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useMemo } from "react";
 import * as t from "three/tsl";
 import * as THREE from "three/webgpu";
 
 import { useTerrainInitialization, useEdgeClampEffect, useSpatialIndex } from "../hooks/useTerrainEffects";
 import { useHistoryStore, useHistoryHydration } from "../stores/useHistoryStore";
-import { TERRAIN_RESOLUTION, useIslandStore, useIslandHydration } from "../stores/useIslandStore";
+import { TERRAIN_RESOLUTION, useIslandStore } from "../stores/useIslandStore";
 import { TerrainSystem } from "../systems/TerrainSystem";
 import { findZExtrema } from "../utils/terrainUtils";
 
 export default function Terrain({ ...props }) {
   // Refs
   const planeRef = useRef();
-  const materialRef = useRef();
   const mousePos = useRef(new THREE.Vector2(0.5, 0.5));
+  const brushingRef = useRef(false);
 
-  // Store state
-  const activeTool = useIslandStore(state => state.activeTool);
-  const getTerrainData = useHistoryStore(state => state.getTerrainData);
-  const terrainGeomAttrsPosArr = useHistoryStore(state => state.terrainGeomAttrsPosArr);
-  const setTerrainGeomAttrsPosArr = useHistoryStore(state => state.setTerrainGeomAttrsPosArr);
-  const terrainSystem = useIslandStore(state => state.terrainSystem);
-  const setTerrainSystem = useIslandStore(state => state.actions.setTerrainSystem);
-  const setTerrainZExtrema = useIslandStore(state => state.actions.setTerrainZExtrema);
-  const { undo: useHistoryStoreUndo, redo: useHistoryStoreRedo } = useHistoryStore.temporal.getState();
-  const { pointerDown, editMode, sculpt, wireframe } = useIslandStore();
-  const islandStoreHydrated = useIslandHydration();
+  // Minimal subscriptions for rendering
+  const wireframe = useIslandStore(state => state.wireframe);
+  const editMode = useIslandStore(state => state.editMode);
+  const sculptActive = useIslandStore(state => state.sculpt.active);
   const historyStoreHydrated = useHistoryHydration();
 
-  // Local state
-  const [brushing, setBrushing] = useState(false);
+  // Store values in ref to avoid re-renders
+  const storeRef = useRef({
+    activeTool: useIslandStore.getState().activeTool,
+    pointerDown: useIslandStore.getState().pointerDown,
+    sculpt: useIslandStore.getState().sculpt,
+    terrainSystem: useIslandStore.getState().terrainSystem,
+    terrainGeomAttrsPosArr: useHistoryStore.getState().terrainGeomAttrsPosArr,
+  });
+
+  // Store functions for use in effects
+  const setTerrainSystem = useIslandStore(state => state.actions.setTerrainSystem);
+  const setTerrainGeomAttrsPosArr = useHistoryStore(state => state.setTerrainGeomAttrsPosArr);
+  const setTerrainZExtrema = useIslandStore(state => state.actions.setTerrainZExtrema);
+  const getTerrainData = useHistoryStore(state => state.getTerrainData);
 
   // Use custom hooks
   useTerrainInitialization({
@@ -51,7 +56,9 @@ export default function Terrain({ ...props }) {
   // Initialize terrain system when geometry is ready
   useEffect(() => {
     if (!planeRef.current || !spatialIndex) return;
-    setTerrainSystem(new TerrainSystem(planeRef.current, spatialIndex));
+    const system = new TerrainSystem(planeRef.current, spatialIndex);
+    setTerrainSystem(system);
+    storeRef.current.terrainSystem = system;
   }, [setTerrainSystem, spatialIndex]);
 
   /**
@@ -67,60 +74,103 @@ export default function Terrain({ ...props }) {
     return t.vec4(level1Mix, t.step(waterLevel, level1));
   });
 
-  useEffect(() => {
+  // Memoize material creation
+  const material = useMemo(() => {
     const material = new THREE.MeshStandardNodeMaterial({
       transparent: true,
       wireframe,
     });
-
-    materialRef.current = material;
     material.colorNode = oceanLand({ position: t.positionGeometry, colour: "#246913" });
-  }, [wireframe, islandStoreHydrated, oceanLand]);
+    return material;
+  }, [wireframe, oceanLand]);
 
   /**
-   * Update terrain on undo/redo
+   * Subscribe to store changes without causing re-renders
    */
   useEffect(() => {
-    if (!planeRef.current) return;
+    // Island store subscription
+    const unsubscribe = useIslandStore.subscribe(
+      state => ({
+        activeTool: state.activeTool,
+        pointerDown: state.pointerDown,
+        sculpt: state.sculpt,
+        terrainSystem: state.terrainSystem,
+      }),
+      newState => {
+        const prevPointerDown = storeRef.current.pointerDown;
 
-    const positions = planeRef.current.geometry.attributes.position.array;
-    const terrainData = getTerrainData();
+        // Update ref with new values
+        storeRef.current = {
+          ...storeRef.current,
+          activeTool: newState.activeTool,
+          pointerDown: newState.pointerDown,
+          sculpt: newState.sculpt,
+          terrainSystem: newState.terrainSystem,
+        };
 
-    if (terrainData.length > 0) {
-      // Apply from store
-      for (let i = 0; i < positions.length; i++) {
-        positions[i] = terrainData[i];
+        // Handle pointer up logic directly here
+        if (prevPointerDown && !newState.pointerDown && brushingRef.current && planeRef.current) {
+          brushingRef.current = false;
+
+          // Store current terrain in history
+          const currentTerrain = planeRef.current.geometry.attributes.position.array;
+          setTerrainGeomAttrsPosArr(currentTerrain);
+
+          // Update extrema
+          const extrema = findZExtrema(currentTerrain);
+          setTerrainZExtrema(extrema);
+        }
       }
+    );
 
-      // Update geometry
-      planeRef.current.geometry.attributes.position.needsUpdate = true;
-      planeRef.current.geometry.computeVertexNormals();
-    }
-  }, [useHistoryStoreUndo, useHistoryStoreRedo, terrainGeomAttrsPosArr, getTerrainData]);
+    // History store subscription for undo/redo
+    const historyUnsubscribe = useHistoryStore.subscribe(
+      state => state.terrainGeomAttrsPosArr,
+      terrainGeomAttrsPosArr => {
+        storeRef.current.terrainGeomAttrsPosArr = terrainGeomAttrsPosArr;
+
+        // Update terrain on change
+        if (planeRef.current) {
+          const positions = planeRef.current.geometry.attributes.position.array;
+
+          if (terrainGeomAttrsPosArr.length > 0) {
+            // Apply from store
+            for (let i = 0; i < positions.length; i++) {
+              positions[i] = terrainGeomAttrsPosArr[i];
+            }
+
+            // Update geometry
+            planeRef.current.geometry.attributes.position.needsUpdate = true;
+            planeRef.current.geometry.computeVertexNormals();
+          }
+        }
+      }
+    );
+
+    return () => {
+      unsubscribe();
+      historyUnsubscribe();
+    };
+  }, [setTerrainGeomAttrsPosArr, setTerrainZExtrema, getTerrainData]);
 
   /**
-   * Handle pointer up - store state in history
+   * Set cursor style based on mode
    */
   useEffect(() => {
-    if (!pointerDown && brushing && planeRef.current) {
-      setBrushing(false);
-
-      // Store current terrain in history
-      const currentTerrain = planeRef.current.geometry.attributes.position.array;
-      setTerrainGeomAttrsPosArr(currentTerrain);
-
-      // Update extrema
-      const extrema = findZExtrema(currentTerrain);
-      setTerrainZExtrema(extrema);
-    }
-  }, [brushing, pointerDown, setTerrainGeomAttrsPosArr, setTerrainZExtrema]);
+    document.body.style.cursor = editMode && sculptActive ? "crosshair" : "grab";
+    return () => {
+      document.body.style.cursor = "default";
+    };
+  }, [editMode, sculptActive]);
 
   /**
    * Apply brush on pointer move
    */
   useFrame(({ raycaster }) => {
-    if (pointerDown && editMode && sculpt.active && terrainSystem) {
-      setBrushing(true);
+    const { pointerDown, activeTool, sculpt, terrainSystem } = storeRef.current;
+
+    if (pointerDown && editMode && sculptActive && terrainSystem) {
+      brushingRef.current = true;
       const intersection = raycaster.intersectObject(planeRef.current);
 
       if (intersection.length > 0) {
@@ -136,19 +186,9 @@ export default function Terrain({ ...props }) {
     }
   });
 
-  /**
-   * Set cursor style based on mode
-   */
-  useEffect(() => {
-    document.body.style.cursor = editMode && sculpt.active ? "crosshair" : "grab";
-    return () => {
-      document.body.style.cursor = "default";
-    };
-  }, [editMode, sculpt.active]);
-
   return (
     <Plane ref={planeRef} args={[2, 2, TERRAIN_RESOLUTION, TERRAIN_RESOLUTION]} rotation={[-Math.PI * 0.5, 0, 0]} {...props} receiveShadow>
-      {materialRef.current && <primitive object={materialRef.current} />}
+      {material && <primitive object={material} />}
     </Plane>
   );
 }
