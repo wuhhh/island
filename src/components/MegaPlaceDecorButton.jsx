@@ -3,6 +3,8 @@ import { useRef, useEffect } from "react";
 
 import { useDecorRegistry } from "../hooks/useDecorRegistry.jsx";
 import { useIslandStore } from "../stores/useIslandStore.js";
+import ToolTip from "./ui/ToolTip.jsx";
+import KeyBindingItem from "./KeyBindingItem.jsx";
 
 /**
  * MegaPlaceDecorButton component for placing decorative items on the island
@@ -30,8 +32,16 @@ export default function MegaPlaceDecorButton() {
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, [decorSelect, setPlaceProp]);
 
-  // Toggle decor selection panel
-  const handleClick = () => setPlaceProp("decorSelect", !decorSelect);
+  // Toggle decor selection panel and turn off decor select if already active
+  const handleClick = () => {
+    if (activeTool === "decor-select") {
+      setActiveTool(null); // Reset active tool
+      setPlaceProp("active", false); // Turn off place mode
+      setPlaceProp("decorSelect", false);
+    } else {
+      setPlaceProp("decorSelect", !decorSelect);
+    }
+  };
 
   // Set item
   const handleClickItem = item => {
@@ -44,27 +54,48 @@ export default function MegaPlaceDecorButton() {
 
   return (
     <div ref={ref} className='relative'>
-      <button onClick={handleClick} className='absolute bottom-[19px] left-1/2 -translate-x-1/2' aria-label='Place decorative items'>
-        <span className='relative block size-[69px]'>
-          <span className='absolute top-0 left-1/2 -translate-x-3 -translate-y-2 size-6 bg-white rounded-full' />
-          <span className='relative block w-full h-full p-0.5 content-center bg-white rounded-full'>
+      <div className='group h-[69px] absolute bottom-[19px] left-1/2 -translate-x-1/2'>
+        {/* <div className=''> */}
+        <button onClick={handleClick} className='transition-transform hover:scale-105 duration-200' aria-label='Place decorative items'>
+          <span className='relative block size-[69px]'>
+            <span className='absolute top-0 left-1/2 -translate-x-3 -translate-y-2 size-6 bg-white rounded-full' />
             <span
-              className={`block w-full h-full content-center bg-gradient-to-b from-[#2D5CF2] via-30% to-[#2A50C7] rounded-full ${
-                activeTool === "decor-select" || decorSelect ? "ring-4 ring-white/30" : ""
+              className={`relative block w-full h-full p-0.5 content-center bg-white rounded-full ${
+                decorSelect ? "shadow-lg shadow-white/30" : ""
               }`}
             >
-              <Trees className='mx-auto' size={32} color='white' strokeWidth={1.5} />
+              <span
+                className={`block w-full h-full content-center ${
+                  activeTool === "decor-select"
+                    ? "bg-gradient-to-b from-orange-500 to-orange-600"
+                    : "bg-gradient-to-b from-[#2D5CF2] via-30% to-[#2A50C7]"
+                } rounded-full ${decorSelect ? "ring-2 ring-white/40" : ""}`}
+              >
+                <Trees className='mx-auto' size={32} color='white' strokeWidth={1.5} />
+              </span>
+            </span>
+            <span className='absolute top-1 left-1/2 -translate-x-2.5 -translate-y-2 size-5 bg-white/20 rounded-full content-center' />
+            <span
+              className={`absolute top-0.5 left-1/2 -translate-x-2.5 -translate-y-2 size-5 ${
+                activeTool === "decor-select"
+                  ? "bg-gradient-to-b from-orange-500 to-orange-600"
+                  : "bg-gradient-to-b from-[#2D5CF2] to-[#2A50C7]"
+              } rounded-full content-center`}
+            >
+              <span className='relative content-center w-full h-full'>
+                <span className='block w-2 h-[0.09375rem] rounded-full bg-white mx-auto' />
+                <span className='absolute top-0 -left-1 rotate-90 block w-2 h-[0.09375rem] rounded-full bg-white mx-auto' />
+              </span>
             </span>
           </span>
-          <span className='absolute top-1 left-1/2 -translate-x-2.5 -translate-y-2 size-5 bg-white/20 rounded-full content-center' />
-          <span className='absolute top-0.5 left-1/2 -translate-x-2.5 -translate-y-2 size-5 bg-gradient-to-b from-[#2D5CF2] to-[#2A50C7] rounded-full content-center'>
-            <span className='relative content-center w-full h-full'>
-              <span className='block w-2 h-[0.09375rem] rounded-full bg-white mx-auto' />
-              <span className='absolute top-0 -left-1 rotate-90 block w-2 h-[0.09375rem] rounded-full bg-white mx-auto' />
-            </span>
-          </span>
-        </span>
-      </button>
+        </button>
+        {/* </div> */}
+        {!decorSelect && (
+          <ToolTip position='top'>
+            <KeyBindingItem keyCombination={["p"]} action='Place Items' tag='span' flip />
+          </ToolTip>
+        )}
+      </div>
 
       {decorSelect && (
         <div className='absolute bottom-28 left-1/2 transform -translate-x-1/2 w-[320px] p-3 bg-slate-50 shadow-lg text-sm rounded-2xl'>
