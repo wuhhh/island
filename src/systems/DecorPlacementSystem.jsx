@@ -27,7 +27,7 @@ export function highlightIndicator(isValid) {
  * @param {Object} terrain - The terrain object (used for height calculations)
  * @returns {boolean} - Whether the placement is valid
  */
-function validateYRange(point, placementProps, terrain) {
+function validateYRange(point, placementProps) {
   // Handle renamed intersection range validation
   const { yIntersectMin, yIntersectMax, yFloatMin, yFloatMax, yFloatBase, yFloatRatio } = placementProps;
 

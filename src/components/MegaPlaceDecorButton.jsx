@@ -1,5 +1,6 @@
-import React, { useRef, useEffect } from "react";
 import { Trees } from "lucide-react";
+import React, { useRef, useEffect } from "react";
+
 import { useDecorRegistry } from "../hooks/useDecorRegistry.jsx";
 import { useIslandStore } from "../stores/useIslandStore.js";
 
