@@ -11,29 +11,30 @@ import {
   Redo,
   RefreshCw,
   Undo,
-  WandSparkles,
+  Undo2,
   X,
 } from "lucide-react";
 import React, { useEffect, useState, useRef } from "react";
 
-import { useDecorRegistry } from "../hooks/useDecorRegistry.jsx";
 import { useKeyboardManager } from "../hooks/useKeyboardManager";
 import { useResetIsland } from "../hooks/useResetIsland.js";
 import { useHistoryStore } from "../stores/useHistoryStore.js";
 import { useIslandStore } from "../stores/useIslandStore.js";
 import { createSnapshot, loadSnapshotFromPath } from "../utils/islandSnapshot.js";
 
+import MegaPlaceDecorButton from "./MegaPlaceDecorButton.jsx";
+
 import Kbd from "./Kbd.jsx";
 import KeyBindingItem from "./KeyBindingItem.jsx";
-import LogoMark from "./LogoMark.jsx";
+// import LogoMark from "./LogoMark.jsx";
 
 const TOOL_OPTIONS = [
   { id: "move", icon: Hand, label: "Move", shortcut: ["v"], type: "toggle" },
-  { id: "sculpt+", icon: Brush, label: "Raise terrain", shortcut: ["a"], type: "toggle" },
-  { id: "sculpt-", icon: Eraser, label: "Lower terrain", shortcut: ["s"], type: "toggle" },
+  { id: "sculpt+", icon: Brush, label: "Raise Terrain", shortcut: ["a"], type: "toggle" },
+  { id: "sculpt-", icon: Eraser, label: "Lower Terrain", shortcut: ["s"], type: "toggle" },
   { id: "size", icon: CircleDotDashed, label: "Brush Size", shortcut: ["[", "]"], type: "slider" },
   { id: "strength", icon: CircleFadingPlus, label: "Brush Strength", shortcut: ["-", "+"], type: "slider" },
-  { id: "decor-select", icon: WandSparkles, label: "Place Items", shortcut: ["p"], type: "decor-select" },
+  // { id: "decor-select", icon: WandSparkles, label: "Place Items", shortcut: ["p"], type: "decor-select" },
   { id: "undo", icon: Undo, label: "Undo", shortcut: ["u"], type: "action" },
   { id: "redo", icon: Redo, label: "Redo", shortcut: ["y"], type: "action" },
   { id: "download", icon: Download, label: "Download JSON", type: "action" },
@@ -41,11 +42,48 @@ const TOOL_OPTIONS = [
   { id: "help", icon: HelpCircle, label: "Help", shortcut: ["h"], type: "action" },
 ];
 
-const ToolTip = ({ children }) => (
-  <span className='group absolute left-full top-1/2 transform -translate-y-1/2 ml-4 whitespace-nowrap bg-slate-50 text-black shadow-sm text-sm rounded-sm px-2 py-1 hidden group-hover:block'>
-    {children}
-  </span>
-);
+/**
+ * Tooltip component to show key bindings
+ * @param {Object} props
+ * @param {React.ReactNode} props.children - Content of the tooltip
+ * @param {string} [props.position="right"] - Position of the tooltip (right, left, top, bottom)
+ * @param {number} [props.offset=4] - Offset in pixels from the target element
+ */
+const ToolTip = ({ children, position = "right", offset = 16 }) => {
+  // Convert pixel value to rem (assuming 4px = 0.25rem in your Tailwind config)
+  const offsetRem = offset * 0.0625;
+
+  // Calculate positioning classes and styles
+  const positionConfig = {
+    right: {
+      classes: "left-full top-1/2 transform -translate-y-1/2",
+      styles: { marginLeft: `${offsetRem}rem` },
+    },
+    left: {
+      classes: "right-full top-1/2 transform -translate-y-1/2",
+      styles: { marginRight: `${offsetRem}rem` },
+    },
+    top: {
+      classes: "bottom-full left-1/2 transform -translate-x-1/2",
+      styles: { marginBottom: `${offsetRem}rem` },
+    },
+    bottom: {
+      classes: "top-full left-1/2 transform -translate-x-1/2",
+      styles: { marginTop: `${offsetRem}rem` },
+    },
+  };
+
+  const config = positionConfig[position];
+
+  return (
+    <span
+      className={`group absolute ${config.classes} whitespace-nowrap bg-slate-50 text-black shadow-sm text-sm rounded-xs px-2 py-1 pointer-events-none opacity-0 transition-opacity duration-200 group-hover:opacity-100`}
+      style={config.styles}
+    >
+      {children}
+    </span>
+  );
+};
 
 const ToolbarButton = ({ children, label, onClick, active, subtle }) => (
   <button
@@ -71,25 +109,35 @@ const ToolbarToggle = ({ editMode, toggleEditMode }) => (
   >
     <AnimatePresence mode='wait'>
       {editMode ? (
-        <motion.div
-          key='close'
-          initial={{ rotate: -20, opacity: 0 }}
-          animate={{ rotate: 0, opacity: 1 }}
-          exit={{ rotate: 20, opacity: 0 }}
-          className='absolute inset-0 flex items-center justify-center'
-        >
-          <X strokeWidth={1} />
-        </motion.div>
+        <div className='group'>
+          <motion.div
+            key='close'
+            initial={{ rotate: -20, opacity: 0 }}
+            animate={{ rotate: 0, opacity: 1 }}
+            exit={{ rotate: 20, opacity: 0 }}
+            className='absolute inset-0 flex items-center justify-center'
+          >
+            <X strokeWidth={1} />
+          </motion.div>
+          <ToolTip>
+            <KeyBindingItem keyCombination={["e"]} action='Exit Edit Mode' tag='span' flip />
+          </ToolTip>
+        </div>
       ) : (
-        <motion.div
-          key='edit'
-          initial={{ rotate: 20, opacity: 0 }}
-          animate={{ rotate: 0, opacity: 1 }}
-          exit={{ rotate: -20, opacity: 0 }}
-          className='absolute inset-0 flex items-center justify-center'
-        >
-          <Pencil strokeWidth={1} />
-        </motion.div>
+        <div className='group'>
+          <motion.div
+            key='edit'
+            initial={{ rotate: 20, opacity: 0 }}
+            animate={{ rotate: 0, opacity: 1 }}
+            exit={{ rotate: -20, opacity: 0 }}
+            className='absolute inset-0 flex items-center justify-center'
+          >
+            <Pencil strokeWidth={1} />
+          </motion.div>
+          <ToolTip>
+            <KeyBindingItem keyCombination={["e"]} action='Edit Mode' tag='span' flip />
+          </ToolTip>
+        </div>
       )}
     </AnimatePresence>
   </button>
@@ -206,73 +254,13 @@ function SliderTool({ tool, openSlider, setOpenSlider, sculpt, setSculptProp }) 
   );
 }
 
-function DecorSelectTool({ tool, activeTool, setActiveTool, decorSelect, setPlaceProp, setSculptProp }) {
-  const decorRegistry = useDecorRegistry();
-  const ref = useRef(null);
-
-  // Click away
-  useEffect(() => {
-    const handleClickOutside = e => {
-      if (decorSelect && ref.current && !ref.current.contains(e.target)) {
-        setPlaceProp("decorSelect", false);
-      }
-    };
-    document.addEventListener("mousedown", handleClickOutside);
-    return () => document.removeEventListener("mousedown", handleClickOutside);
-  }, [decorSelect, setPlaceProp, setActiveTool]);
-
-  // Toggle
-  const handleClickMain = () => setPlaceProp("decorSelect", !decorSelect);
-
-  // Set item
-  const handleClickItem = item => {
-    setActiveTool("decor-select");
-    setSculptProp("active", false);
-    setPlaceProp("item", item);
-    setPlaceProp("decorSelect", false);
-    setPlaceProp("active", true);
-  };
-
-  return (
-    <div ref={ref} className='relative group'>
-      <ToolbarButton
-        label={tool.label}
-        onClick={handleClickMain}
-        active={activeTool === "decor-select" || decorSelect}
-        subtle={decorSelect}
-      >
-        <tool.icon strokeWidth={1} />
-      </ToolbarButton>
-      {!decorSelect && (
-        <ToolTip>
-          <KeyBindingItem keyCombination={tool.shortcut} action={tool.label} tag='span' flip />
-        </ToolTip>
-      )}
-      {decorSelect && (
-        <div className='absolute left-full top-1/2 transform -translate-y-1/2 ml-[20px] w-[296px] p-2 bg-slate-50 shadow-sm text-sm rounded-2xl'>
-          <div className='flex flex-wrap items-center gap-x-2 gap-y-4'>
-            {/* Render only registry entries that include an Icon */}
-            {Object.entries(decorRegistry)
-              .filter(([_, { Icon }]) => Icon)
-              .map(([key, { Icon, defaultIconProps }]) => (
-                <button key={key} onClick={() => handleClickItem(key)} className='cursor-pointer group/icon'>
-                  <Icon {...defaultIconProps} />
-                </button>
-              ))}
-            {/* Example buttons for tree and house */}
-          </div>
-        </div>
-      )}
-    </div>
-  );
-}
+// DecorSelectTool component has been moved to MegaPlaceDecorButton.jsx
 
 export default function UserInterface() {
   useKeyboardManager();
 
   const editMode = useIslandStore(state => state.editMode);
   const setEditMode = useIslandStore(state => state.actions.setEditMode);
-  const place = useIslandStore(state => state.place);
   const sculpt = useIslandStore(state => state.sculpt);
   const setPlaceProp = useIslandStore(state => state.actions.setPlaceProp);
   const setSculptProp = useIslandStore(state => state.actions.setSculptProp);
@@ -383,18 +371,7 @@ export default function UserInterface() {
                     setSculptProp={setSculptProp}
                   />
                 );
-              case "decor-select":
-                return (
-                  <DecorSelectTool
-                    key={tool.id}
-                    tool={tool}
-                    activeTool={activeTool}
-                    setActiveTool={setActiveTool}
-                    decorSelect={place.decorSelect}
-                    setPlaceProp={setPlaceProp}
-                    setSculptProp={setSculptProp}
-                  />
-                );
+              // decor-select case removed as it's now handled by MegaPlaceDecorButton
               default:
                 return null;
             }
@@ -472,7 +449,7 @@ export default function UserInterface() {
       )}
 
       {/* Logo */}
-      <LogoMark />
+      {/* <LogoMark /> */}
 
       {/* Credits button */}
       <div className='absolute bottom-[26px] right-12 w-[26px] h-[26px] flex items-center'>
@@ -482,11 +459,28 @@ export default function UserInterface() {
       </div>
 
       {/* Reset to default island button */}
-      <div className='absolute bottom-[26px] h-[26px] left-1/2 -translate-x-1/2 flex items-center justify-center text-center'>
-        <button onClick={() => loadSnapshotFromPath("/island/snapshots/default.json")} className='btn-dotted text-white'>
-          Revert to Starter Island
+      <div className='absolute top-4 right-4 h-14 group'>
+        <ToolTip position='left' offset={20}>
+          <span className='text-sm'>Load Starter Island</span>
+        </ToolTip>
+        <button onClick={() => loadSnapshotFromPath("/island/snapshots/default.json")} className=' group/btn'>
+          <span className='size-14 rounded-full bg-white shadow-md flex items-center justify-center relative'>
+            <span className='size-[50px] rounded-full overflow-hidden'>
+              <img
+                src='/island/images/island-preview@2x.jpg'
+                alt='Revert to Starter Island'
+                className='w-full h-full object-cover transition-transform duration-500 group-hover/btn:scale-110'
+              />
+            </span>
+            <span className='size-5 absolute top-1/2 -translate-y-1/2 left-0 -translate-x-3 bg-gradient-to-b from-[#2D5CF2] to-[#2A50C7] rounded-full flex items-center justify-center'>
+              <Undo2 className='-scale-x-100' size={12} stroke='white' strokeWidth={2} />
+            </span>
+          </span>
         </button>
       </div>
+
+      {/* Mega place decor button */}
+      {editMode && <MegaPlaceDecorButton />}
 
       {/* Credits modal */}
       {showCreditsModal && (
