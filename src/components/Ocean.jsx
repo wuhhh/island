@@ -1,5 +1,5 @@
 import { useThree } from "@react-three/fiber";
-import React, { useRef, useState, useEffect } from "react";
+import { useRef, useState, useEffect } from "react";
 import * as t from "three/tsl";
 import * as THREE from "three/webgpu";
 

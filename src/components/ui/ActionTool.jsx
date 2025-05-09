@@ -1,12 +1,9 @@
-import React from "react";
-
 import { useResetIsland } from "../../hooks/useResetIsland.js";
 import { useHistoryStore } from "../../stores/useHistoryStore.js";
 import KeyBindingItem from "../KeyBindingItem";
 
 import ToolbarButton from "./ToolbarButton";
 import ToolTip from "./ToolTip";
-
 
 /**
  * Action tool in the toolbar

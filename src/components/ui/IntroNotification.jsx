@@ -1,5 +1,4 @@
 import { motion } from "framer-motion";
-import React from "react";
 
 /**
  * Intro notification displayed on first visit

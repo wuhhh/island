@@ -1,5 +1,3 @@
-import React from "react";
-
 /**
  * Modal for displaying credits and attribution information
  * @param {Object} props

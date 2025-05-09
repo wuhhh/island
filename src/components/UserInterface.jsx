@@ -1,5 +1,5 @@
 import { Brush, CircleDotDashed, CircleFadingPlus, Download, Eraser, Hand, HelpCircle, Redo, RefreshCw, Undo } from "lucide-react";
-import React, { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 
 import { useKeyboardManager } from "../hooks/useKeyboardManager";
 import { useResetIsland } from "../hooks/useResetIsland.js";

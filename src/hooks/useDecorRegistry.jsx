@@ -1,6 +1,6 @@
 import { useGLTF } from "@react-three/drei";
 import { useFrame } from "@react-three/fiber";
-import React, { forwardRef, useLayoutEffect, useMemo, useRef } from "react";
+import { forwardRef, useLayoutEffect, useMemo, useRef } from "react";
 import { MathUtils } from "three/webgpu";
 
 import DecorItem from "../components/DecorItem";

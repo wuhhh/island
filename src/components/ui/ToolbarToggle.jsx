@@ -1,11 +1,9 @@
 import { motion, AnimatePresence } from "framer-motion";
 import { Pencil, X } from "lucide-react";
-import React from "react";
 
 import KeyBindingItem from "../KeyBindingItem";
 
 import ToolTip from "./ToolTip";
-
 
 /**
  * Toggle button for edit mode

@@ -1,5 +1,3 @@
-import React from "react";
-
 /**
  * Button to show credits
  * @param {Object} props

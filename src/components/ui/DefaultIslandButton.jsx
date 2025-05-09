@@ -1,5 +1,4 @@
 import { Undo2 } from "lucide-react";
-import React from "react";
 
 import ToolTip from "./ToolTip";
 

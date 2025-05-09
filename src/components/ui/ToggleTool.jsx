@@ -1,5 +1,3 @@
-import React from "react";
-
 import KeyBindingItem from "../KeyBindingItem";
 
 import ToolbarButton from "./ToolbarButton";

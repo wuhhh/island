@@ -1,5 +1,3 @@
-import React from "react";
-
 import Kbd from "../Kbd";
 import KeyBindingItem from "../KeyBindingItem";
 
