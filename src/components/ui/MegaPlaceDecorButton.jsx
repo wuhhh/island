@@ -1,10 +1,11 @@
 import { Trees } from "lucide-react";
 import { useRef, useEffect } from "react";
 
-import { useDecorRegistry } from "../hooks/useDecorRegistry.jsx";
-import { useIslandStore } from "../stores/useIslandStore.js";
-import ToolTip from "./ui/ToolTip.jsx";
-import KeyBindingItem from "./KeyBindingItem.jsx";
+import { useDecorRegistry } from "../../hooks/useDecorRegistry.jsx";
+import { useIslandStore } from "../../stores/useIslandStore.js";
+import KeyBindingItem from "../KeyBindingItem.jsx";
+
+import ToolTip from "./ToolTip.jsx";
 
 /**
  * MegaPlaceDecorButton component for placing decorative items on the island

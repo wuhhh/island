@@ -6,13 +6,13 @@ import { useResetIsland } from "../hooks/useResetIsland.js";
 import { useIslandStore } from "../stores/useIslandStore.js";
 import { createSnapshot, loadSnapshotFromPath } from "../utils/islandSnapshot.js";
 
-import MegaPlaceDecorButton from "./MegaPlaceDecorButton.jsx";
 import { Toolbar } from "./ui";
 import CreditsButton from "./ui/CreditsButton.jsx";
 import CreditsModal from "./ui/CreditsModal.jsx";
 import DefaultIslandButton from "./ui/DefaultIslandButton.jsx";
 import HelpModal from "./ui/HelpModal.jsx";
 import IntroNotification from "./ui/IntroNotification.jsx";
+import MegaPlaceDecorButton from "./ui/MegaPlaceDecorButton.jsx";
 
 // Tool options for the toolbar
 const TOOL_OPTIONS = [
