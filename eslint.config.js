@@ -1,12 +1,18 @@
 import eslint from "@eslint/js";
+import { defineConfig } from "eslint/config";
 import importPlugin from "eslint-plugin-import";
 import jsxA11yPlugin from "eslint-plugin-jsx-a11y";
 import reactPlugin from "eslint-plugin-react";
 import reactHooksPlugin from "eslint-plugin-react-hooks";
 import globals from "globals";
 
-export default [
+export default defineConfig([
   eslint.configs.recommended,
+
+  // Ignore specific directories
+  {
+    ignores: ["dist/*", "build/*", "public/*"],
+  },
 
   // React configuration
   {
@@ -107,4 +113,4 @@ export default [
       "no-unused-expressions": "off",
     },
   },
-];
+]);
