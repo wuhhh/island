@@ -80,6 +80,8 @@ export default function Terrain({ ...props }) {
       transparent: true,
       wireframe,
     });
+    // Interesting...
+    // material.normalNode = t.normalView.add(t.mx_fractal_noise_float(t.positionGeometry.mul(0)).mul(0.25).sub(0.5));
     material.colorNode = oceanLand({ position: t.positionGeometry, colour: "#246913" });
     return material;
   }, [wireframe, oceanLand]);
