@@ -92,7 +92,7 @@ export default function MegaPlaceDecorButton() {
         </button>
         {/* </div> */}
         {!decorSelect && (
-          <ToolTip position='top'>
+          <ToolTip position='top' offset={20}>
             <KeyBindingItem keyCombination={["p"]} action='Place Items' tag='span' flip />
           </ToolTip>
         )}

@@ -35,7 +35,7 @@ const ToolTip = ({ children, position = "right", offset = 16 }) => {
 
   return (
     <span
-      className={`group absolute ${config.classes} whitespace-nowrap bg-slate-50 text-black shadow-sm text-sm rounded-xs px-2 py-1 pointer-events-none opacity-0 transition-opacity duration-200 group-hover:opacity-100`}
+      className={`group absolute ${config.classes} whitespace-nowrap bg-slate-50 text-black shadow-sm text-sm rounded-xs px-2 py-1 pointer-events-none opacity-0 transition-opacity delay-0 duration-200 group-hover:opacity-100 group-hover:delay-500`}
       style={config.styles}
     >
       {children}

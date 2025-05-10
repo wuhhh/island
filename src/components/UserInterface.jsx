@@ -10,6 +10,7 @@ import { Toolbar } from "./ui";
 import CreditsButton from "./ui/CreditsButton.jsx";
 import CreditsModal from "./ui/CreditsModal.jsx";
 import DefaultIslandButton from "./ui/DefaultIslandButton.jsx";
+import DeleteButton from "./ui/DeleteButton.jsx";
 import HelpModal from "./ui/HelpModal.jsx";
 import IntroNotification from "./ui/IntroNotification.jsx";
 import MegaPlaceDecorButton from "./ui/MegaPlaceDecorButton.jsx";
@@ -146,6 +147,9 @@ export default function UserInterface() {
 
       {/* Decorations Button */}
       {editMode && <MegaPlaceDecorButton />}
+
+      {/* Delete button */}
+      {editMode && <DeleteButton />}
     </section>
   );
 }
