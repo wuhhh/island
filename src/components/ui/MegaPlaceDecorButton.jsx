@@ -36,7 +36,7 @@ export default function MegaPlaceDecorButton() {
   // Toggle decor selection panel and turn off decor select if already active
   const handleClick = () => {
     if (activeTool === "decor-select") {
-      setActiveTool(null); // Reset active tool
+      setActiveTool("move"); // Reset active tool
       setPlaceProp("active", false); // Turn off place mode
       setPlaceProp("decorSelect", false);
     } else {
