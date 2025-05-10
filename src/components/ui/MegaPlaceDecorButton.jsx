@@ -83,9 +83,9 @@ export default function MegaPlaceDecorButton() {
                   : "bg-gradient-to-b from-[#2D5CF2] to-[#2A50C7]"
               } rounded-full content-center`}
             >
-              <span className='relative content-center w-full h-full'>
+              <span className='relative block content-center w-full h-full'>
                 <span className='block w-2 h-[0.09375rem] rounded-full bg-white mx-auto' />
-                <span className='absolute top-0 -left-1 rotate-90 block w-2 h-[0.09375rem] rounded-full bg-white mx-auto' />
+                <span className='absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[0.09375rem] h-2 rounded-full bg-white' />
               </span>
             </span>
           </span>
