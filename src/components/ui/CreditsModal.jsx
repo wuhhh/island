@@ -11,7 +11,7 @@ function CreditsModal({ show, onClose }) {
     <div role='dialog' aria-modal='true' className='fixed inset-0 bg-ocean/50 backdrop-blur-md flex justify-center items-center z-50 prose'>
       <div className='bg-white rounded-lg shadow max-w-xl w-full p-6'>
         <h2 className='text-xl font-semibold mb-4'>Credits</h2>
-        <div className='mb-4'>
+        <div className='mb-4 space-y-2'>
           <p>
             Model Island is work in progress by Huw Roberts. You can find more of my creations at{" "}
             <a href='https://huwroberts.net' target='_blank'>
@@ -22,6 +22,12 @@ function CreditsModal({ show, onClose }) {
               Bluesky
             </a>
             .
+          </p>
+          <p>
+            The project is open source and available on{" "}
+            <a href='https://github.com/wuhhh/island  ' target='_blank' rel='noopener noreferrer'>
+              GitHub
+            </a>
           </p>
         </div>
         <div className='mb-4'>
