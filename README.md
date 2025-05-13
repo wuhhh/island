@@ -5,7 +5,7 @@ Model Island is a fun island maker made over 30 days for a Discord challenge run
 
 ## Screenshot
 
-![Island Screenshot](https://play.huwroberts.dev/island/screenshots/island--example-lg@2x.jpg)
+![Island Screenshot](/public/screenshots/island--example-lg@2x.jpg)
 
 
 ## Author
