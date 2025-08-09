@@ -3,6 +3,8 @@
 
 Model Island is a fun island maker made over 30 days for a Discord challenge run by Bruno Simon. It let's you sculpt an island up out of the ocean using sculpting brush tools in your browser. When you're happy with the topography of your land, decorate it with different models such as trees, houses and turbines.
 
+[Go make an island!](https://play.huwroberts.dev/island)
+
 ## Screenshot
 
 ![Island Screenshot](/public/screenshots/island--example-lg@2x.jpg)
